@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DOOM II: BRUTAL HELLGATE</title>
+  <title>DOOM II: BRUTAL HELLGATE · Multi-Floor &amp; Anti-Trap Edition</title>
   <style>
     :root {
       --bg: #070507;
       --panel: #140c0e;
       --border: #4a151b;
       --crimson: #e11d48;
-      --blood: #991b1b;
       --gold: #facc15;
       --green: #22c55e;
       --cyan: #38bdf8;
@@ -62,7 +61,6 @@
       image-rendering: crisp-edges;
     }
 
-    /* Visor Blood Splatters Overlay */
     .visor-blood {
       position: absolute;
       inset: 0;
@@ -76,7 +74,7 @@
       position: absolute;
       top: 10px;
       left: 12px;
-      right: 54px; /* Clear of CrazyVault corner close button */
+      right: 54px;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
@@ -125,7 +123,7 @@
       background: linear-gradient(180deg, #27272a 0%, #18181b 100%);
       border-top: 3px solid #52525b;
       display: grid;
-      grid-template-columns: 1.1fr 1fr 0.75fr 1fr 1.3fr;
+      grid-template-columns: 1.1fr 1fr 0.75fr 1.1fr 1.3fr;
       align-items: center;
       padding: 4px 10px;
       gap: 8px;
@@ -146,7 +144,7 @@
       position: relative;
     }
     .hud-num {
-      font-size: clamp(1.15rem, 2.5vw, 1.65rem);
+      font-size: clamp(1.1rem, 2.4vw, 1.55rem);
       font-weight: 900;
       line-height: 1;
       color: #ef4444;
@@ -158,8 +156,9 @@
       font-size: 0.62rem;
       font-weight: 800;
       color: #a1a1aa;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.7px;
       margin-top: 3px;
+      white-space: nowrap;
     }
 
     .mugshot-cell {
@@ -248,7 +247,7 @@
     .t-kick { width: 58px; height: 58px; background: rgba(217, 119, 6, 0.85); font-size: 0.75rem; }
     .t-wep  { width: 50px; height: 50px; background: rgba(37, 99, 235, 0.85); font-size: 0.7rem; }
 
-    /* Title / Briefing / Intermission Modals */
+    /* Modals */
     .modal-bg {
       position: fixed;
       inset: 0;
@@ -263,7 +262,7 @@
     .modal-bg.active { display: flex; }
 
     .doom-box {
-      width: min(640px, 95vw);
+      width: min(650px, 95vw);
       max-height: 92dvh;
       overflow-y: auto;
       background: #140b0d;
@@ -274,7 +273,7 @@
       box-shadow: 0 0 50px rgba(225, 29, 72, 0.35);
     }
     .doom-title {
-      font-size: clamp(1.6rem, 4.2vw, 2.5rem);
+      font-size: clamp(1.5rem, 4vw, 2.35rem);
       font-weight: 900;
       letter-spacing: 2px;
       color: #ef4444;
@@ -282,17 +281,17 @@
       margin-bottom: 6px;
     }
     .doom-sub {
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       color: #fca5a5;
-      margin-bottom: 16px;
-      letter-spacing: 0.8px;
+      margin-bottom: 14px;
+      letter-spacing: 0.7px;
     }
 
     .diff-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     .diff-card {
       background: #1f1013;
@@ -308,7 +307,7 @@
       background: rgba(250, 204, 21, 0.14);
       color: #facc15;
     }
-    .diff-card b { display: block; font-size: 0.84rem; margin-bottom: 3px; }
+    .diff-card b { display: block; font-size: 0.82rem; margin-bottom: 3px; }
     .diff-card span { font-size: 0.68rem; color: #a1a1aa; }
 
     .controls-panel {
@@ -329,10 +328,10 @@
       border: 2px solid #f87171;
       color: #fff;
       font-family: inherit;
-      font-size: 1rem;
+      font-size: 0.96rem;
       font-weight: 900;
       letter-spacing: 1px;
-      padding: 12px 28px;
+      padding: 11px 24px;
       border-radius: 8px;
       cursor: pointer;
       box-shadow: 0 8px 24px rgba(220, 38, 38, 0.45);
@@ -387,7 +386,7 @@
       </div>
       <div class="hud-cell">
         <div class="hud-num armor" id="hudArmor">25%</div>
-        <div class="hud-lbl" id="hudSector">E1M1 · KILLS 0/0</div>
+        <div class="hud-lbl" id="hudSector">SEC-1 · FL 1/3</div>
       </div>
       <div class="hud-cell">
         <div class="arms-grid" id="armsGrid">
@@ -398,7 +397,7 @@
           <div class="arm-slot" data-w="5">5:CHAIN</div>
           <div class="arm-slot" data-w="6">6:RCKT</div>
         </div>
-        <div class="hud-lbl" id="hudKeys">KEYS: NONE</div>
+        <div class="hud-lbl" id="hudKills">KILLS 0/0</div>
       </div>
     </footer>
   </div>
@@ -407,7 +406,7 @@
   <div class="modal-bg active" id="titleModal">
     <div class="doom-box">
       <div class="doom-title">DOOM II: BRUTAL HELLGATE</div>
-      <div class="doom-sub">GORE ENGINE · HEADSHOTS · MIGHTY BOOT KICKS · GLORY EXECUTIONS</div>
+      <div class="doom-sub">RANDOM MULTI-FLOOR SECTORS · NO FALL PITS · ANTI-DOOR-TRAP ENGINE</div>
 
       <div class="diff-grid" id="diffGrid">
         <button type="button" class="diff-card" data-diff="hurt">
@@ -426,13 +425,12 @@
 
       <div class="controls-panel">
         <b>WASD</b> Move / Strafe · <b>Mouse (Click Screen)</b> or <b>◀/▶</b> Aim · <b>Left-Click / Space</b> Fire<br>
-        <b>F / Right-Click</b> Mighty Boot Kick (Staggers foes, kicks barrels, executes low-HP demons for +HP!)<br>
-        <b>1–6</b> Weapons (Chainsaw, Assault Rifle, Shotgun, Super Shotgun, Chaingun, Rocket Launcher) · <b>R</b> Reload · <b>G</b> Taunt · <b>TAB</b> Automap
+        <b>F / Right-Click</b> Mighty Boot Kick / Open Door / Use Lift · <b>1–6</b> Weapons · <b>R</b> Reload · <b>G</b> Taunt · <b>TAB</b> Automap<br>
+        <b>Multi-Floor Lifts (Doom Style):</b> Each generated sector has connected floors (1 → 2 → 3) linked by glowing Elevator Pads — walk on or press <b>F</b> to ascend/descend floors, and reach the <b>Exit Elevator</b> to advance to a fresh random sector!
       </div>
 
       <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-        <button type="button" class="rip-btn" id="startCampaignBtn">RIP &amp; TEAR (CAMPAIGN)</button>
-        <button type="button" class="rip-btn" id="startEndlessBtn" style="background:linear-gradient(180deg,#b45309,#78350f); border-color:#fbbf24;">ENDLESS HELL ARENA</button>
+        <button type="button" class="rip-btn" id="startGameBtn">RIP &amp; TEAR</button>
       </div>
     </div>
   </div>
@@ -442,14 +440,14 @@
     <div class="doom-box" style="max-width:480px;">
       <div class="doom-title" id="interTitle" style="font-size:1.8rem;">SECTOR CLEARED</div>
       <p id="interStats" style="color:#e4e4e7; font-size:0.88rem; line-height:1.65; margin:14px 0 18px;"></p>
-      <button type="button" class="rip-btn" id="interActionBtn">ENTER NEXT SECTOR</button>
+      <button type="button" class="rip-btn" id="interActionBtn">GENERATE NEXT SECTOR</button>
     </div>
   </div>
 
   <script>
     (() => {
       // =========================================================================
-      // 1. RETRO PIXEL BUFFER & PROCEDURAL 64x64 TEXTURE GENERATOR
+      // 1. RETRO PIXEL BUFFER & PROCEDURAL 64x64 TEXTURES
       // =========================================================================
       const RW = 360;
       const RH = 225;
@@ -465,22 +463,20 @@
         return ((a & 255) << 24) | ((b & 255) << 16) | ((g & 255) << 8) | (r & 255);
       }
 
-      // Generate procedural textures into Uint32Array[64*64]
       const TEXTURES = {};
       function buildTextures() {
-        // 1: UAC Techbase Wall with rivets & hazard trim
+        // 1: UAC Techbase Wall
         const t1 = new Uint32Array(TEX_SIZE * TEX_SIZE);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
             const noise = ((x * 37 + y * 17) ^ (x * 13)) & 15;
             let r = 68 + noise, g = 74 + noise, b = 86 + noise;
             if (x % 32 === 0 || y % 32 === 0) { r -= 28; g -= 28; b -= 28; }
-            if ((x % 32 === 3 || x % 32 === 29) && (y % 32 === 3 || y % 32 === 29)) { r += 35; g += 35; b += 40; }
-            // Bottom hazard stripe
             if (y >= 54 && y <= 60) {
               const stripe = ((x + y) >> 2) & 1;
-              if (stripe) { r = 210; g = 160; b = 20; }
-              else { r = 24; g = 24; b = 28; }
+              r = stripe ? 210 : 24;
+              g = stripe ? 160 : 24;
+              b = stripe ? 20 : 28;
             }
             t1[y * 64 + x] = packRGBA(Math.max(0, Math.min(255, r)), Math.max(0, Math.min(255, g)), Math.max(0, Math.min(255, b)));
           }
@@ -522,33 +518,33 @@
         }
         TEXTURES[3] = t3;
 
-        // 4: Security Sliding Door
+        // 4: Security Sliding Door (only placed in open corridors between rooms!)
         const t4 = new Uint32Array(TEX_SIZE * TEX_SIZE);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
-            let r = 95, g = 102, b = 112;
+            let r = 104, g = 112, b = 126;
             if (x < 4 || x > 59 || y < 4 || y > 59) { r = 45; g = 48; b = 54; }
-            else if (Math.abs(x - 31.5) < 1.5) { r = 20; g = 20; b = 24; }
+            else if (Math.abs(x - 31.5) < 1.5) { r = 16; g = 16; b = 20; }
             else if (y > 26 && y < 38) {
               const chev = ((x + y) >> 2) & 1;
-              r = chev ? 220 : 30;
-              g = chev ? 50 : 30;
-              b = chev ? 50 : 35;
+              r = chev ? 225 : 28;
+              g = chev ? 175 : 28;
+              b = chev ? 25 : 34;
             }
             t4[y * 64 + x] = packRGBA(r, g, b);
           }
         }
         TEXTURES[4] = t4;
 
-        // 5: Exit Elevator Switch Wall
+        // 5: Exit Elevator Switch Wall (Green illuminated exit)
         const t5 = new Uint32Array(TEX_SIZE * TEX_SIZE);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
-            let r = 55, g = 60, b = 70;
-            if (x >= 18 && x <= 45 && y >= 16 && y <= 48) {
-              r = 25; g = 28; b = 34;
-              if (x >= 24 && x <= 39 && y >= 24 && y <= 36) {
-                r = 235; g = 45; b = 45; // Glowing red exit switch
+            let r = 45, g = 52, b = 60;
+            if (x >= 16 && x <= 47 && y >= 14 && y <= 50) {
+              r = 18; g = 24; b = 28;
+              if (x >= 22 && x <= 41 && y >= 22 && y <= 40) {
+                r = 34; g = 215; b = 110;
               }
             }
             t5[y * 64 + x] = packRGBA(r, g, b);
@@ -556,25 +552,25 @@
         }
         TEXTURES[5] = t5;
 
-        // 6: Cracked Secret Push-Wall (Subtle hint)
+        // 6: Secret Push-Wall
         const t6 = new Uint32Array(t2);
         for (let i = 8; i < 56; i++) {
           t6[i * 64 + ((i * 3) % 12 + 26)] = packRGBA(22, 8, 10);
         }
         TEXTURES[6] = t6;
 
-        // Floor & Ceiling textures
+        // Floor & Ceiling textures (no bottomless pits — solid Doom floors everywhere)
         const floorTex = new Uint32Array(64 * 64);
         const ceilTex = new Uint32Array(64 * 64);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
             const g = ((x * 17 ^ y * 31) & 15);
             const border = (x % 32 === 0 || y % 32 === 0) ? -14 : 0;
-            floorTex[y * 64 + x] = packRGBA(36 + g + border, 34 + g + border, 40 + g + border);
+            floorTex[y * 64 + x] = packRGBA(40 + g + border, 38 + g + border, 44 + g + border);
 
-            const rib = (x % 16 < 3) ? -12 : 0;
-            const light = (x >= 28 && x <= 35 && y >= 28 && y <= 35) ? 65 : 0;
-            ceilTex[y * 64 + x] = packRGBA(24 + rib + light, 22 + rib + light, 28 + rib + light);
+            const rib = (x % 16 < 3) ? -10 : 0;
+            const light = (x >= 28 && x <= 35 && y >= 28 && y <= 35) ? 60 : 0;
+            ceilTex[y * 64 + x] = packRGBA(28 + rib + light, 25 + rib + light, 32 + rib + light);
           }
         }
         TEXTURES.floor = floorTex;
@@ -582,25 +578,8 @@
       }
       buildTextures();
 
-      // Dynamic Blood Decals stored per grid tile ("x,y" -> splat seed)
-      let bloodWalls = new Set();
-      let bloodFloors = new Set();
-
-      function splatterBlood(wx, wy) {
-        const gx = Math.floor(wx);
-        const gy = Math.floor(wy);
-        bloodFloors.add(`${gx},${gy}`);
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (Math.random() < 0.65) {
-              bloodWalls.add(`${gx + dx},${gy + dy}`);
-            }
-          }
-        }
-      }
-
       // =========================================================================
-      // 2. BRUTAL WEBAUDIO SOUND & SYNTH INDUSTRIAL METAL RIFF
+      // 2. SOUND & INDUSTRIAL METAL RIFF
       // =========================================================================
       const SFX = {
         ctx: null,
@@ -669,10 +648,10 @@
         gib()      { this.noise(0.22, 720, 0.18); this.tone(160, 0.15, 'square', 0.07, 50); },
         pickup()   { this.tone(540, 0.07, 'triangle', 0.07); setTimeout(() => this.tone(780, 0.1, 'triangle', 0.07), 60); },
         hurt()     { this.tone(120, 0.22, 'sawtooth', 0.14, 48); },
+        lift()     { this.tone(220, 0.18, 'triangle', 0.08, 440); },
 
         startRiff() {
           if (this.riffTimer) return;
-          // E1M1-inspired chugging E-phrygian metal riff
           const notes = [82.4, 82.4, 164.8, 82.4, 82.4, 146.8, 82.4, 82.4, 130.8, 82.4, 82.4, 123.5, 82.4, 82.4, 130.8, 146.8];
           this.riffTimer = setInterval(() => {
             if (!this.riffOn || !running || paused) return;
@@ -700,7 +679,7 @@
       };
 
       // =========================================================================
-      // 3. WEAPONS & BESTIARY DATA
+      // 3. WEAPONS & BESTIARY
       // =========================================================================
       const WEAPONS = {
         1: { id: 1, name: 'Chainsaw',       ammoType: null,     ammoUse: 0, rate: 0.08, pellets: 1,  spread: 0.12, dmg: 16, range: 1.75, auto: true,  kickback: 0.4 },
@@ -712,158 +691,42 @@
       };
 
       const ENEMY_TYPES = {
-        trooper:  { name: 'Zombieman',     hp: 42,  spd: 1.85, dmg: 9,  r: 0.32, scale: 0.95, color: '#84cc16', eye: '#ef4444', ranged: 'bullet', drop: 'clip' },
-        sergeant: { name: 'Shotgun Guy',   hp: 65,  spd: 2.0,  dmg: 18, r: 0.34, scale: 1.0,  color: '#475569', eye: '#f43f5e', ranged: 'buckshot', drop: 'shells' },
-        imp:      { name: 'Hell Imp',      hp: 78,  spd: 2.55, dmg: 15, r: 0.34, scale: 1.02, color: '#9a3412', eye: '#facc15', ranged: 'fireball', drop: null },
-        pinky:    { name: 'Pinky Demon',   hp: 145, spd: 3.65, dmg: 24, r: 0.40, scale: 1.12, color: '#db2777', eye: '#fef08a', ranged: null, drop: null },
-        caco:     { name: 'Cacodemon',     hp: 240, spd: 2.15, dmg: 26, r: 0.44, scale: 1.25, color: '#dc2626', eye: '#22c55e', ranged: 'plasma', flying: true, drop: null },
-        baron:    { name: 'Baron of Hell', hp: 560, spd: 2.35, dmg: 36, r: 0.46, scale: 1.38, color: '#be123c', eye: '#4ade80', ranged: 'hellfire', isBoss: true, drop: 'rockets' }
+        trooper:  { name: 'Zombieman',     hp: 42,  spd: 1.85, dmg: 9,  r: 0.30, scale: 0.95, color: '#84cc16', eye: '#ef4444', ranged: 'bullet',   drop: 'clip' },
+        sergeant: { name: 'Shotgun Guy',   hp: 65,  spd: 2.0,  dmg: 18, r: 0.32, scale: 1.0,  color: '#475569', eye: '#f43f5e', ranged: 'buckshot', drop: 'shells' },
+        imp:      { name: 'Hell Imp',      hp: 78,  spd: 2.55, dmg: 15, r: 0.32, scale: 1.02, color: '#9a3412', eye: '#facc15', ranged: 'fireball', drop: null },
+        pinky:    { name: 'Pinky Demon',   hp: 145, spd: 3.65, dmg: 24, r: 0.36, scale: 1.12, color: '#db2777', eye: '#fef08a', ranged: null,       drop: null },
+        caco:     { name: 'Cacodemon',     hp: 240, spd: 2.15, dmg: 26, r: 0.38, scale: 1.25, color: '#dc2626', eye: '#22c55e', ranged: 'plasma',   flying: true, drop: null },
+        baron:    { name: 'Baron of Hell', hp: 560, spd: 2.35, dmg: 36, r: 0.42, scale: 1.38, color: '#be123c', eye: '#4ade80', ranged: 'hellfire', isBoss: true, drop: 'rockets' }
       };
 
       // =========================================================================
-      // 4. CAMPAIGN LEVELS + PROCEDURAL HELL GENERATOR
+      // 4. RANDOM MULTI-FLOOR GENERATOR (NO WALL DOORS, NO TRAPPING, NO FALL PITS)
       // =========================================================================
-      // Legend:
-      // 1 = UAC Wall, 2 = Hell Brick, 3 = Rusty Slime Wall, 4 = Door, 5 = Exit Elevator, 6 = Secret Wall
-      // P = Player Start, B = Explosive Barrel, H = Medkit, A = Armor, S = Shotgun, D = Super Shotgun,
-      // C = Chaingun, R = Rocket Launcher, M = Ammo Crate, K = Red Keycard
-      // z = Trooper, g = Sergeant, i = Imp, p = Pinky, c = Cacodemon, X = Baron of Hell
+      // A sector consists of 3 connected floors (floor 0, 1, 2).
+      // Lifts are floor pads (not walls) that move the player up/down between floors.
+      // Doors are strictly placed ONLY in 1-tile-wide corridor passages connecting two open rooms,
+      // and NEVER close while any actor (player, enemy, or barrel) overlaps the tile!
 
-      const CAMPAIGN = [
-        {
-          code: 'E1M1',
-          name: 'HANGAR SLAUGHTERHOUSE',
-          grid: [
-            "11111111111111111111",
-            "1P...1......z...1..1",
-            "1..A.1..B.......4..1",
-            "1....4......z...1.S1",
-            "11141111141111111111",
-            "1....1.......B.....1",
-            "1.z..4...i......g..1",
-            "1....1.......M.....1",
-            "11111114111114111111",
-            "1..H...1.....1..D..1",
-            "1..g...1..p..6..M..1",
-            "11111111..B..1111111",
-            "1...i........1.....1",
-            "1.......p....4..i..5",
-            "11111111111111111111"
-          ]
-        },
-        {
-          code: 'E1M2',
-          name: 'NUCLEAR BLOODWORKS',
-          grid: [
-            "3333333333333333333333",
-            "3P..3......B.......3.3",
-            "3.A.4..z.......g...4C3",
-            "3...3......M.......3.3",
-            "3343333343333334333333",
-            "3.......3......3.....3",
-            "3..p....3..i...4..H..3",
-            "3....B..3......3.....3",
-            "3333334333333433333333",
-            "3..D..3......3....B..3",
-            "3..M..6..c...3..p....3",
-            "3333333......3.......3",
-            "3...g........4...c...3",
-            "3......i.....3.....H.5",
-            "3333333333333333333333"
-          ]
-        },
-        {
-          code: 'E2M1',
-          name: 'CRIMSON CITADEL',
-          grid: [
-            "2222222222222222222222",
-            "2P....2....B.....2.R.2",
-            "2..A..4..i....g..6.M.2",
-            "2.....2..........2...2",
-            "2224222222422222222222",
-            "2.....2........2.....2",
-            "2..p..4...c....4..H..2",
-            "2.....2....B...2.....2",
-            "2222222224222222224222",
-            "2..M..2........2.....2",
-            "2..c..4...X....4..p..2",
-            "2.....2...H....2.....5",
-            "2222222222222222222222"
-          ]
-        }
-      ];
+      const MAP_W = 24;
+      const MAP_H = 18;
+      const NUM_FLOORS = 3;
 
-      function generateProceduralHell(stageNum) {
-        const W = 24, H = 18;
-        const g = Array.from({ length: H }, () => Array(W).fill('2'));
-        const rooms = [];
-        for (let attempt = 0; attempt < 60 && rooms.length < 7; attempt++) {
-          const rw = 4 + Math.floor(Math.random() * 4);
-          const rh = 3 + Math.floor(Math.random() * 3);
-          const rx = 1 + Math.floor(Math.random() * (W - rw - 2));
-          const ry = 1 + Math.floor(Math.random() * (H - rh - 2));
-          if (rooms.some(r => rx < r.x + r.w + 1 && rx + rw + 1 > r.x && ry < r.y + r.h + 1 && ry + rh + 1 > r.y)) continue;
-          rooms.push({ x: rx, y: ry, w: rw, h: rh, cx: Math.floor(rx + rw / 2), cy: Math.floor(ry + rh / 2) });
-          for (let y = ry; y < ry + rh; y++) {
-            for (let x = rx; x < rx + rw; x++) g[y][x] = '.';
-          }
-        }
-        for (let i = 1; i < rooms.length; i++) {
-          let x = rooms[i - 1].cx, y = rooms[i - 1].cy;
-          const tx = rooms[i].cx, ty = rooms[i].cy;
-          while (x !== tx) { g[y][x] = '.'; x += x < tx ? 1 : -1; }
-          while (y !== ty) { g[y][x] = '.'; y += y < ty ? 1 : -1; }
-        }
-        const first = rooms[0];
-        const last = rooms[rooms.length - 1];
-        g[first.cy][first.cx] = 'P';
-        g[first.y][first.x] = 'A';
-        g[first.y][first.x + first.w - 1] = 'D';
-        g[last.cy][last.cx] = 'X';
-        g[last.y][last.x + last.w - 1] = '5';
-
-        const pool = ['z', 'g', 'i', 'p', 'c'];
-        for (let i = 1; i < rooms.length; i++) {
-          const r = rooms[i];
-          g[r.y][r.x] = Math.random() < 0.5 ? 'H' : 'M';
-          if (Math.random() < 0.45) g[r.y + r.h - 1][r.x] = 'B';
-          const count = 2 + Math.min(3, Math.floor(stageNum / 2));
-          for (let k = 0; k < count; k++) {
-            const ex = r.x + 1 + Math.floor(Math.random() * Math.max(1, r.w - 2));
-            const ey = r.y + 1 + Math.floor(Math.random() * Math.max(1, r.h - 2));
-            if (g[ey][ex] === '.') g[ey][ex] = pool[Math.floor(Math.random() * pool.length)];
-          }
-        }
-        return {
-          code: `HELL-${stageNum}`,
-          name: `ABYSSAL SLAUGHTER SECTOR ${stageNum}`,
-          grid: g.map(row => row.join(''))
-        };
-      }
-
-      // =========================================================================
-      // 5. GAME STATE & INITIALIZATION
-      // =========================================================================
-      let diff = 'uv'; // hurt | uv | nightmare
-      let endlessMode = false;
-      let levelIndex = 0;
+      let sectorNumber = 1;
+      let currentFloor = 0;
+      let floorsData = []; // Array of floor states
+      let diff = 'uv';
       let running = false;
       let paused = false;
       let showAutomap = false;
 
-      let mapW = 20, mapH = 15;
-      let worldMap = [];
-      let doors = {}; // "x,y" -> { openAmt: 0..1, opening: false, timer: 0 }
-
       let player = {
         x: 2.5, y: 2.5,
         angle: 0,
-        vx: 0, vy: 0,
         hp: 100, maxHp: 100,
         armor: 25, maxArmor: 200,
         weapon: 2,
         owned: { 1: true, 2: true, 3: false, 4: false, 5: false, 6: false },
-        ammo: { clip: 45, shells: 12, rockets: 2 },
+        ammo: { clip: 50, shells: 10, rockets: 2 },
         mag: 30, maxMag: 30,
         reloadTimer: 0,
         fireCd: 0,
@@ -874,16 +737,13 @@
         tauntTimer: 0,
         hurtFlash: 0,
         pickupFlash: 0,
+        liftCooldown: 0,
         kills: 0,
         totalEnemies: 0
       };
 
-      let enemies = [];
-      let pickups = [];
-      let barrels = [];
       let projectiles = [];
       let gibs = [];
-      let bloodPools = [];
       let explosions = [];
       let shake = 0;
 
@@ -919,72 +779,215 @@
         }
       }
 
-      function loadLevel(idx, keepGear = false) {
-        const lvl = endlessMode ? generateProceduralHell(idx + 1) : CAMPAIGN[idx % CAMPAIGN.length];
-        mapH = lvl.grid.length;
-        mapW = lvl.grid[0].length;
-        worldMap = Array.from({ length: mapH }, () => Array(mapW).fill(0));
-        doors = {};
-        enemies = [];
-        pickups = [];
-        barrels = [];
-        projectiles = [];
-        gibs = [];
-        bloodPools = [];
-        explosions = [];
-        bloodWalls.clear();
-        bloodFloors.clear();
+      function getCurrentFloorData() {
+        return floorsData[currentFloor];
+      }
 
-        if (!keepGear) {
-          player.hp = 100;
-          player.armor = 25;
-          player.weapon = 2;
-          player.owned = { 1: true, 2: true, 3: false, 4: false, 5: false, 6: false };
-          player.ammo = { clip: 50, shells: 10, rockets: 2 };
-          player.mag = 30;
-        } else {
-          player.hp = Math.min(100, Math.max(player.hp, 65));
-        }
-        player.kills = 0;
-        player.totalEnemies = 0;
-        player.reloadTimer = 0;
-        player.kickTimer = 0;
-        player.tauntTimer = 0;
+      function generateSingleFloorState(floorIdx, secNum, hpMult) {
+        const grid = Array.from({ length: MAP_H }, () => Array(MAP_W).fill(floorIdx === 0 ? 1 : floorIdx === 1 ? 3 : 2));
+        const rooms = [];
 
-        const hpMult = diff === 'hurt' ? 0.8 : diff === 'nightmare' ? 1.35 : 1.0;
+        for (let attempt = 0; attempt < 90 && rooms.length < 7; attempt++) {
+          const rw = 4 + Math.floor(Math.random() * 4);
+          const rh = 3 + Math.floor(Math.random() * 3);
+          const rx = 1 + Math.floor(Math.random() * (MAP_W - rw - 2));
+          const ry = 1 + Math.floor(Math.random() * (MAP_H - rh - 2));
 
-        for (let y = 0; y < mapH; y++) {
-          for (let x = 0; x < mapW; x++) {
-            const ch = lvl.grid[y][x];
-            if ('123456'.includes(ch)) {
-              const code = Number(ch);
-              worldMap[y][x] = code;
-              if (code === 4) doors[`${x},${y}`] = { openAmt: 0, opening: false, timer: 0 };
-            } else if (ch === 'P') {
-              player.x = x + 0.5;
-              player.y = y + 0.5;
-              player.angle = 0;
-            } else if (ch === 'B') {
-              barrels.push({ x: x + 0.5, y: y + 0.5, vx: 0, vy: 0, hp: 22, alive: true });
-            } else if ('HASDCRM'.includes(ch)) {
-              pickups.push({ x: x + 0.5, y: y + 0.5, kind: ch, taken: false });
-            } else if ('zgipcxX'.includes(ch)) {
-              const mapKey = ch === 'z' ? 'trooper' : ch === 'g' ? 'sergeant' : ch === 'i' ? 'imp' : ch === 'p' ? 'pinky' : ch === 'c' ? 'caco' : 'baron';
-              spawnDemon(mapKey, x + 0.5, y + 0.5, hpMult);
+          const overlaps = rooms.some(r => rx < r.x + r.w + 1 && rx + rw + 1 > r.x && ry < r.y + r.h + 1 && ry + rh + 1 > r.y);
+          if (overlaps) continue;
+
+          const cx = Math.floor(rx + rw / 2);
+          const cy = Math.floor(ry + rh / 2);
+          rooms.push({ x: rx, y: ry, w: rw, h: rh, cx, cy });
+
+          for (let y = ry; y < ry + rh; y++) {
+            for (let x = rx; x < rx + rw; x++) {
+              grid[y][x] = 0;
             }
           }
         }
 
-        document.getElementById('hudSector').textContent = `${lvl.code} · KILLS 0/${player.totalEnemies}`;
-        pushMsg(`ENTERING ${lvl.code}: ${lvl.name}`);
-        updateHud();
+        // Ensure at least 3 rooms
+        while (rooms.length < 3) {
+          const idx = rooms.length;
+          const rx = 2 + idx * 6;
+          const ry = 3 + idx * 3;
+          const rw = 5, rh = 4;
+          rooms.push({ x: rx, y: ry, w: rw, h: rh, cx: rx + 2, cy: ry + 2 });
+          for (let y = ry; y < ry + rh; y++) {
+            for (let x = rx; x < rx + rw; x++) grid[y][x] = 0;
+          }
+        }
+
+        const corridorTiles = [];
+        // Connect rooms with clean corridors and place doors ONLY on narrow corridor choke points
+        for (let i = 1; i < rooms.length; i++) {
+          let x = rooms[i - 1].cx;
+          let y = rooms[i - 1].cy;
+          const tx = rooms[i].cx;
+          const ty = rooms[i].cy;
+
+          while (x !== tx) {
+            if (grid[y][x] !== 0) {
+              grid[y][x] = 0;
+              corridorTiles.push({ x, y, horiz: true });
+            }
+            x += x < tx ? 1 : -1;
+          }
+          while (y !== ty) {
+            if (grid[y][x] !== 0) {
+              grid[y][x] = 0;
+              corridorTiles.push({ x, y, horiz: false });
+            }
+            y += y < ty ? 1 : -1;
+          }
+        }
+
+        const doors = {};
+        let doorsPlaced = 0;
+        for (const ct of corridorTiles) {
+          if (doorsPlaced >= 3) break;
+          if (ct.x <= 1 || ct.y <= 1 || ct.x >= MAP_W - 2 || ct.y >= MAP_H - 2) continue;
+          // Ensure it's a genuine corridor tile (has walls on opposite sides, open along travel axis)
+          const wallsHoriz = grid[ct.y][ct.x - 1] > 0 && grid[ct.y][ct.x + 1] > 0 && grid[ct.y - 1][ct.x] === 0 && grid[ct.y + 1][ct.x] === 0;
+          const wallsVert  = grid[ct.y - 1][ct.x] > 0 && grid[ct.y + 1][ct.x] > 0 && grid[ct.y][ct.x - 1] === 0 && grid[ct.y][ct.x + 1] === 0;
+          if (wallsHoriz || wallsVert) {
+            grid[ct.y][ct.x] = 4;
+            doors[`${ct.x},${ct.y}`] = { openAmt: 0, opening: false, timer: 0 };
+            doorsPlaced++;
+          }
+        }
+
+        // Lift pads connecting floors (never placed inside walls)
+        const lifts = [];
+        const spawnRoom = rooms[0];
+        const spawnPos = { x: spawnRoom.cx + 0.5, y: spawnRoom.cy + 0.5 };
+
+        function findOpenFloorSpot(room, preferOffset = 0) {
+          for (let dy = 0; dy < room.h; dy++) {
+            for (let dx = 0; dx < room.w; dx++) {
+              const tx = room.x + ((dx + preferOffset) % room.w);
+              const ty = room.y + dy;
+              if (grid[ty]?.[tx] === 0 && !(tx === spawnRoom.cx && ty === spawnRoom.cy)) {
+                return { x: tx + 0.5, y: ty + 0.5 };
+              }
+            }
+          }
+          return { x: room.cx + 0.5, y: room.cy + 0.5 };
+        }
+
+        if (floorIdx < NUM_FLOORS - 1) {
+          const rUp = rooms[rooms.length - 1];
+          const spotUp = findOpenFloorSpot(rUp, 0);
+          grid[Math.floor(spotUp.y)][Math.floor(spotUp.x)] = 0;
+          lifts.push({
+            x: spotUp.x,
+            y: spotUp.y,
+            dir: 'up',
+            targetFloor: floorIdx + 1,
+            label: `LIFT UP → FL ${floorIdx + 2}`
+          });
+        }
+
+        if (floorIdx > 0) {
+          const rDown = rooms[rooms.length > 2 ? 1 : 0];
+          const spotDown = findOpenFloorSpot(rDown, 1);
+          grid[Math.floor(spotDown.y)][Math.floor(spotDown.x)] = 0;
+          lifts.push({
+            x: spotDown.x,
+            y: spotDown.y,
+            dir: 'down',
+            targetFloor: floorIdx - 1,
+            label: `LIFT DOWN → FL ${floorIdx}`
+          });
+        }
+
+        // Place Exit Elevator switch on a wall of the top floor's final room and guarantee clear access
+        let exitWall = null;
+        if (floorIdx === NUM_FLOORS - 1) {
+          const topRoom = rooms[rooms.length - 1];
+          const candidates = [
+            { wx: topRoom.cx, wy: topRoom.y - 1, ax: topRoom.cx, ay: topRoom.y },
+            { wx: topRoom.cx, wy: topRoom.y + topRoom.h, ax: topRoom.cx, ay: topRoom.y + topRoom.h - 1 },
+            { wx: topRoom.x - 1, wy: topRoom.cy, ax: topRoom.x, ay: topRoom.cy },
+            { wx: topRoom.x + topRoom.w, wy: topRoom.cy, ax: topRoom.x + topRoom.w - 1, ay: topRoom.cy }
+          ];
+          for (const cand of candidates) {
+            if (cand.wx > 0 && cand.wy > 0 && cand.wx < MAP_W - 1 && cand.wy < MAP_H - 1 && grid[cand.wy][cand.wx] > 0) {
+              grid[cand.wy][cand.wx] = 5;
+              grid[cand.ay][cand.ax] = 0;
+              exitWall = cand;
+              break;
+            }
+          }
+        }
+
+        // Populate pickups, barrels, and demons safely on walkable floor tiles
+        const pickups = [];
+        const barrels = [];
+        const enemies = [];
+
+        const weaponPool = ['S', 'D', 'C', 'R'];
+        for (let i = 1; i < rooms.length; i++) {
+          const rm = rooms[i];
+          const px = rm.x + 1 + 0.5;
+          const py = rm.y + 1 + 0.5;
+          if (grid[Math.floor(py)][Math.floor(px)] === 0) {
+            const kind = i === 1 ? weaponPool[floorIdx % weaponPool.length] : (Math.random() < 0.5 ? 'H' : 'M');
+            pickups.push({ x: px, y: py, kind, taken: false });
+          }
+
+          if (rm.w >= 5 && rm.h >= 4) {
+            const bx = rm.x + rm.w - 1.5;
+            const by = rm.y + rm.h - 1.5;
+            if (grid[Math.floor(by)][Math.floor(bx)] === 0) {
+              barrels.push({ x: bx, y: by, vx: 0, vy: 0, hp: 22, alive: true });
+            }
+          }
+
+          const demonPool = ['trooper', 'sergeant', 'imp', 'pinky', 'caco'];
+          const demonCount = 2 + Math.min(3, Math.floor((secNum + floorIdx) / 2));
+          for (let k = 0; k < demonCount; k++) {
+            const ex = rm.x + 0.5 + ((k + 1) % Math.max(1, rm.w - 1));
+            const ey = rm.y + 0.5 + (k % Math.max(1, rm.h - 1));
+            const gx = Math.floor(ex), gy = Math.floor(ey);
+            if (grid[gy]?.[gx] === 0 && Math.hypot(ex - spawnPos.x, ey - spawnPos.y) > 2.2) {
+              const tKey = demonPool[(i + k + floorIdx) % demonPool.length];
+              enemies.push(makeEnemyObj(tKey, ex, ey, hpMult * (1 + floorIdx * 0.15)));
+            }
+          }
+        }
+
+        // Boss on top floor
+        if (floorIdx === NUM_FLOORS - 1) {
+          const bossRm = rooms[rooms.length - 1];
+          const bx = bossRm.x + 1.5;
+          const by = bossRm.y + 1.5;
+          if (grid[Math.floor(by)]?.[Math.floor(bx)] === 0) {
+            enemies.push(makeEnemyObj('baron', bx, by, hpMult * 1.25));
+          }
+        }
+
+        return {
+          floorIdx,
+          grid,
+          doors,
+          lifts,
+          exitWall,
+          spawnPos,
+          pickups,
+          barrels,
+          enemies,
+          bloodWalls: new Set(),
+          bloodFloors: new Set(),
+          bloodPools: []
+        };
       }
 
-      function spawnDemon(typeKey, x, y, hpMult = 1) {
+      function makeEnemyObj(typeKey, x, y, hpMult) {
         const spec = ENEMY_TYPES[typeKey];
         const maxHp = Math.round(spec.hp * hpMult);
-        player.totalEnemies++;
-        enemies.push({
+        return {
           type: typeKey,
           name: spec.name,
           x, y,
@@ -1001,25 +1004,110 @@
           flying: !!spec.flying,
           isBoss: !!spec.isBoss,
           drop: spec.drop,
-          state: 'idle', // idle | chase | windup | staggered | dead
+          state: 'idle',
           stateTimer: 0,
           attackCd: 0.7 + Math.random() * 0.9,
           hitFlash: 0,
           headless: false,
           headlessTimer: 0
-        });
+        };
+      }
+
+      function generateSector(secNum, keepPlayerStats = false) {
+        sectorNumber = secNum;
+        currentFloor = 0;
+        projectiles = [];
+        gibs = [];
+        explosions = [];
+
+        const hpMult = diff === 'hurt' ? 0.8 : diff === 'nightmare' ? 1.35 : 1.0;
+        floorsData = [];
+        for (let f = 0; f < NUM_FLOORS; f++) {
+          floorsData.push(generateSingleFloorState(f, secNum, hpMult));
+        }
+
+        if (!keepPlayerStats) {
+          player.hp = 100;
+          player.armor = 25;
+          player.weapon = 2;
+          player.owned = { 1: true, 2: true, 3: false, 4: false, 5: false, 6: false };
+          player.ammo = { clip: 50, shells: 10, rockets: 2 };
+          player.mag = 30;
+        } else {
+          player.hp = Math.min(100, Math.max(player.hp, 65));
+        }
+
+        player.x = floorsData[0].spawnPos.x;
+        player.y = floorsData[0].spawnPos.y;
+        player.angle = 0;
+        player.kills = 0;
+        player.totalEnemies = floorsData.reduce((sum, f) => sum + f.enemies.length, 0);
+        player.reloadTimer = 0;
+        player.kickTimer = 0;
+        player.tauntTimer = 0;
+        player.liftCooldown = 0.6;
+
+        pushMsg(`SECTOR ${secNum} GENERATED · 3 FLOORS CONNECTED BY LIFTS`);
+        updateHud();
+      }
+
+      function transferToFloor(targetFloorIdx) {
+        if (targetFloorIdx < 0 || targetFloorIdx >= NUM_FLOORS) return;
+        const prevFloor = currentFloor;
+        currentFloor = targetFloorIdx;
+        const destFloor = getCurrentFloorData();
+
+        // Find matching lift pad or safe spawn on destination floor
+        const matchingLift = destFloor.lifts.find(l => l.targetFloor === prevFloor) || destFloor.lifts[0];
+        if (matchingLift) {
+          player.x = matchingLift.x;
+          player.y = matchingLift.y;
+        } else {
+          player.x = destFloor.spawnPos.x;
+          player.y = destFloor.spawnPos.y;
+        }
+
+        // Guarantee player lands on a non-blocked floor tile & push away close enemies
+        if (!canMoveTo(player.x, player.y, 0.22)) {
+          for (const [ox, oy] of [[0.6,0],[-0.6,0],[0,0.6],[0,-0.6]]) {
+            if (canMoveTo(player.x + ox, player.y + oy, 0.22)) {
+              player.x += ox;
+              player.y += oy;
+              break;
+            }
+          }
+        }
+        for (const en of destFloor.enemies) {
+          if (en.state !== 'dead' && Math.hypot(en.x - player.x, en.y - player.y) < 0.85) {
+            const ang = Math.atan2(en.y - player.y, en.x - player.x) || 0;
+            const nxEn = en.x + Math.cos(ang) * 1.1;
+            const nyEn = en.y + Math.sin(ang) * 1.1;
+            if (canMoveTo(nxEn, nyEn, en.r)) {
+              en.x = nxEn;
+              en.y = nyEn;
+            }
+          }
+        }
+
+        player.liftCooldown = 1.1;
+        projectiles = [];
+        gibs = [];
+        SFX.lift();
+        pushMsg(`ELEVATOR ARRIVED AT FLOOR ${currentFloor + 1} / ${NUM_FLOORS}`);
+        updateHud();
       }
 
       // =========================================================================
-      // 6. COLLISION & LINE OF SIGHT
+      // 5. ANTI-TRAP COLLISION & DOOR SAFETY
       // =========================================================================
       function isTileBlocked(gx, gy) {
-        if (gx < 0 || gy < 0 || gx >= mapW || gy >= mapH) return true;
-        const code = worldMap[gy][gx];
+        if (gx < 0 || gy < 0 || gx >= MAP_W || gy >= MAP_H) return true;
+        const fd = getCurrentFloorData();
+        const code = fd.grid[gy][gx];
         if (code === 0) return false;
         if (code === 4) {
-          const d = doors[`${gx},${gy}`];
-          return !d || d.openAmt < 0.75;
+          const d = fd.doors[`${gx},${gy}`];
+          return !d || d.openAmt < 0.8;
         }
         return true;
       }
@@ -1044,13 +1132,32 @@
         return true;
       }
 
+      function isAnyEntityInsideTile(gx, gy) {
+        if (Math.floor(player.x) === gx && Math.floor(player.y) === gy) return true;
+        const fd = getCurrentFloorData();
+        for (const en of fd.enemies) {
+          if (en.state !== 'dead' && Math.floor(en.x) === gx && Math.floor(en.y) === gy) return true;
+        }
+        for (const b of fd.barrels) {
+          if (b.alive && Math.floor(b.x) === gx && Math.floor(b.y) === gy) return true;
+        }
+        return false;
+      }
+
       // =========================================================================
-      // 7. BRUTAL COMBAT: SHOOTING, KICKING, GLORY EXECUTIONS, GIBS & EXPLOSIONS
+      // 6. BRUTAL COMBAT & INTERACTION
       // =========================================================================
       function spawnGibs(x, y, count = 12, force = 4.2) {
-        splatterBlood(x, y);
-        bloodPools.push({ x, y, r: 0.25 + Math.random() * 0.25 });
-        if (bloodPools.length > 80) bloodPools.shift();
+        const fd = getCurrentFloorData();
+        const gx = Math.floor(x), gy = Math.floor(y);
+        fd.bloodFloors.add(`${gx},${gy}`);
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (Math.random() < 0.65) fd.bloodWalls.add(`${gx + dx},${gy + dy}`);
+          }
+        }
+        fd.bloodPools.push({ x, y, r: 0.25 + Math.random() * 0.25 });
+        if (fd.bloodPools.length > 70) fd.bloodPools.shift();
 
         const parts = ['skull', 'rib', 'meat', 'meat', 'eye'];
         for (let i = 0; i < count; i++) {
@@ -1063,18 +1170,19 @@
             vy: Math.sin(a) * spd,
             vz: 2.2 + Math.random() * 3.2,
             kind: parts[i % parts.length],
-            ttl: 9.0
+            ttl: 8.0
           });
         }
       }
 
       function triggerExplosion(x, y, radius = 2.6, maxDmg = 150) {
+        const fd = getCurrentFloorData();
         SFX.boom();
         shake = Math.max(shake, 14);
         explosions.push({ x, y, r: 0.2, maxR: radius, ttl: 0.32, maxTtl: 0.32 });
-        splatterBlood(x, y);
+        fd.bloodFloors.add(`${Math.floor(x)},${Math.floor(y)}`);
 
-        for (const en of enemies) {
+        for (const en of fd.enemies) {
           if (en.state === 'dead') continue;
           const d = Math.hypot(en.x - x, en.y - y);
           if (d <= radius) {
@@ -1085,7 +1193,7 @@
           }
         }
 
-        for (const b of barrels) {
+        for (const b of fd.barrels) {
           if (b.alive && Math.hypot(b.x - x, b.y - y) <= radius * 0.9) {
             b.alive = false;
             setTimeout(() => triggerExplosion(b.x, b.y, 2.7, 140), 70);
@@ -1113,7 +1221,6 @@
           pushMsg(`HEADSHOT! ${en.name.toUpperCase()} DECAPITATED!`);
         }
 
-        // Stagger threshold for Brutal Glory Kill
         if (en.hp > 0 && en.hp <= Math.max(18, en.maxHp * 0.24) && !en.isBoss) {
           en.state = 'staggered';
           en.stateTimer = 3.2;
@@ -1129,15 +1236,17 @@
             spawnGibs(en.x, en.y, en.isBoss ? 26 : 14, 4.8);
             if (Math.hypot(en.x - player.x, en.y - player.y) < 3.0) addVisorBlood();
           } else {
-            splatterBlood(en.x, en.y);
-            bloodPools.push({ x: en.x, y: en.y, r: 0.32 });
+            const fd = getCurrentFloorData();
+            fd.bloodFloors.add(`${Math.floor(en.x)},${Math.floor(en.y)}`);
+            fd.bloodPools.push({ x: en.x, y: en.y, r: 0.32 });
           }
 
           if (en.drop) {
-            pickups.push({ x: en.x, y: en.y, kind: en.drop === 'clip' ? 'M' : en.drop === 'shells' ? 'S_AMMO' : 'R_AMMO', taken: false });
-          }
-          if (en.isBoss) {
-            pushMsg(`${en.name.toUpperCase()} OBLITERATED!`);
+            getCurrentFloorData().pickups.push({
+              x: en.x, y: en.y,
+              kind: en.drop === 'clip' ? 'M' : en.drop === 'shells' ? 'S_AMMO' : 'R_AMMO',
+              taken: false
+            });
           }
           updateHud();
         }
@@ -1147,25 +1256,36 @@
         player.kickTimer = 0.26;
         SFX.kick();
 
+        const fd = getCurrentFloorData();
         const dirX = Math.cos(player.angle);
         const dirY = Math.sin(player.angle);
 
-        // 1. Check Doors & Exit Switch right in front
+        // 0. Check if standing on or right next to a Floor Lift
+        if (player.liftCooldown <= 0) {
+          for (const lf of fd.lifts) {
+            if (Math.hypot(player.x - lf.x, player.y - lf.y) < 1.25) {
+              transferToFloor(lf.targetFloor);
+              return;
+            }
+          }
+        }
+
+        // 1. Check Doors, Secret Walls, and Exit Elevator Switch
         for (const dist of [0.85, 1.45]) {
           const tx = Math.floor(player.x + dirX * dist);
           const ty = Math.floor(player.y + dirY * dist);
-          if (tx >= 0 && ty >= 0 && tx < mapW && ty < mapH) {
-            const tile = worldMap[ty][tx];
+          if (tx >= 0 && ty >= 0 && tx < MAP_W && ty < MAP_H) {
+            const tile = fd.grid[ty][tx];
             if (tile === 4) {
-              const d = doors[`${tx},${ty}`];
+              const d = fd.doors[`${tx},${ty}`];
               if (d && !d.opening) {
                 d.opening = true;
-                d.timer = 4.5;
+                d.timer = 5.5;
                 pushMsg('DOOR UNSEALED');
                 return;
               }
             } else if (tile === 6) {
-              worldMap[ty][tx] = 0;
+              fd.grid[ty][tx] = 0;
               shake = 6;
               SFX.boom();
               pushMsg('SECRET WALL FOUND!');
@@ -1177,13 +1297,13 @@
           }
         }
 
-        // 2. Kick Explosive Barrels flying forward
-        for (const b of barrels) {
+        // 2. Kick Explosive Barrels
+        for (const b of fd.barrels) {
           if (!b.alive) continue;
           const dx = b.x - player.x, dy = b.y - player.y;
           const d = Math.hypot(dx, dy);
-          const diff = normalizeAngle(Math.atan2(dy, dx) - player.angle);
-          if (d < 1.9 && Math.abs(diff) < 0.55) {
+          const diffAng = normalizeAngle(Math.atan2(dy, dx) - player.angle);
+          if (d < 1.9 && Math.abs(diffAng) < 0.55) {
             b.vx += dirX * 9.5;
             b.vy += dirY * 9.5;
             pushMsg('BARREL LAUNCHED!');
@@ -1191,14 +1311,14 @@
           }
         }
 
-        // 3. Kick or Glory-Execute Enemies in melee range
+        // 3. Kick or Glory-Execute Enemies
         let bestEn = null, bestD = 2.05;
-        for (const en of enemies) {
+        for (const en of fd.enemies) {
           if (en.state === 'dead') continue;
           const dx = en.x - player.x, dy = en.y - player.y;
           const d = Math.hypot(dx, dy);
-          const diff = normalizeAngle(Math.atan2(dy, dx) - player.angle);
-          if (d < bestD && Math.abs(diff) < 0.58) {
+          const diffAng = normalizeAngle(Math.atan2(dy, dx) - player.angle);
+          if (d < bestD && Math.abs(diffAng) < 0.58) {
             bestD = d;
             bestEn = en;
           }
@@ -1207,12 +1327,11 @@
         if (bestEn) {
           shake = Math.max(shake, 8);
           if (bestEn.state === 'staggered') {
-            // GLORY KILL EXECUTION!
             damageDemon(bestEn, 999, dirX * 6, dirY * 6, true, true);
             player.hp = Math.min(player.maxHp, player.hp + 15);
             player.armor = Math.min(player.maxArmor, player.armor + 5);
             addVisorBlood();
-            pushMsg(`BRUTAL GLORY KILL! +15 HP · +5 ARMOR`);
+            pushMsg('BRUTAL GLORY KILL! +15 HP · +5 ARMOR');
           } else {
             damageDemon(bestEn, 28, dirX * 7.5, dirY * 7.5, false, false);
             bestEn.state = 'staggered';
@@ -1226,7 +1345,6 @@
         const w = WEAPONS[player.weapon];
         if (!w || player.fireCd > 0 || player.reloadTimer > 0) return;
 
-        // Rifle magazine check
         if (w.id === 2 && player.mag <= 0) {
           reloadRifle();
           return;
@@ -1254,8 +1372,8 @@
         else if (w.id === 5) SFX.chaingun();
         else if (w.id === 6) SFX.rocket();
 
-        // Alert nearby enemies
-        for (const en of enemies) {
+        const fd = getCurrentFloorData();
+        for (const en of fd.enemies) {
           if (en.state === 'idle' && Math.hypot(en.x - player.x, en.y - player.y) < 12 && hasLineOfSight(player.x, player.y, en.x, en.y)) {
             en.state = 'chase';
           }
@@ -1277,13 +1395,11 @@
           return;
         }
 
-        // Hitscan pellets / chainsaw slashes
         for (let p = 0; p < w.pellets; p++) {
           const rayAng = player.angle + (Math.random() - 0.5) * w.spread;
           const rdx = Math.cos(rayAng);
           const rdy = Math.sin(rayAng);
 
-          // Find wall distance along this pellet
           let wallDist = w.range;
           for (let d = 0.1; d < w.range; d += 0.08) {
             if (isTileBlocked(Math.floor(player.x + rdx * d), Math.floor(player.y + rdy * d))) {
@@ -1292,9 +1408,8 @@
             }
           }
 
-          // Check barrel hit
           let hitBarrel = null, barrelD = wallDist;
-          for (const b of barrels) {
+          for (const b of fd.barrels) {
             if (!b.alive) continue;
             const bx = b.x - player.x, by = b.y - player.y;
             const proj = bx * rdx + by * rdy;
@@ -1304,9 +1419,8 @@
             }
           }
 
-          // Check enemy hit
           let hitEn = null, enD = barrelD, isHeadshot = false;
-          for (const en of enemies) {
+          for (const en of fd.enemies) {
             if (en.state === 'dead') continue;
             const ex = en.x - player.x, ey = en.y - player.y;
             const proj = ex * rdx + ey * rdy;
@@ -1321,8 +1435,7 @@
           }
 
           if (hitEn) {
-            const mult = isHeadshot ? 2.1 : 1.0;
-            damageDemon(hitEn, Math.round(w.dmg * mult), rdx * w.kickback, rdy * w.kickback, isHeadshot, false);
+            damageDemon(hitEn, Math.round(w.dmg * (isHeadshot ? 2.1 : 1.0)), rdx * w.kickback, rdy * w.kickback, isHeadshot, false);
             if (w.id === 1) addVisorBlood();
           } else if (hitBarrel) {
             hitBarrel.hp -= w.dmg;
@@ -1331,8 +1444,9 @@
               triggerExplosion(hitBarrel.x, hitBarrel.y, 2.7, 140);
             }
           } else if (wallDist < w.range && w.id !== 1) {
-            // Bullet spark/blood on wall
-            if (Math.random() < 0.35) bloodWalls.add(`${Math.floor(player.x + rdx * wallDist)},${Math.floor(player.y + rdy * wallDist)}`);
+            if (Math.random() < 0.35) {
+              fd.bloodWalls.add(`${Math.floor(player.x + rdx * wallDist)},${Math.floor(player.y + rdy * wallDist)}`);
+            }
           }
         }
 
@@ -1352,7 +1466,7 @@
         player.tauntTimer = 1.2;
         SFX.tone(140, 0.25, 'sawtooth', 0.12, 90);
         pushMsg('"COME GET SOME!" · DEMONS ENRAGED!');
-        for (const en of enemies) {
+        for (const en of getCurrentFloorData().enemies) {
           if (en.state !== 'dead' && Math.hypot(en.x - player.x, en.y - player.y) < 14) {
             en.state = 'chase';
             en.spd *= 1.15;
@@ -1379,10 +1493,10 @@
           exitPointerLock();
           document.getElementById('interTitle').textContent = 'YOU WERE TORN APART';
           document.getElementById('interStats').innerHTML = `
-            Killed <b>${player.kills} / ${player.totalEnemies}</b> Demons<br>
+            Killed <b>${player.kills} / ${player.totalEnemies}</b> Demons on Sector ${sectorNumber}<br>
             Difficulty: <b>${diff.toUpperCase()}</b>
           `;
-          document.getElementById('interActionBtn').textContent = 'TRY AGAIN';
+          document.getElementById('interActionBtn').textContent = 'RESTART SECTOR';
           document.getElementById('interModal').classList.add('active');
         }
       }
@@ -1392,12 +1506,12 @@
         exitPointerLock();
         SFX.pickup();
         const pct = player.totalEnemies > 0 ? Math.round((player.kills / player.totalEnemies) * 100) : 100;
-        document.getElementById('interTitle').textContent = 'SECTOR PURGED!';
+        document.getElementById('interTitle').textContent = `SECTOR ${sectorNumber} PURGED!`;
         document.getElementById('interStats').innerHTML = `
           KILLS: <b>${player.kills} / ${player.totalEnemies} (${pct}%)</b><br>
           HEALTH: <b>${player.hp}%</b> · ARMOR: <b>${player.armor}%</b>
         `;
-        document.getElementById('interActionBtn').textContent = 'DESCEND TO NEXT SECTOR';
+        document.getElementById('interActionBtn').textContent = 'GENERATE NEXT SECTOR';
         document.getElementById('interModal').classList.add('active');
       }
 
@@ -1408,15 +1522,15 @@
       }
 
       // =========================================================================
-      // 8. SIMULATION UPDATE LOOP
+      // 7. UPDATE LOOP (WITH ANTI-DOOR-CRUSH PROTECTION)
       // =========================================================================
       const keys = {};
       const touchState = { moveX: 0, moveY: 0, moveId: null, startX: 0, startY: 0, lookId: null, lastLookX: 0 };
 
       function update(dt) {
-        if (!running || paused) return;
+        if (!running || paused || floorsData.length === 0) return;
+        const fd = getCurrentFloorData();
 
-        // Message TTL
         for (let i = messages.length - 1; i >= 0; i--) {
           messages[i].ttl -= dt;
           if (messages[i].ttl <= 0) {
@@ -1425,20 +1539,26 @@
           }
         }
 
-        // Doors animation
-        Object.keys(doors).forEach(k => {
-          const d = doors[k];
+        // Doors with anti-crush safety: never close while anyone is inside the doorway tile
+        Object.keys(fd.doors).forEach(k => {
+          const d = fd.doors[k];
+          const [gx, gy] = k.split(',').map(Number);
+          const occupied = isAnyEntityInsideTile(gx, gy);
+
           if (d.opening) {
-            d.openAmt = Math.min(1, d.openAmt + dt * 2.4);
+            d.openAmt = Math.min(1, d.openAmt + dt * 2.6);
             d.timer -= dt;
-            if (d.timer <= 0) {
-              const [gx, gy] = k.split(',').map(Number);
-              if (Math.floor(player.x) !== gx || Math.floor(player.y) !== gy) {
-                d.opening = false;
-              }
+            if (d.timer <= 0 && !occupied) {
+              d.opening = false;
             }
           } else {
-            d.openAmt = Math.max(0, d.openAmt - dt * 2.0);
+            if (occupied) {
+              // Re-open automatically instead of crushing/trapping player or demon
+              d.opening = true;
+              d.timer = 1.2;
+            } else {
+              d.openAmt = Math.max(0, d.openAmt - dt * 2.0);
+            }
           }
         });
 
@@ -1450,6 +1570,7 @@
         if (player.tauntTimer > 0) player.tauntTimer = Math.max(0, player.tauntTimer - dt);
         if (player.hurtFlash > 0) player.hurtFlash = Math.max(0, player.hurtFlash - dt);
         if (player.pickupFlash > 0) player.pickupFlash = Math.max(0, player.pickupFlash - dt);
+        if (player.liftCooldown > 0) player.liftCooldown = Math.max(0, player.liftCooldown - dt);
         shake = Math.max(0, shake - dt * 30);
 
         if (player.reloadTimer > 0) {
@@ -1462,11 +1583,9 @@
           }
         }
 
-        // Keyboard Turning fallback (when Pointer Lock isn't used)
         if (keys['ArrowLeft']) player.angle -= 2.5 * dt;
         if (keys['ArrowRight']) player.angle += 2.5 * dt;
 
-        // Movement Input
         let forward = 0, strafe = 0;
         if (keys['KeyW'] || keys['ArrowUp']) forward += 1;
         if (keys['KeyS'] || keys['ArrowDown']) forward -= 1;
@@ -1487,18 +1606,27 @@
 
         const nx = player.x + vx * dt;
         const ny = player.y + vy * dt;
-        if (canMoveTo(nx, player.y, 0.26)) player.x = nx;
-        if (canMoveTo(player.x, ny, 0.26)) player.y = ny;
+        if (canMoveTo(nx, player.y, 0.24)) player.x = nx;
+        if (canMoveTo(player.x, ny, 0.24)) player.y = ny;
 
         if (mag > 0.05) player.weaponBob += dt * 10;
 
-        // Continuous fire for automatic weapons / Space held
+        // Automatic Floor Lift step trigger
+        if (player.liftCooldown <= 0) {
+          for (const lf of fd.lifts) {
+            if (Math.hypot(player.x - lf.x, player.y - lf.y) < 0.45) {
+              transferToFloor(lf.targetFloor);
+              return;
+            }
+          }
+        }
+
         if ((keys['Space'] || mouseDown) && (WEAPONS[player.weapon].auto || player.fireCd <= 0)) {
           fireWeapon();
         }
 
         // Pickups
-        for (const pk of pickups) {
+        for (const pk of fd.pickups) {
           if (pk.taken) continue;
           if (Math.hypot(pk.x - player.x, pk.y - player.y) < 0.65) {
             if (pk.kind === 'H') {
@@ -1517,7 +1645,7 @@
               player.owned[4] = true;
               player.ammo.shells += 12;
               player.weapon = 4;
-              pushMsg('ACQUIRED SUPER SHOTGUN! RIP & TEAR!');
+              pushMsg('ACQUIRED SUPER SHOTGUN!');
             } else if (pk.kind === 'C') {
               player.owned[5] = true;
               player.ammo.clip += 50;
@@ -1531,7 +1659,7 @@
             } else if (pk.kind === 'M') {
               player.ammo.clip += 25;
               player.ammo.shells += 6;
-              pushMsg('COLLECTED AMMO CRATE (+25 CLIP, +6 SHELLS)');
+              pushMsg('COLLECTED AMMO CRATE');
             } else if (pk.kind === 'S_AMMO') {
               player.ammo.shells += 4;
               pushMsg('PICKED UP 4 SHOTGUN SHELLS');
@@ -1546,13 +1674,13 @@
           }
         }
 
-        // Barrels Sliding & Detonation
-        for (const b of barrels) {
+        // Barrels
+        for (const b of fd.barrels) {
           if (!b.alive) continue;
           if (Math.hypot(b.vx, b.vy) > 0.1) {
             const bx = b.x + b.vx * dt;
             const by = b.y + b.vy * dt;
-            if (!canMoveTo(bx, by, 0.28)) {
+            if (!canMoveTo(bx, by, 0.26)) {
               b.alive = false;
               triggerExplosion(b.x, b.y, 2.7, 140);
               continue;
@@ -1562,7 +1690,7 @@
             b.vx *= Math.pow(0.08, dt);
             b.vy *= Math.pow(0.08, dt);
 
-            for (const en of enemies) {
+            for (const en of fd.enemies) {
               if (en.state !== 'dead' && Math.hypot(en.x - b.x, en.y - b.y) < en.r + 0.35) {
                 b.alive = false;
                 triggerExplosion(b.x, b.y, 2.7, 140);
@@ -1573,7 +1701,7 @@
         }
 
         // Enemies AI
-        for (const en of enemies) {
+        for (const en of fd.enemies) {
           if (en.state === 'dead') continue;
           if (en.hitFlash > 0) en.hitFlash -= dt;
 
@@ -1581,13 +1709,10 @@
             en.headlessTimer -= dt;
             en.x += (Math.random() - 0.5) * 2 * dt;
             en.y += (Math.random() - 0.5) * 2 * dt;
-            if (en.headlessTimer <= 0) {
-              damageDemon(en, 999, 0, 0, true, false);
-            }
+            if (en.headlessTimer <= 0) damageDemon(en, 999, 0, 0, true, false);
             continue;
           }
 
-          // Knockback integration
           if (Math.hypot(en.vx, en.vy) > 0.05) {
             const kx = en.x + en.vx * dt;
             const ky = en.y + en.vy * dt;
@@ -1615,7 +1740,6 @@
 
           if (en.attackCd > 0) en.attackCd -= dt;
 
-          // Melee attack
           if (dist < en.r + 0.52) {
             if (en.attackCd <= 0) {
               hurtPlayer(en.dmg);
@@ -1624,7 +1748,6 @@
             continue;
           }
 
-          // Ranged attack
           if (en.ranged && canSee && dist < 11 && en.attackCd <= 0) {
             en.attackCd = en.isBoss ? 1.35 : 1.9;
             const ang = Math.atan2(dy, dx);
@@ -1645,7 +1768,6 @@
             }
           }
 
-          // Move toward player
           const moveAng = Math.atan2(dy, dx) + (en.ranged && dist < 5 ? 0.5 : 0);
           const mx = en.x + Math.cos(moveAng) * en.spd * dt;
           const my = en.y + Math.sin(moveAng) * en.spd * dt;
@@ -1668,7 +1790,7 @@
 
           if (pr.fromPlayer) {
             let hit = false;
-            for (const en of enemies) {
+            for (const en of fd.enemies) {
               if (en.state !== 'dead' && Math.hypot(en.x - pr.x, en.y - pr.y) < en.r + 0.25) {
                 if (pr.kind === 'rocket') triggerExplosion(pr.x, pr.y, 2.8, pr.dmg);
                 else damageDemon(en, pr.dmg, pr.vx * 0.3, pr.vy * 0.3);
@@ -1685,7 +1807,7 @@
           }
         }
 
-        // Gibs Physics
+        // Gibs
         for (let i = gibs.length - 1; i >= 0; i--) {
           const g = gibs[i];
           g.ttl -= dt;
@@ -1705,7 +1827,6 @@
           }
         }
 
-        // Explosions
         for (let i = explosions.length - 1; i >= 0; i--) {
           const ex = explosions[i];
           ex.ttl -= dt;
@@ -1715,9 +1836,10 @@
       }
 
       // =========================================================================
-      // 9. 3D TEXTURED RAYCASTER + SPRITE & BRUTAL FIRST-PERSON WEAPON RENDERER
+      // 8. 3D RAYCASTER & SPRITE RENDERER
       // =========================================================================
       function render3D() {
+        const fd = getCurrentFloorData();
         const dirX = Math.cos(player.angle);
         const dirY = Math.sin(player.angle);
         const fov = 0.68;
@@ -1728,7 +1850,6 @@
         const bobOffset = Math.sin(player.weaponBob) * 3;
         const halfH = Math.floor(RH / 2 + bobOffset);
 
-        // Floor & Ceiling Raycasting
         const rayDirX0 = dirX - planeX;
         const rayDirY0 = dirY - planeY;
         const rayDirX1 = dirX + planeX;
@@ -1762,7 +1883,7 @@
             let g = ((col >> 8) & 255) * shade;
             let b = ((col >> 16) & 255) * shade;
 
-            if (isFloor && bloodFloors.has(`${cellX},${cellY}`) && ((tx + ty) % 3 === 0)) {
+            if (isFloor && fd.bloodFloors.has(`${cellX},${cellY}`) && ((tx + ty) % 3 === 0)) {
               r = Math.min(255, r + 85 * shade);
               g *= 0.4;
               b *= 0.4;
@@ -1771,7 +1892,6 @@
           }
         }
 
-        // Wall Raycasting (DDA)
         for (let x = 0; x < RW; x++) {
           const cameraX = (2 * x) / RW - 1;
           const rayDirX = dirX + planeX * cameraX;
@@ -1789,7 +1909,7 @@
           if (rayDirY < 0) { stepY = -1; sideDistY = (player.y - mapY) * deltaDistY; }
           else { stepY = 1; sideDistY = (mapY + 1.0 - player.y) * deltaDistY; }
 
-          let hit = 0, side = 0, wallCode = 1;
+          let side = 0, wallCode = 1;
           for (let iter = 0; iter < 48; iter++) {
             if (sideDistX < sideDistY) {
               sideDistX += deltaDistX;
@@ -1800,16 +1920,15 @@
               mapY += stepY;
               side = 1;
             }
-            if (mapX < 0 || mapY < 0 || mapX >= mapW || mapY >= mapH) {
-              hit = 1; wallCode = 1; break;
+            if (mapX < 0 || mapY < 0 || mapX >= MAP_W || mapY >= MAP_H) {
+              wallCode = 1; break;
             }
-            const code = worldMap[mapY][mapX];
+            const code = fd.grid[mapY][mapX];
             if (code > 0) {
               if (code === 4) {
-                const d = doors[`${mapX},${mapY}`];
-                if (d && d.openAmt >= 0.92) continue;
+                const d = fd.doors[`${mapX},${mapY}`];
+                if (d && d.openAmt >= 0.94) continue;
               }
-              hit = 1;
               wallCode = code;
               break;
             }
@@ -1825,9 +1944,8 @@
           let wallX = side === 0 ? player.y + perpWallDist * rayDirY : player.x + perpWallDist * rayDirX;
           wallX -= Math.floor(wallX);
 
-          // Sliding Door Offset
           if (wallCode === 4) {
-            const d = doors[`${mapX},${mapY}`];
+            const d = fd.doors[`${mapX},${mapY}`];
             if (d) {
               wallX -= d.openAmt;
               if (wallX < 0) continue;
@@ -1844,7 +1962,7 @@
 
           const sideDim = side === 1 ? 0.74 : 1.0;
           const distShade = Math.min(1.25, (1 / (1 + perpWallDist * 0.14)) * sideDim * flashBoost);
-          const hasBlood = bloodWalls.has(`${mapX},${mapY}`);
+          const hasBlood = fd.bloodWalls.has(`${mapX},${mapY}`);
 
           for (let y = drawStart; y <= drawEnd; y++) {
             const texY = Math.floor(texPos) & 63;
@@ -1865,15 +1983,17 @@
 
         vctx.putImageData(frameImg, 0, 0);
 
-        // Collect all 3D Billboard Sprites (Enemies, Pickups, Barrels, Projectiles, Gibs)
         const sprites = [];
-        for (const en of enemies) {
+        for (const lf of fd.lifts) {
+          sprites.push({ kind: 'lift', obj: lf, x: lf.x, y: lf.y, dist: (lf.x - player.x) ** 2 + (lf.y - player.y) ** 2 });
+        }
+        for (const en of fd.enemies) {
           sprites.push({ kind: 'enemy', obj: en, x: en.x, y: en.y, dist: (en.x - player.x) ** 2 + (en.y - player.y) ** 2 });
         }
-        for (const pk of pickups) {
+        for (const pk of fd.pickups) {
           if (!pk.taken) sprites.push({ kind: 'pickup', obj: pk, x: pk.x, y: pk.y, dist: (pk.x - player.x) ** 2 + (pk.y - player.y) ** 2 });
         }
-        for (const b of barrels) {
+        for (const b of fd.barrels) {
           if (b.alive) sprites.push({ kind: 'barrel', obj: b, x: b.x, y: b.y, dist: (b.x - player.x) ** 2 + (b.y - player.y) ** 2 });
         }
         for (const pr of projectiles) {
@@ -1903,10 +2023,8 @@
           drawBillboard(sp, screenX, spriteH, transformY, halfH);
         }
 
-        // First-Person Weapon & Mighty Boot Overlay
         drawFirstPersonView();
 
-        // Low-HP / Hurt / Pickup Screen Tints
         if (player.hurtFlash > 0) {
           vctx.fillStyle = `rgba(220, 38, 38, ${player.hurtFlash * 1.4})`;
           vctx.fillRect(0, 0, RW, RH);
@@ -1915,7 +2033,6 @@
           vctx.fillRect(0, 0, RW, RH);
         }
 
-        // Crosshair
         vctx.strokeStyle = 'rgba(250, 204, 21, 0.85)';
         vctx.lineWidth = 1;
         vctx.beginPath();
@@ -1923,7 +2040,6 @@
         vctx.moveTo(RW / 2, RH / 2 - 4); vctx.lineTo(RW / 2, RH / 2 + 4);
         vctx.stroke();
 
-        // Automap Overlay [TAB]
         if (showAutomap) drawAutomap();
       }
 
@@ -1932,7 +2048,20 @@
         vctx.save();
         vctx.globalAlpha = Math.max(0.25, shade);
 
-        if (sp.kind === 'enemy') {
+        if (sp.kind === 'lift') {
+          const lf = sp.obj;
+          const bh = h * 0.32;
+          const bw = bh * 1.1;
+          const bottomY = halfH + h / 2;
+          vctx.fillStyle = lf.dir === 'up' ? '#38bdf8' : '#f59e0b';
+          vctx.fillRect(sx - bw / 2, bottomY - bh * 0.25, bw, bh * 0.25);
+          // Floating beacon arrow
+          const bob = Math.sin(performance.now() * 0.006) * 2;
+          vctx.fillStyle = '#ffffff';
+          vctx.font = `bold ${Math.max(8, Math.floor(bh * 0.45))}px monospace`;
+          vctx.textAlign = 'center';
+          vctx.fillText(lf.dir === 'up' ? '▲' : '▼', sx, bottomY - bh * 0.45 + bob);
+        } else if (sp.kind === 'enemy') {
           const en = sp.obj;
           const sc = en.scale;
           const bh = h * sc;
@@ -1941,7 +2070,6 @@
           const bottomY = halfH + h / 2 - floatY;
 
           if (en.state === 'dead') {
-            // Gore corpse pile on floor
             vctx.fillStyle = '#7f1d1d';
             vctx.beginPath();
             vctx.ellipse(sx, bottomY - bh * 0.06, bw * 0.55, bh * 0.1, 0, 0, Math.PI * 2);
@@ -1950,34 +2078,28 @@
             return;
           }
 
-          // Torso
           vctx.fillStyle = en.hitFlash > 0 ? '#ffffff' : en.color;
           vctx.fillRect(sx - bw * 0.35, bottomY - bh * 0.68, bw * 0.7, bh * 0.48);
 
-          // Legs
           vctx.fillStyle = '#27272a';
           const stride = Math.sin(performance.now() * 0.01) * (bw * 0.08);
           vctx.fillRect(sx - bw * 0.3, bottomY - bh * 0.22, bw * 0.22, bh * 0.22 + stride);
           vctx.fillRect(sx + bw * 0.08, bottomY - bh * 0.22, bw * 0.22, bh * 0.22 - stride);
 
-          // Head (unless decapitated!)
           if (!en.headless) {
             vctx.fillStyle = en.hitFlash > 0 ? '#ffffff' : en.color;
             vctx.beginPath();
             vctx.arc(sx, bottomY - bh * 0.78, bw * 0.22, 0, Math.PI * 2);
             vctx.fill();
 
-            // Glowing demon eyes
             vctx.fillStyle = en.eye;
             vctx.fillRect(sx - bw * 0.11, bottomY - bh * 0.81, Math.max(1.5, bw * 0.07), Math.max(1.5, bh * 0.04));
             vctx.fillRect(sx + bw * 0.04, bottomY - bh * 0.81, Math.max(1.5, bw * 0.07), Math.max(1.5, bh * 0.04));
           } else {
-            // Neck blood fountain
             vctx.fillStyle = '#ef4444';
             vctx.fillRect(sx - bw * 0.1, bottomY - bh * 0.76, bw * 0.2, bh * 0.08);
           }
 
-          // Staggered Glory-Kill Prompt Indicator
           if (en.state === 'staggered') {
             vctx.strokeStyle = '#facc15';
             vctx.lineWidth = 1.5;
@@ -2029,7 +2151,6 @@
         const recY = player.weaponRecoil * 18;
         const relY = player.reloadTimer > 0 ? Math.sin((player.reloadTimer / 0.85) * Math.PI) * 28 : 0;
 
-        // Muzzle flash
         if (player.muzzleFlash > 0) {
           vctx.save();
           vctx.fillStyle = 'rgba(253, 224, 71, 0.85)';
@@ -2039,31 +2160,26 @@
           vctx.restore();
         }
 
-        // Active Weapon Sprite
         const wx = RW / 2 + bobX;
         const wy = RH + bobY + recY + relY;
         vctx.save();
         if (player.weapon === 1) {
-          // Chainsaw
           vctx.fillStyle = '#eab308';
           vctx.fillRect(wx - 22, wy - 44, 44, 44);
           vctx.fillStyle = '#71717a';
           vctx.fillRect(wx - 6, wy - 76, 12, 36);
         } else if (player.weapon === 4) {
-          // Super Shotgun Twin Barrels
           vctx.fillStyle = '#3f3f46';
           vctx.fillRect(wx - 16, wy - 64, 14, 64);
           vctx.fillRect(wx + 2, wy - 64, 14, 64);
           vctx.fillStyle = '#78350f';
           vctx.fillRect(wx - 18, wy - 24, 36, 24);
         } else if (player.weapon === 5) {
-          // Vulcan Chaingun
           vctx.fillStyle = '#52525b';
           vctx.fillRect(wx - 18, wy - 62, 36, 62);
           vctx.fillStyle = '#facc15';
           vctx.fillRect(wx - 14, wy - 56, 28, 6);
         } else if (player.weapon === 6) {
-          // Rocket Launcher
           vctx.fillStyle = '#365314';
           vctx.fillRect(wx - 16, wy - 68, 32, 68);
           vctx.fillStyle = '#18181b';
@@ -2071,7 +2187,6 @@
           vctx.arc(wx, wy - 68, 12, 0, Math.PI * 2);
           vctx.fill();
         } else {
-          // Rifle / Pump Shotgun
           vctx.fillStyle = '#27272a';
           vctx.fillRect(wx - 10, wy - 66, 20, 66);
           vctx.fillStyle = player.weapon === 2 ? '#38bdf8' : '#92400e';
@@ -2079,37 +2194,41 @@
         }
         vctx.restore();
 
-        // Mighty Boot Kick Overlay
         if (player.kickTimer > 0) {
           const ext = Math.sin((player.kickTimer / 0.26) * Math.PI);
           const bootY = RH - ext * 85;
           vctx.fillStyle = '#27272a';
           vctx.fillRect(RW * 0.34, bootY, 42, 90);
           vctx.fillStyle = '#71717a';
-          vctx.fillRect(RW * 0.34, bootY, 42, 16); // Steel toe cap
+          vctx.fillRect(RW * 0.34, bootY, 42, 16);
         }
       }
 
       function drawAutomap() {
+        const fd = getCurrentFloorData();
         const scale = 6;
         const ox = 12, oy = 46;
         vctx.save();
-        vctx.fillStyle = 'rgba(7, 5, 7, 0.85)';
-        vctx.fillRect(ox - 4, oy - 4, mapW * scale + 8, mapH * scale + 8);
-        for (let y = 0; y < mapH; y++) {
-          for (let x = 0; x < mapW; x++) {
-            const c = worldMap[y][x];
+        vctx.fillStyle = 'rgba(7, 5, 7, 0.86)';
+        vctx.fillRect(ox - 4, oy - 4, MAP_W * scale + 8, MAP_H * scale + 8);
+        for (let y = 0; y < MAP_H; y++) {
+          for (let x = 0; x < MAP_W; x++) {
+            const c = fd.grid[y][x];
             if (c === 0) continue;
             vctx.fillStyle = c === 5 ? '#22c55e' : c === 4 ? '#facc15' : '#991b1b';
             vctx.fillRect(ox + x * scale, oy + y * scale, scale - 1, scale - 1);
           }
         }
-        for (const en of enemies) {
+        for (const lf of fd.lifts) {
+          vctx.fillStyle = '#38bdf8';
+          vctx.fillRect(ox + lf.x * scale - 2, oy + lf.y * scale - 2, 4, 4);
+        }
+        for (const en of fd.enemies) {
           if (en.state === 'dead') continue;
           vctx.fillStyle = '#f43f5e';
           vctx.fillRect(ox + en.x * scale - 1.5, oy + en.y * scale - 1.5, 3, 3);
         }
-        vctx.fillStyle = '#38bdf8';
+        vctx.fillStyle = '#facc15';
         vctx.beginPath();
         vctx.arc(ox + player.x * scale, oy + player.y * scale, 2.5, 0, Math.PI * 2);
         vctx.fill();
@@ -2117,7 +2236,7 @@
       }
 
       // =========================================================================
-      // 10. HUD & INPUT BINDINGS
+      // 9. HUD & INPUT HANDLERS
       // =========================================================================
       function updateHud() {
         const w = WEAPONS[player.weapon];
@@ -2128,8 +2247,8 @@
           ? (player.reloadTimer > 0 ? 'RELOADING' : `MAG ${player.mag}/${player.maxMag}`)
           : w.name.toUpperCase();
 
-        const lvl = endlessMode ? { code: `HELL-${levelIndex + 1}` } : CAMPAIGN[levelIndex % CAMPAIGN.length];
-        document.getElementById('hudSector').textContent = `${lvl.code} · KILLS ${player.kills}/${player.totalEnemies}`;
+        document.getElementById('hudSector').textContent = `SEC-${sectorNumber} · FL ${currentFloor + 1}/${NUM_FLOORS}`;
+        document.getElementById('hudKills').textContent = `KILLS ${player.kills}/${player.totalEnemies}`;
 
         document.querySelectorAll('.arm-slot').forEach(el => {
           const wid = Number(el.dataset.w);
@@ -2146,18 +2265,15 @@
         mctx.fillStyle = '#18181b';
         mctx.fillRect(0, 0, 32, 34);
 
-        // Helmet & Visor
         mctx.fillStyle = '#3f3f46';
         mctx.fillRect(5, 3, 22, 26);
         mctx.fillStyle = '#fde047';
         mctx.fillRect(8, 12, 16, 13);
 
-        // Eyes
         mctx.fillStyle = player.hp < 35 ? '#ef4444' : '#09090b';
         mctx.fillRect(10, 14, 3, 3);
         mctx.fillRect(19, 14, 3, 3);
 
-        // Bloodied grin / damage states
         if (player.hp < 75) {
           mctx.fillStyle = '#dc2626';
           mctx.fillRect(9, 21, 3, 4);
@@ -2181,7 +2297,6 @@
         if (document.pointerLockElement) document.exitPointerLock();
       }
 
-      // Mouse Look & Fire
       let mouseDown = false;
       const viewport = document.getElementById('viewport');
       viewport.addEventListener('mousedown', (e) => {
@@ -2191,9 +2306,12 @@
           return;
         }
         mouseDown = true;
-        if (document.pointerLockElement !== viewport && viewport.requestPointerLock) {
-          viewport.requestPointerLock();
-        }
+        try {
+          if (document.pointerLockElement !== viewport && viewport.requestPointerLock) {
+            const p = viewport.requestPointerLock();
+            if (p && typeof p.catch === 'function') p.catch(() => {});
+          }
+        } catch {}
         fireWeapon();
       });
       window.addEventListener('mouseup', () => { mouseDown = false; });
@@ -2212,7 +2330,6 @@
         switchWeapon(next);
       });
 
-      // Keyboard
       window.addEventListener('keydown', (e) => {
         if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Tab'].includes(e.code)) e.preventDefault();
         keys[e.code] = true;
@@ -2237,7 +2354,6 @@
       });
       window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-      // Touch Controls
       const moveZone = document.getElementById('touchMoveZone');
       const lookZone = document.getElementById('touchLookZone');
 
@@ -2290,7 +2406,6 @@
         switchWeapon(next);
       });
 
-      // HUD & Modal Buttons
       document.querySelectorAll('.arm-slot').forEach(el => {
         el.addEventListener('click', () => switchWeapon(Number(el.dataset.w)));
       });
@@ -2317,20 +2432,9 @@
         });
       });
 
-      document.getElementById('startCampaignBtn').addEventListener('click', () => {
-        endlessMode = false;
-        levelIndex = 0;
+      document.getElementById('startGameBtn').addEventListener('click', () => {
         document.getElementById('titleModal').classList.remove('active');
-        loadLevel(0, false);
-        running = true;
-        SFX.startRiff();
-      });
-
-      document.getElementById('startEndlessBtn').addEventListener('click', () => {
-        endlessMode = true;
-        levelIndex = 0;
-        document.getElementById('titleModal').classList.remove('active');
-        loadLevel(0, false);
+        generateSector(1, false);
         running = true;
         SFX.startRiff();
       });
@@ -2338,21 +2442,19 @@
       document.getElementById('interActionBtn').addEventListener('click', () => {
         document.getElementById('interModal').classList.remove('active');
         if (player.hp <= 0) {
-          loadLevel(levelIndex, false);
+          generateSector(sectorNumber, false);
         } else {
-          levelIndex++;
-          loadLevel(levelIndex, true);
+          generateSector(sectorNumber + 1, true);
         }
         running = true;
       });
 
-      // Main Frame Loop
       let lastTs = performance.now();
       function frame(ts) {
         const dt = Math.min(0.05, (ts - lastTs) / 1000);
         lastTs = ts;
         update(dt);
-        if (worldMap.length > 0) render3D();
+        if (floorsData.length > 0) render3D();
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);

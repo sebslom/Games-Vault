@@ -19,6 +19,7 @@
       gap: 10px;
       padding: 10px;
       overflow: hidden;
+      touch-action: none;
     }
     .hud {
       width: min(520px, 95vw);
@@ -69,6 +70,7 @@
     }
     .jump-btn {
       width: min(520px, 95vw);
+      touch-action: manipulation;
       background: #1a1d2d;
       border: 1px solid #6842ff;
       color: #e2e8f0;
@@ -130,8 +132,17 @@
       overlay.classList.add('hidden');
     }
 
+    let lastJumpAt = 0;
+
     function jump() {
-      if (!running) return;
+      const now = performance.now();
+      if (now - lastJumpAt < 90) return;
+      lastJumpAt = now;
+
+      if (!running) {
+        reset();
+        return;
+      }
       if (player.jumps < 2) {
         player.vy = player.jumps === 0 ? -10.8 : -9.5;
         player.jumps++;
@@ -146,9 +157,32 @@
       }
     });
 
-    canvas.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
-    jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
-    startBtn.addEventListener('click', reset);
+    function handleMobileOrPointerJump(e) {
+      if (e && e.cancelable) e.preventDefault();
+      if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+      jump();
+    }
+
+    canvas.addEventListener('pointerdown', handleMobileOrPointerJump, { passive: false });
+    canvas.addEventListener('touchstart', handleMobileOrPointerJump, { passive: false });
+
+    jumpBtn.addEventListener('pointerdown', handleMobileOrPointerJump, { passive: false });
+    jumpBtn.addEventListener('touchstart', handleMobileOrPointerJump, { passive: false });
+    jumpBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      jump();
+    });
+
+    startBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      reset();
+    });
+    startBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      reset();
+    }, { passive: false });
 
     function spawnObstacle() {
       const isGap = Math.random() < 0.36;

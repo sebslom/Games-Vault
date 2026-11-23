@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Neon Grid Snake</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 12px;
+      overflow: hidden;
+    }
+    .hud {
+      width: min(460px, 94vw);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #131520;
+      border: 1px solid #25293d;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .hud .score { color: #38bdf8; }
+    .hud .best { color: #a78bfa; }
+    .canvas-wrap {
+      position: relative;
+      width: min(460px, 94vw);
+      aspect-ratio: 1 / 1;
+      background: #0b101c;
+      border: 2px solid #25293d;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.65);
+    }
+    canvas { width: 100%; height: 100%; display: block; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(9, 13, 22, 0.84);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      padding: 20px;
+    }
+    .overlay.visible { display: flex; }
+    .overlay h2 { font-size: 1.7rem; color: #f43f5e; }
+    .btn {
+      background: #6842ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn:hover { background: #7c5cff; }
+    .touch-pad {
+      display: none;
+      grid-template-columns: repeat(3, 54px);
+      grid-template-rows: repeat(2, 48px);
+      gap: 6px;
+    }
+    .pad-btn {
+      background: #1a1d2d;
+      border: 1px solid #2d334d;
+      color: #e2e8f0;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .pad-btn:active { background: #6842ff; color: #fff; }
+    @media (hover: none) and (pointer: coarse) {
+      .touch-pad { display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <span class="score">SCORE: <b id="scoreVal">0</b></span>
+    <span class="best">BEST: <b id="bestVal">0</b></span>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="gameCanvas" width="440" height="440"></canvas>
+    <div class="overlay" id="gameOverOverlay">
+      <h2>GAME OVER</h2>
+      <p id="finalSummary">Score: 0</p>
+      <button class="btn" id="restartBtn">Play Again</button>
+    </div>
+  </div>
+  <div class="touch-pad">
+    <div></div>
+    <button class="pad-btn" data-dir="UP">▲</button>
+    <div></div>
+    <button class="pad-btn" data-dir="LEFT">◀</button>
+    <button class="pad-btn" data-dir="DOWN">▼</button>
+    <button class="pad-btn" data-dir="RIGHT">▶</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('scoreVal');
+    const bestEl = document.getElementById('bestVal');
+    const overlay = document.getElementById('gameOverOverlay');
+    const finalSummary = document.getElementById('finalSummary');
+    const restartBtn = document.getElementById('restartBtn');
+
+    const gridSize = 20;
+    const cols = canvas.width / gridSize;
+    const rows = canvas.height / gridSize;
+
+    let snake, food, bonusOrb, dir, nextDir, score, best, loopId, alive;
+    best = Number(localStorage.getItem('cv_snake_best') || 0);
+    bestEl.textContent = best;
+
+    function randCell() {
+      return {
+        x: Math.floor(Math.random() * cols),
+        y: Math.floor(Math.random() * rows)
+      };
+    }
+
+    function spawnFood() {
+      let pos;
+      do { pos = randCell(); } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+      return pos;
+    }
+
+    function resetGame() {
+      snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+      dir = 'RIGHT';
+      nextDir = 'RIGHT';
+      score = 0;
+      alive = true;
+      bonusOrb = null;
+      food = spawnFood();
+      scoreEl.textContent = score;
+      overlay.classList.remove('visible');
+      clearInterval(loopId);
+      loopId = setInterval(tick, 95);
+    }
+
+    function setDirection(newDir) {
+      if (!alive) return;
+      if (newDir === 'LEFT' && dir !== 'RIGHT') nextDir = 'LEFT';
+      else if (newDir === 'RIGHT' && dir !== 'LEFT') nextDir = 'RIGHT';
+      else if (newDir === 'UP' && dir !== 'DOWN') nextDir = 'UP';
+      else if (newDir === 'DOWN' && dir !== 'UP') nextDir = 'DOWN';
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+      if (!alive && (e.code === 'Space' || e.code === 'Enter')) { resetGame(); return; }
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') setDirection('LEFT');
+      else if (e.code === 'ArrowRight' || e.code === 'KeyD') setDirection('RIGHT');
+      else if (e.code === 'ArrowUp' || e.code === 'KeyW') setDirection('UP');
+      else if (e.code === 'ArrowDown' || e.code === 'KeyS') setDirection('DOWN');
+    });
+
+    document.querySelectorAll('.pad-btn').forEach(btn => {
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        setDirection(btn.dataset.dir);
+      });
+    });
+
+    function tick() {
+      dir = nextDir;
+      const head = { ...snake[0] };
+      if (dir === 'LEFT') head.x--;
+      if (dir === 'RIGHT') head.x++;
+      if (dir === 'UP') head.y--;
+      if (dir === 'DOWN') head.y++;
+
+      if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) {
+        alive = false;
+        clearInterval(loopId);
+        finalSummary.textContent = `Final Score: ${score} · Best: ${best}`;
+        overlay.classList.add('visible');
+        return;
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        if (score > best) {
+          best = score;
+          localStorage.setItem('cv_snake_best', best);
+          bestEl.textContent = best;
+        }
+        scoreEl.textContent = score;
+        food = spawnFood();
+        if (!bonusOrb && Math.random() < 0.35) {
+          bonusOrb = { ...spawnFood(), ttl: 65 };
+        }
+      } else {
+        snake.pop();
+      }
+
+      if (bonusOrb) {
+        if (head.x === bonusOrb.x && head.y === bonusOrb.y) {
+          score += 25;
+          if (score > best) {
+            best = score;
+            localStorage.setItem('cv_snake_best', best);
+            bestEl.textContent = best;
+          }
+          scoreEl.textContent = score;
+          bonusOrb = null;
+        } else {
+          bonusOrb.ttl--;
+          if (bonusOrb.ttl <= 0) bonusOrb = null;
+        }
+      }
+
+      draw();
+    }
+
+    function draw() {
+      ctx.fillStyle = '#0b101c';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = 'rgba(37, 41, 61, 0.45)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= canvas.width; x += gridSize) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y <= canvas.height; y += gridSize) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.arc(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2, gridSize * 0.38, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (bonusOrb) {
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(bonusOrb.x * gridSize + gridSize / 2, bonusOrb.y * gridSize + gridSize / 2, gridSize * 0.42, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      snake.forEach((seg, idx) => {
+        ctx.fillStyle = idx === 0 ? '#38bdf8' : '#6842ff';
+        ctx.fillRect(seg.x * gridSize + 2, seg.y * gridSize + 2, gridSize - 4, gridSize - 4);
+      });
+    }
+
+    restartBtn.addEventListener('click', resetGame);
+    resetGame();
+  </script>
+</body>
+</html>

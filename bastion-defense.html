@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Bastion Micro Defense</title>
+  <style>
+    :root {
+      --bg: #070912;
+      --panel: #101424;
+      --panel-alt: #161c32;
+      --border: #252e4d;
+      --cyan: #38bdf8;
+      --gold: #fbbf24;
+      --orange: #f97316;
+      --purple: #a855f7;
+      --emerald: #34d399;
+      --rose: #f43f5e;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- Top Command Bar --- */
+    .topbar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 14px;
+      padding-right: 52px; /* Space for CrazyVault close corner button */
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+
+    .hud-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      background: #090d18;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-chip span { color: var(--muted); font-size: 0.68rem; text-transform: uppercase; }
+
+    .ctrl-btn {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.14s;
+      position: relative;
+    }
+    .ctrl-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .ctrl-btn.active {
+      background: #2563eb;
+      border-color: var(--cyan);
+      color: #fff;
+    }
+    .ctrl-btn.armory {
+      background: rgba(168, 85, 247, 0.18);
+      border-color: var(--purple);
+      color: #e9d5ff;
+    }
+    .notif-dot {
+      display: none;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--gold);
+      position: absolute;
+      top: -2px;
+      right: -2px;
+    }
+    .notif-dot.show { display: block; }
+
+    /* --- Main Tactical Layout --- */
+    .main-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 310px;
+      overflow: hidden;
+    }
+
+    /* Battlefield Viewport */
+    .battle-pane {
+      position: relative;
+      background: #060810;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 10px;
+    }
+
+    canvas {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      box-shadow: 0 20px 55px rgba(0, 0, 0, 0.8);
+      cursor: crosshair;
+      display: block;
+    }
+
+    .wave-toast {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      background: rgba(16, 20, 36, 0.92);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 0.82rem;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+      z-index: 12;
+      white-space: nowrap;
+    }
+    .wave-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .target-banner {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(244, 63, 94, 0.92);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 900;
+      padding: 6px 16px;
+      border-radius: 999px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 12;
+      box-shadow: 0 8px 24px rgba(244, 63, 94, 0.45);
+    }
+    .target-banner.show { display: flex; }
+
+    /* Right Command Sidebar */
+    .command-pane {
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px 12px;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 0.68rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Turret Build Cards */
+    .build-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 7px;
+    }
+
+    .tower-btn {
+      background: #0c101d;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 9px;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.14s, background 0.14s;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .tower-btn:hover { border-color: #475569; background: #13192c; }
+    .tower-btn.selected {
+      border-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.14);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.22);
+    }
+    .tower-btn.unaffordable { opacity: 0.52; }
+
+    .tb-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 900;
+      font-size: 0.8rem;
+    }
+    .tb-cost { color: var(--gold); font-size: 0.76rem; }
+    .tb-role { font-size: 0.68rem; color: var(--muted); line-height: 1.25; }
+
+    /* Inspector Box */
+    .inspector-box {
+      background: #0b0f1c;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 0.76rem;
+    }
+    .insp-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .insp-name { font-weight: 900; font-size: 0.88rem; }
+    .insp-tier {
+      background: #1d2542;
+      color: var(--gold);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 900;
+      font-size: 0.68rem;
+    }
+    .insp-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 8px;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .priority-row {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .prio-btn {
+      flex: 1;
+      background: #141a2e;
+      border: 1px solid #283252;
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 4px 2px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .prio-btn.active {
+      background: var(--cyan);
+      color: #070912;
+      border-color: var(--cyan);
+    }
+    .insp-actions {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 6px;
+    }
+    .upg-btn {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #04130c;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 6px;
+      font-weight: 900;
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+    .upg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .sell-btn {
+      background: rgba(244, 63, 94, 0.16);
+      border: 1px solid var(--rose);
+      color: #fda4af;
+      border-radius: 8px;
+      padding: 8px 6px;
+      font-weight: 800;
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+
+    /* Commander Powers */
+    .powers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .power-btn {
+      background: #0c101d;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 7px 5px;
+      color: var(--text);
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .power-btn:hover:not(:disabled) { border-color: var(--gold); }
+    .power-btn.armed { border-color: var(--rose); background: rgba(244, 63, 94, 0.18); }
+    .power-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .power-btn .p-name { font-size: 0.7rem; font-weight: 900; display: block; }
+    .power-btn .p-cd { font-size: 0.65rem; color: var(--cyan); font-weight: 800; }
+
+    /* Launch Next Wave CTA */
+    .wave-cta {
+      width: 100%;
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: #090d16;
+      border: none;
+      border-radius: 11px;
+      padding: 11px;
+      font-size: 0.88rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+    }
+    .wave-cta:disabled {
+      background: #1a2138;
+      color: #64748b;
+      box-shadow: none;
+      cursor: default;
+    }
+
+    /* --- Modals (Map Select / Armory / Victory-Defeat) --- */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 14, 0.86);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 60;
+    }
+    .modal-bg.active { display: flex; }
+
+    .modal-box {
+      width: min(680px, 95vw);
+      max-height: 90dvh;
+      overflow-y: auto;
+      background: #101526;
+      border: 1px solid #2e385c;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.85);
+      text-align: center;
+    }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .map-card {
+      background: #161d33;
+      border: 2px solid #283254;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: left;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .map-card.selected {
+      border-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.14);
+    }
+    .map-card h4 { font-size: 0.92rem; font-weight: 900; margin-bottom: 4px; }
+    .map-card p { font-size: 0.74rem; color: var(--muted); line-height: 1.35; }
+
+    .diff-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .diff-btn {
+      background: #161d33;
+      border: 1.5px solid #283254;
+      color: var(--muted);
+      border-radius: 9px;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .diff-btn.selected {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(251, 191, 36, 0.12);
+    }
+
+    .doctrine-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 14px 0;
+      text-align: left;
+    }
+    .doc-item {
+      background: #151b30;
+      border: 1px solid #283254;
+      border-radius: 11px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+      }
+      .command-pane {
+        border-left: none;
+        border-top: 1px solid var(--border);
+        max-height: 44dvh;
+      }
+      .build-grid { grid-template-columns: repeat(3, 1fr); }
+      .map-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Command HUD -->
+  <header class="topbar">
+    <div class="hud-group">
+      <div class="stat-chip"><span>Core</span><b id="coreHpVal" style="color:#34d399;">20/20</b></div>
+      <div class="stat-chip"><span>Gold</span><b id="goldVal" style="color:#fbbf24;">$180</b></div>
+      <div class="stat-chip"><span>Tech</span><b id="techVal" style="color:#c084fc;">0 ◈</b></div>
+      <div class="stat-chip"><span>Wave</span><b id="waveVal" style="color:#38bdf8;">0 / 20</b></div>
+    </div>
+
+    <div class="hud-group">
+      <button class="ctrl-btn armory" id="openArmoryBtn">Armory <span class="notif-dot" id="armoryDot"></span></button>
+      <button class="ctrl-btn" id="speedBtn">1x Speed</button>
+      <button class="ctrl-btn" id="autoWaveBtn">Auto: OFF</button>
+      <button class="ctrl-btn" id="pauseBtn">Pause</button>
+      <button class="ctrl-btn" id="muteBtn">SFX ON</button>
+      <button class="ctrl-btn" id="openSetupBtn">Maps</button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <div class="main-grid">
+    <div class="battle-pane">
+      <div class="wave-toast" id="waveToast">WAVE 1 INCOMING</div>
+      <div class="target-banner" id="targetBanner">
+        <span id="targetBannerText">Click battlefield to deploy Orbital Strike</span>
+        <button class="ctrl-btn" id="cancelTargetBtn" style="padding:3px 8px;">Cancel</button>
+      </div>
+      <canvas id="tdCanvas" width="800" height="480"></canvas>
+    </div>
+
+    <aside class="command-pane">
+      <!-- Build Turrets -->
+      <div>
+        <div class="section-title">
+          <span>Deploy Defense Turret</span>
+          <span style="color:#38bdf8;">[1-6]</span>
+        </div>
+        <div class="build-grid" id="buildGrid"></div>
+      </div>
+
+      <!-- Selected Tower / Tile Inspector -->
+      <div class="inspector-box" id="inspectorBox">
+        <div style="color:#94a3b8; text-align:center; padding:8px 4px;">
+          Select a turret blueprint above and click any open grid tile (or glowing Power Node) to build.
+        </div>
+      </div>
+
+      <!-- Commander Active Abilities -->
+      <div>
+        <div class="section-title"><span>Commander Powers</span><span>[Q / W / E]</span></div>
+        <div class="powers-grid" id="powersGrid"></div>
+      </div>
+
+      <!-- Start Next Wave -->
+      <button class="wave-cta" id="nextWaveBtn">LAUNCH WAVE 1</button>
+    </aside>
+  </div>
+
+  <!-- Map & Difficulty Modal -->
+  <div class="modal-bg active" id="setupModal">
+    <div class="modal-box">
+      <h2 style="font-size:1.55rem; font-weight:900; color:#38bdf8;">BASTION MICRO DEFENSE</h2>
+      <p style="font-size:0.84rem; color:#94a3b8; margin-top:4px;">Select a tactical sector &amp; threat level to command</p>
+
+      <div class="map-grid" id="mapGrid"></div>
+
+      <div class="diff-row" id="diffRow">
+        <button class="diff-btn" data-diff="recruit">Recruit</button>
+        <button class="diff-btn selected" data-diff="veteran">Veteran</button>
+        <button class="diff-btn" data-diff="nightmare">Nightmare</button>
+      </div>
+
+      <button class="wave-cta" id="startBattleBtn" style="max-width:260px;">DEPLOY BASTION</button>
+    </div>
+  </div>
+
+  <!-- Armory Doctrine Research Modal -->
+  <div class="modal-bg" id="armoryModal">
+    <div class="modal-box" style="max-width:540px;">
+      <h2 style="font-size:1.35rem; font-weight:900; color:#c084fc;">BASTION ARMORY DOCTRINES</h2>
+      <p style="font-size:0.8rem; color:#94a3b8; margin-top:4px;">
+        Spend <b>Tech Cores (◈)</b> earned from clearing waves &amp; bosses · Available: <b id="armoryTechVal" style="color:#c084fc;">0 ◈</b>
+      </p>
+      <div class="doctrine-list" id="doctrineList"></div>
+      <button class="ctrl-btn" id="closeArmoryBtn" style="padding:9px 22px;">Resume Command</button>
+    </div>
+  </div>
+
+  <!-- Outcome Modal -->
+  <div class="modal-bg" id="outcomeModal">
+    <div class="modal-box" style="max-width:440px;">
+      <h2 id="outTitle" style="font-size:1.65rem; font-weight:900; color:#fbbf24;">SECTOR SECURED!</h2>
+      <p id="outSub" style="font-size:0.88rem; color:#cbd5e1; margin:12px 0 18px; line-height:1.5;"></p>
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <button class="wave-cta" id="endlessBtn" style="max-width:190px; display:none;">ENDLESS MODE</button>
+        <button class="ctrl-btn active" id="replayBtn" style="padding:11px 20px;">New Sector</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const COLS = 20;
+      const ROWS = 12;
+      const TILE = 40; // 800 x 480 canvas
+
+      // Sound Effects
+      const SFX = {
+        ctx: null,
+        muted: false,
+        tone(freq, dur = 0.06, type = 'triangle', vol = 0.04, endF = null) {
+          if (this.muted) return;
+          try {
+            if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            if (endF) osc.frequency.exponentialRampToValueAtTime(Math.max(40, endF), this.ctx.currentTime + dur);
+            g.gain.setValueAtTime(vol, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+            osc.connect(g);
+            g.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + dur);
+          } catch {}
+        },
+        shoot(kind) {
+          if (kind === 'vulcan') this.tone(420, 0.04, 'sawtooth', 0.025, 180);
+          else if (kind === 'cryo') this.tone(680, 0.08, 'sine', 0.03, 420);
+          else if (kind === 'tesla') this.tone(920, 0.07, 'sawtooth', 0.035, 340);
+          else if (kind === 'mortar') this.tone(170, 0.14, 'square', 0.045, 65);
+          else if (kind === 'railgun') this.tone(1100, 0.12, 'sawtooth', 0.05, 160);
+        },
+        build() { this.tone(520, 0.07, 'sine', 0.05); setTimeout(() => this.tone(760, 0.09, 'sine', 0.05), 55); },
+        coin()  { this.tone(980, 0.05, 'sine', 0.03); },
+        boom()  { this.tone(130, 0.2, 'sawtooth', 0.06, 45); },
+        alarm() { this.tone(240, 0.14, 'square', 0.06); setTimeout(() => this.tone(190, 0.2, 'square', 0.06), 140); }
+      };
+
+      // Maps Definition
+      const MAPS = [
+        {
+          id: 'serpent',
+          name: "Serpent's Gorge",
+          desc: 'Winding canyon with tight hairpin bends ideal for Cryo & Mortar splash zones.',
+          paths: [
+            [[0, 2], [5, 2], [5, 8], [10, 8], [10, 2], [15, 2], [15, 9], [19, 9]]
+          ],
+          nodes: [
+            { c: 7, r: 5, kind: 'damage', label: '+25% DMG' },
+            { c: 12, r: 5, kind: 'haste', label: '+20% SPD' },
+            { c: 3, r: 5, kind: 'range', label: '+20% RNG' }
+          ]
+        },
+        {
+          id: 'twingate',
+          name: 'Twin Gate Citadel',
+          desc: 'Two invasion lanes converge at the central bridge before assaulting the Core.',
+          paths: [
+            [[0, 2], [7, 2], [7, 5], [13, 5], [13, 5], [19, 5]],
+            [[0, 9], [7, 9], [7, 6], [13, 6], [13, 5], [19, 5]]
+          ],
+          nodes: [
+            { c: 10, r: 3, kind: 'damage', label: '+25% DMG' },
+            { c: 10, r: 8, kind: 'damage', label: '+25% DMG' },
+            { c: 15, r: 3, kind: 'haste', label: '+20% SPD' }
+          ]
+        },
+        {
+          id: 'spiral',
+          name: 'Obsidian Spiral',
+          desc: 'Enemies spiral clockwise around a central fortified Bastion Core.',
+          paths: [
+            [[0, 1], [18, 1], [18, 10], [2, 10], [2, 3], [15, 3], [15, 8], [5, 8], [5, 5], [11, 5]]
+          ],
+          nodes: [
+            { c: 8, r: 6, kind: 'haste', label: '+20% SPD' },
+            { c: 12, r: 6, kind: 'range', label: '+20% RNG' },
+            { c: 10, r: 2, kind: 'damage', label: '+25% DMG' }
+          ]
+        }
+      ];
+
+      // 6 Turret Archetypes
+      const TOWERS = {
+        vulcan: {
+          id: 'vulcan', name: 'Vulcan Gatling', cost: 50, color: '#38bdf8',
+          range: 118, fireRate: 3.4, damage: 11, armorPen: 0.55,
+          role: 'Rapid kinetic fire. Melts unarmored swarms.',
+          evoName: 'Hyper-Rotary Shredder'
+        },
+        cryo: {
+          id: 'cryo', name: 'Cryo Spire', cost: 75, color: '#67e8f9',
+          range: 112, fireRate: 1.15, damage: 14, armorPen: 0.85,
+          role: 'Frost pulse slows foes & applies +15% brittle vulnerability.',
+          evoName: 'Absolute Zero Monolith'
+        },
+        tesla: {
+          id: 'tesla', name: 'Arc Tesla', cost: 95, color: '#a855f7',
+          range: 126, fireRate: 1.05, damage: 26, armorPen: 1.45,
+          role: 'Chain lightning across 3-6 targets. Shreds shields & armor.',
+          evoName: 'Stormlord Obelisk'
+        },
+        mortar: {
+          id: 'mortar', name: 'Hellfire Mortar', cost: 120, color: '#f97316',
+          range: 165, fireRate: 0.68, damage: 46, armorPen: 0.8,
+          role: 'Long-range explosive shells + burning napalm craters.',
+          evoName: 'Cataclysm Howitzer'
+        },
+        railgun: {
+          id: 'railgun', name: 'Railgun Sniper', cost: 140, color: '#f43f5e',
+          range: 225, fireRate: 0.55, damage: 88, armorPen: 1.65,
+          role: 'Extreme-range piercing rail beam that penetrates lines.',
+          evoName: 'Omega Gauss Cannon'
+        },
+        beacon: {
+          id: 'beacon', name: 'Aegis Beacon', cost: 110, color: '#34d399',
+          range: 116, fireRate: 0.8, damage: 0, armorPen: 1,
+          role: 'Buffs nearby turrets (+Speed/Range/Crit) & yields wave gold.',
+          evoName: 'Command Nexus'
+        }
+      };
+
+      // Armory Doctrines
+      const DOCTRINES = [
+        { id: 'bastionHp', name: 'Reinforced Bastion', max: 5, cost: 2, desc: '+5 Max Core HP & +5 Energy Shield immediately.' },
+        { id: 'bounty',    name: 'Bounty Scavengers',  max: 5, cost: 2, desc: '+15% Gold earned from every enemy eliminated.' },
+        { id: 'capacitor', name: 'Overclock Capacitors',max: 5, cost: 3, desc: '+10% Attack Speed across all deployed turrets.' },
+        { id: 'payload',   name: 'Expanded Payload',   max: 5, cost: 3, desc: '+12% AoE Splash, Frost & Beacon Aura radius.' },
+        { id: 'interest',  name: 'Tactical War Bonds', max: 5, cost: 3, desc: '+4% Interest on unspent Gold after every wave.' }
+      ];
+
+      // State
+      const canvas = document.getElementById('tdCanvas');
+      const ctx = canvas.getContext('2d');
+
+      let selectedMapId = 'serpent';
+      let difficulty = 'veteran';
+      let currentMap = MAPS[0];
+      let roadMask = [];
+      let blockedMask = [];
+      let nodeMap = {};
+      let pixelPaths = [];
+      let corePos = { x: 760, y: 360 };
+      let spawnPositions = [];
+
+      let gold = 180;
+      let techCores = 0;
+      let coreHp = 20;
+      let maxCoreHp = 20;
+      let coreShield = 10;
+      let maxCoreShield = 10;
+      let waveNum = 0;
+      let maxWaves = 20;
+      let endlessMode = false;
+
+      let gameSpeed = 1;
+      let autoWave = false;
+      let paused = false;
+      let gameOver = false;
+
+      let selectedBlueprint = 'vulcan';
+      let selectedTower = null;
+      let hoverTile = null;
+      let armedAbility = null; // 'orbital' | 'stasis' | null
+
+      let turrets = [];
+      let enemies = [];
+      let projectiles = [];
+      let beams = [];
+      let hazards = []; // napalm pools & stasis fields
+      let shockwaves = [];
+      let particles = [];
+      let floaters = [];
+
+      let waveActive = false;
+      let spawnQueue = [];
+      let spawnTimer = 0;
+      let overchargeTimer = 0;
+      let shake = 0;
+      let toastTimer = 0;
+
+      let doctrines = { bastionHp: 0, bounty: 0, capacitor: 0, payload: 0, interest: 0 };
+      let abilities = {
+        orbital: { id: 'orbital', name: 'Orbital Beam', key: 'Q', cd: 0, maxCd: 24, targeted: true },
+        stasis:  { id: 'stasis',  name: 'Cryo Stasis',  key: 'W', cd: 0, maxCd: 20, targeted: true },
+        surge:   { id: 'surge',   name: 'Overcharge',   key: 'E', cd: 0, maxCd: 28, targeted: false }
+      };
+
+      function showToast(msg, dur = 2.2) {
+        const el = document.getElementById('waveToast');
+        el.textContent = msg;
+        el.classList.add('show');
+        toastTimer = dur;
+      }
+
+      function addParticles(x, y, color, count = 10, spd = 140) {
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const s = (0.3 + Math.random() * 0.8) * spd;
+          particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: 2 + Math.random() * 2.5, color, ttl: 0.3 + Math.random() * 0.25 });
+        }
+      }
+
+      function addFloater(x, y, text, color = '#fff') {
+        floaters.push({ x, y, text, color, vy: -34, ttl: 0.72, maxTtl: 0.72 });
+      }
+
+      function initMap(mapId, diff) {
+        selectedMapId = mapId;
+        difficulty = diff;
+        currentMap = MAPS.find(m => m.id === mapId) || MAPS[0];
+
+        roadMask = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+        blockedMask = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+        nodeMap = {};
+        pixelPaths = [];
+        spawnPositions = [];
+
+        currentMap.paths.forEach(wpList => {
+          const pts = wpList.map(([c, r]) => ({ x: c * TILE + TILE / 2, y: r * TILE + TILE / 2 }));
+          pixelPaths.push(pts);
+          spawnPositions.push(pts[0]);
+          const last = pts[pts.length - 1];
+          corePos = { x: last.x, y: last.y };
+
+          for (let i = 0; i < wpList.length - 1; i++) {
+            const [c1, r1] = wpList[i];
+            const [c2, r2] = wpList[i + 1];
+            const dc = Math.sign(c2 - c1);
+            const dr = Math.sign(r2 - r1);
+            let c = c1, r = r1;
+            while (true) {
+              if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                roadMask[r][c] = true;
+                blockedMask[r][c] = true;
+              }
+              if (c === c2 && r === r2) break;
+              c += dc;
+              r += dr;
+            }
+          }
+        });
+
+        currentMap.nodes.forEach(n => {
+          if (!blockedMask[n.r]?.[n.c]) {
+            nodeMap[`${n.c},${n.r}`] = n;
+          }
+        });
+
+        const diffCfg = {
+          recruit:   { gold: 230, hp: 25, shield: 15 },
+          veteran:   { gold: 180, hp: 20, shield: 10 },
+          nightmare: { gold: 150, hp: 15, shield: 5 }
+        }[diff];
+
+        gold = diffCfg.gold;
+        techCores = 0;
+        coreHp = diffCfg.hp;
+        maxCoreHp = diffCfg.hp;
+        coreShield = diffCfg.shield;
+        maxCoreShield = diffCfg.shield;
+        waveNum = 0;
+        maxWaves = 20;
+        endlessMode = false;
+        gameOver = false;
+        paused = false;
+
+        turrets = [];
+        enemies = [];
+        projectiles = [];
+        beams = [];
+        hazards = [];
+        shockwaves = [];
+        particles = [];
+        floaters = [];
+        waveActive = false;
+        spawnQueue = [];
+        selectedTower = null;
+        armedAbility = null;
+        overchargeTimer = 0;
+
+        doctrines = { bastionHp: 0, bounty: 0, capacitor: 0, payload: 0, interest: 0 };
+        Object.values(abilities).forEach(ab => { ab.cd = 0; });
+
+        updateTargetBanner();
+        renderBuildGrid();
+        renderInspector();
+        renderPowers();
+        updateHud();
+        showToast(`${currentMap.name.toUpperCase()} · READY`, 2.0);
+      }
+
+      // Compute effective turret stats (including Tier upgrades, Power Node, Beacon aura, Doctrines, Overcharge)
+      function getTurretStats(t) {
+        const base = TOWERS[t.kind];
+        const tierMult = Math.pow(1.34, t.tier - 1);
+        const evoBonus = t.tier >= 5 ? 1.35 : 1.0;
+
+        let dmgMult = tierMult * evoBonus;
+        let rateMult = (1 + (t.tier - 1) * 0.14) * (1 + doctrines.capacitor * 0.10);
+        let rangeMult = (1 + (t.tier - 1) * 0.08);
+        let critChance = 0.06 + (t.tier - 1) * 0.03;
+        let splashMult = 1 + doctrines.payload * 0.12;
+
+        // Power Node bonus
+        const node = nodeMap[`${t.c},${t.r}`];
+        if (node) {
+          if (node.kind === 'damage') dmgMult *= 1.25;
+          if (node.kind === 'haste') rateMult *= 1.20;
+          if (node.kind === 'range') rangeMult *= 1.20;
+        }
+
+        // Adjacent Aegis Beacon buffs
+        if (t.kind !== 'beacon') {
+          let bestBeaconTier = 0;
+          for (const other of turrets) {
+            if (other.kind === 'beacon') {
+              const auraR = TOWERS.beacon.range * (1 + (other.tier - 1) * 0.08) * splashMult;
+              if (Math.hypot(other.x - t.x, other.y - t.y) <= auraR) {
+                bestBeaconTier = Math.max(bestBeaconTier, other.tier);
+              }
+            }
+          }
+          if (bestBeaconTier > 0) {
+            rateMult *= 1 + 0.16 + bestBeaconTier * 0.05;
+            rangeMult *= 1 + 0.08 + bestBeaconTier * 0.03;
+            critChance += 0.08 + bestBeaconTier * 0.02;
+          }
+        }
+
+        if (overchargeTimer > 0) rateMult *= 2.0;
+
+        return {
+          damage: Math.round(base.damage * dmgMult),
+          fireRate: base.fireRate * rateMult,
+          range: Math.round(base.range * rangeMult * (t.kind === 'beacon' ? splashMult : 1)),
+          critChance: Math.min(0.65, critChance),
+          splashRadius: Math.round((66 + t.tier * 9) * splashMult),
+          upgradeCost: t.tier >= 5 ? 0 : Math.round(base.cost * Math.pow(1.68, t.tier))
+        };
+      }
+
+      // Build Wave Composition
+      function buildWaveQueue(w) {
+        const diffHpMult = difficulty === 'recruit' ? 0.78 : difficulty === 'nightmare' ? 1.32 : 1.0;
+        const hpScale = (1 + (w - 1) * 0.28 + Math.pow(Math.max(0, w - 4), 1.45) * 0.09) * diffHpMult;
+        const goldScale = 1 + (w - 1) * 0.06;
+        const list = [];
+
+        const count = 8 + w * 2;
+        for (let i = 0; i < count; i++) {
+          let kind = 'grunt';
+          if (w >= 2 && i % 4 === 1) kind = 'skitter';
+          if (w >= 3 && i % 5 === 2) kind = 'ironclad';
+          if (w >= 4 && i % 6 === 3) kind = 'wraith';
+          if (w >= 6 && i % 7 === 4) kind = 'mender';
+
+          list.push(makeEnemySpec(kind, hpScale, goldScale, i % pixelPaths.length));
+        }
+
+        if (w % 5 === 0) {
+          list.push(makeEnemySpec('boss', hpScale * 1.15, goldScale * 2.5, 0));
+        }
+        return list;
+      }
+
+      function makeEnemySpec(kind, hpScale, goldScale, pathIdx) {
+        const table = {
+          skitter:  { name: 'Skitterer', hp: 34,  spd: 92, r: 9,  gold: 7,  armor: 0,    shield: 0,  color: '#fb923c' },
+          grunt:    { name: 'Legionnaire',hp: 62,  spd: 58, r: 11, gold: 9,  armor: 0.1,  shield: 0,  color: '#f43f5e' },
+          ironclad: { name: 'Ironclad',  hp: 155, spd: 40, r: 14, gold: 16, armor: 0.45, shield: 0,  color: '#94a3b8' },
+          wraith:   { name: 'Phase Wraith',hp: 58, spd: 82, r: 11, gold: 14, armor: 0,    shield: 65, color: '#a855f7' },
+          mender:   { name: 'Necro Mender',hp: 84, spd: 52, r: 12, gold: 18, armor: 0.1,  shield: 25, color: '#34d399' },
+          boss:     { name: 'Siege Dreadnought', hp: 980, spd: 34, r: 21, gold: 85, armor: 0.35, shield: 220, color: '#fbbf24' }
+        }[kind];
+
+        const path = pixelPaths[pathIdx % pixelPaths.length];
+        return {
+          kind,
+          name: table.name,
+          path,
+          wpIdx: 1,
+          x: path[0].x,
+          y: path[0].y,
+          progress: 0,
+          hp: Math.round(table.hp * hpScale),
+          maxHp: Math.round(table.hp * hpScale),
+          shield: Math.round(table.shield * hpScale),
+          maxShield: Math.round(table.shield * hpScale),
+          baseSpd: table.spd,
+          r: table.r,
+          gold: Math.max(2, Math.round(table.gold * goldScale)),
+          armor: table.armor,
+          color: table.color,
+          slowTimer: 0,
+          slowFactor: 0,
+          freezeTimer: 0,
+          burnTimer: 0,
+          burnDps: 0,
+          healCd: 3.2,
+          hitFlash: 0
+        };
+      }
+
+      function launchNextWave() {
+        if (waveActive || gameOver) return;
+        waveNum++;
+        waveActive = true;
+        spawnQueue = buildWaveQueue(waveNum);
+        spawnTimer = 0.2;
+        SFX.alarm();
+        showToast(waveNum % 5 === 0 ? `BOSS WAVE ${waveNum} · DREADNOUGHT APPROACHING!` : `WAVE ${waveNum} ENGAGED`, 2.4);
+        updateHud();
+      }
+
+      function damageEnemy(en, rawDmg, armorPen = 1.0, critChance = 0.05, forceCrit = false) {
+        if (en.hp <= 0) return;
+        const isCrit = forceCrit || Math.random() < critChance;
+        let dmg = rawDmg * (isCrit ? 1.85 : 1.0);
+
+        // Shield absorbs first (Tesla deals bonus vs shield)
+        if (en.shield > 0) {
+          const shieldDmg = dmg * (armorPen > 1.2 ? 1.45 : 1.0);
+          const absorbed = Math.min(en.shield, shieldDmg);
+          en.shield -= absorbed;
+          dmg = Math.max(0, dmg - absorbed * 0.7);
+        }
+
+        const effectiveArmor = Math.max(0, en.armor * (2 - armorPen));
+        const finalDmg = Math.max(1, Math.round(dmg * (1 - Math.min(0.75, effectiveArmor))));
+        en.hp -= finalDmg;
+        en.hitFlash = 0.09;
+
+        if (isCrit) {
+          addFloater(en.x, en.y - en.r - 4, `${finalDmg}!`, '#fbbf24');
+        }
+        return finalDmg;
+      }
+
+      function selectTarget(t, range) {
+        let best = null;
+        let bestScore = -Infinity;
+        for (const en of enemies) {
+          if (en.hp <= 0) continue;
+          const d = Math.hypot(en.x - t.x, en.y - t.y);
+          if (d > range + en.r) continue;
+          let metric = 0;
+          if (t.priority === 'first') metric = en.progress;
+          else if (t.priority === 'strong') metric = en.hp + en.shield;
+          else if (t.priority === 'close') metric = -d;
+          else if (t.priority === 'fast') metric = en.baseSpd;
+          if (metric > bestScore) {
+            bestScore = metric;
+            best = en;
+          }
+        }
+        return best;
+      }
+
+      // Commander Active Powers
+      function activateAbility(id) {
+        const ab = abilities[id];
+        if (!ab || ab.cd > 0 || gameOver) return;
+
+        if (id === 'surge') {
+          ab.cd = ab.maxCd;
+          overchargeTimer = 6.0;
+          SFX.build();
+          showToast('OVERCHARGE SURGE · +100% TURRET FIRE RATE (6s)!', 2.2);
+          turrets.forEach(t => addParticles(t.x, t.y, '#38bdf8', 8, 110));
+          renderPowers();
+          return;
+        }
+
+        armedAbility = armedAbility === id ? null : id;
+        updateTargetBanner();
+        renderPowers();
+      }
+
+      function deployTargetedAbility(x, y) {
+        if (!armedAbility) return;
+        const splashMult = 1 + doctrines.payload * 0.12;
+        if (armedAbility === 'orbital') {
+          abilities.orbital.cd = abilities.orbital.maxCd;
+          const rad = 88 * splashMult;
+          const dmg = 175 + waveNum * 38;
+          shockwaves.push({ x, y, r: 8, maxR: rad, color: '#f43f5e', ttl: 0.4, maxTtl: 0.4 });
+          beams.push({ x1: x, y1: 0, x2: x, y2: y, color: '#f43f5e', width: 14, ttl: 0.35, maxTtl: 0.35 });
+          addParticles(x, y, '#fb7185', 28, 230);
+          SFX.boom();
+          shake = 10;
+          for (const en of enemies) {
+            if (Math.hypot(en.x - x, en.y - y) <= rad + en.r) {
+              damageEnemy(en, dmg, 1.6, 0.25, true);
+              en.freezeTimer = Math.max(en.freezeTimer, 1.2);
+            }
+          }
+        } else if (armedAbility === 'stasis') {
+          abilities.stasis.cd = abilities.stasis.maxCd;
+          const rad = 110 * splashMult;
+          hazards.push({ kind: 'stasis', x, y, r: rad, ttl: 4.2 });
+          shockwaves.push({ x, y, r: 10, maxR: rad, color: '#38bdf8', ttl: 0.4, maxTtl: 0.4 });
+          addParticles(x, y, '#67e8f9', 24, 180);
+          SFX.shoot('cryo');
+          for (const en of enemies) {
+            if (Math.hypot(en.x - x, en.y - y) <= rad + en.r) {
+              en.freezeTimer = Math.max(en.freezeTimer, 4.0);
+            }
+          }
+        }
+        armedAbility = null;
+        updateTargetBanner();
+        renderPowers();
+      }
+
+      function updateTargetBanner() {
+        const banner = document.getElementById('targetBanner');
+        const txt = document.getElementById('targetBannerText');
+        if (!armedAbility) {
+          banner.classList.remove('show');
+        } else {
+          txt.textContent = armedAbility === 'orbital'
+            ? 'Click or tap on battlefield to fire Orbital Ion Beam!'
+            : 'Click or tap on battlefield to deploy Cryo Stasis Field!';
+          banner.classList.add('show');
+        }
+      }
+
+      // Main Simulation Update
+      function update(rawDt) {
+        if (toastTimer > 0) {
+          toastTimer -= rawDt;
+          if (toastTimer <= 0) document.getElementById('waveToast').classList.remove('show');
+        }
+        if (paused || gameOver) return;
+
+        const dt = rawDt * gameSpeed;
+        shake = Math.max(0, shake - rawDt * 26);
+
+        if (overchargeTimer > 0) overchargeTimer = Math.max(0, overchargeTimer - dt);
+
+        // Ability Cooldowns
+        let cdChanged = false;
+        Object.values(abilities).forEach(ab => {
+          if (ab.cd > 0) {
+            ab.cd = Math.max(0, ab.cd - dt);
+            cdChanged = true;
+          }
+        });
+        if (cdChanged) renderPowers();
+
+        // Spawn Queue
+        if (waveActive && spawnQueue.length > 0) {
+          spawnTimer -= dt;
+          if (spawnTimer <= 0) {
+            const nextEn = spawnQueue.shift();
+            enemies.push(nextEn);
+            spawnTimer = nextEn.kind === 'skitter' ? 0.42 : 0.72;
+          }
+        }
+
+        // Update Enemies
+        for (let i = enemies.length - 1; i >= 0; i--) {
+          const en = enemies[i];
+          if (en.hp <= 0) {
+            const bountyMult = 1 + doctrines.bounty * 0.15;
+            const reward = Math.max(1, Math.round(en.gold * bountyMult));
+            gold += reward;
+            addParticles(en.x, en.y, en.color, en.kind === 'boss' ? 30 : 10, 160);
+            addFloater(en.x, en.y - 8, `+$${reward}`, '#fbbf24');
+            SFX.coin();
+            if (en.kind === 'boss') {
+              techCores += 3;
+              showToast('DREADNOUGHT DESTROYED! +3 TECH CORES (◈)', 2.8);
+            }
+            enemies.splice(i, 1);
+            continue;
+          }
+
+          if (en.hitFlash > 0) en.hitFlash -= dt;
+          if (en.freezeTimer > 0) en.freezeTimer -= dt;
+          if (en.slowTimer > 0) en.slowTimer -= dt;
+          else en.slowFactor = 0;
+
+          if (en.burnTimer > 0) {
+            en.burnTimer -= dt;
+            en.hp -= en.burnDps * dt;
+            if (en.hp <= 0) continue;
+          }
+
+          // Necro Mender Aura
+          if (en.kind === 'mender') {
+            en.healCd -= dt;
+            if (en.healCd <= 0) {
+              en.healCd = 3.5;
+              shockwaves.push({ x: en.x, y: en.y, r: 6, maxR: 72, color: '#34d399', ttl: 0.35, maxTtl: 0.35 });
+              for (const ally of enemies) {
+                if (ally !== en && ally.hp > 0 && Math.hypot(ally.x - en.x, ally.y - en.y) <= 76) {
+                  ally.hp = Math.min(ally.maxHp, ally.hp + Math.round(ally.maxHp * 0.18));
+                }
+              }
+            }
+          }
+
+          // Move along waypoints
+          if (en.freezeTimer <= 0) {
+            const targetWp = en.path[en.wpIdx];
+            if (targetWp) {
+              const dx = targetWp.x - en.x;
+              const dy = targetWp.y - en.y;
+              const dist = Math.hypot(dx, dy);
+              const spd = en.baseSpd * (1 - en.slowFactor);
+              const step = spd * dt;
+              if (dist <= step) {
+                en.x = targetWp.x;
+                en.y = targetWp.y;
+                en.progress += dist;
+                en.wpIdx++;
+              } else {
+                en.x += (dx / dist) * step;
+                en.y += (dy / dist) * step;
+                en.progress += step;
+              }
+            }
+          }
+
+          // Reached Bastion Core
+          if (en.wpIdx >= en.path.length) {
+            const coreDmg = en.kind === 'boss' ? 8 : en.kind === 'ironclad' ? 3 : 1;
+            enemies.splice(i, 1);
+            shake = 9;
+            SFX.boom();
+            addParticles(corePos.x, corePos.y, '#f43f5e', 18, 200);
+
+            if (coreShield > 0) {
+              const abs = Math.min(coreShield, coreDmg);
+              coreShield -= abs;
+              const rem = coreDmg - abs;
+              if (rem > 0) coreHp = Math.max(0, coreHp - rem);
+            } else {
+              coreHp = Math.max(0, coreHp - coreDmg);
+            }
+
+            if (coreHp <= 0) {
+              gameOver = true;
+              document.getElementById('outTitle').textContent = 'BASTION BREACHED';
+              document.getElementById('outTitle').style.color = '#f43f5e';
+              document.getElementById('outSub').textContent = `The horde overwhelmed your defenses on Wave ${waveNum}.`;
+              document.getElementById('endlessBtn').style.display = 'none';
+              document.getElementById('outcomeModal').classList.add('active');
+              updateHud();
+              return;
+            }
+          }
+        }
+
+        // Check Wave Cleared
+        if (waveActive && spawnQueue.length === 0 && enemies.length === 0) {
+          waveActive = false;
+          techCores += 1;
+
+          // Interest & Aegis Beacon Gold
+          const interestRate = doctrines.interest * 0.04;
+          const interestGold = Math.floor(gold * interestRate);
+          let beaconGold = 0;
+          turrets.forEach(t => {
+            if (t.kind === 'beacon') beaconGold += 12 + t.tier * 6;
+          });
+          const clearBonus = 20 + waveNum * 4 + interestGold + beaconGold;
+          gold += clearBonus;
+          coreShield = Math.min(maxCoreShield, coreShield + 2);
+
+          showToast(`WAVE ${waveNum} CLEARED! +$${clearBonus} · +1 TECH CORE (◈)`, 2.5);
+
+          if (waveNum >= maxWaves && !endlessMode) {
+            document.getElementById('outTitle').textContent = 'SECTOR VICTORY!';
+            document.getElementById('outTitle').style.color = '#fbbf24';
+            document.getElementById('outSub').textContent = `All ${maxWaves} waves repelled on ${currentMap.name} (${difficulty.toUpperCase()})! Continue into Endless Mode or choose a new map.`;
+            document.getElementById('endlessBtn').style.display = 'inline-block';
+            document.getElementById('outcomeModal').classList.add('active');
+          } else if (autoWave) {
+            setTimeout(() => { if (!waveActive && !gameOver) launchNextWave(); }, 900);
+          }
+        }
+
+        // Update Turrets
+        for (const t of turrets) {
+          const stats = getTurretStats(t);
+          t.cd -= dt;
+
+          // Beacon Tier 5 Defense Laser
+          if (t.kind === 'beacon') {
+            if (t.tier >= 5 && t.cd <= 0) {
+              const target = selectTarget(t, stats.range);
+              if (target) {
+                t.cd = 1 / stats.fireRate;
+                const dealt = damageEnemy(target, 32, 1.4, stats.critChance);
+                t.totalDamage += dealt || 0;
+                if (target.hp <= 0) t.kills++;
+                beams.push({ x1: t.x, y1: t.y, x2: target.x, y2: target.y, color: '#34d399', width: 2.5, ttl: 0.14, maxTtl: 0.14 });
+              }
+            }
+            continue;
+          }
+
+          if (t.cd > 0) continue;
+          const target = selectTarget(t, stats.range);
+          if (!target) continue;
+
+          t.angle = Math.atan2(target.y - t.y, target.x - t.x);
+          t.cd = 1 / stats.fireRate;
+          SFX.shoot(t.kind);
+
+          if (t.kind === 'vulcan') {
+            const barrels = t.tier >= 5 ? [-4, 4] : [0];
+            barrels.forEach(off => {
+              const perp = t.angle + Math.PI / 2;
+              projectiles.push({
+                kind: 'vulcan',
+                owner: t,
+                x: t.x + Math.cos(t.angle) * 14 + Math.cos(perp) * off,
+                y: t.y + Math.sin(t.angle) * 14 + Math.sin(perp) * off,
+                target,
+                speed: 440,
+                damage: stats.damage,
+                armorPen: t.tier >= 5 ? 0.95 : TOWERS.vulcan.armorPen,
+                critChance: stats.critChance,
+                color: '#38bdf8',
+                r: 3.2
+              });
+            });
+          } else if (t.kind === 'cryo') {
+            const slowAmt = Math.min(0.68, 0.34 + t.tier * 0.06);
+            shockwaves.push({ x: t.x, y: t.y, r: 8, maxR: stats.range, color: '#67e8f9', ttl: 0.28, maxTtl: 0.28 });
+            for (const en of enemies) {
+              if (en.hp > 0 && Math.hypot(en.x - t.x, en.y - t.y) <= stats.range + en.r) {
+                const dealt = damageEnemy(en, stats.damage, 0.9, stats.critChance);
+                t.totalDamage += dealt || 0;
+                if (en.hp <= 0) t.kills++;
+                en.slowTimer = Math.max(en.slowTimer, 2.4);
+                en.slowFactor = Math.max(en.slowFactor, slowAmt);
+                if (t.tier >= 5 && Math.random() < 0.22) {
+                  en.freezeTimer = Math.max(en.freezeTimer, 1.3);
+                }
+              }
+            }
+          } else if (t.kind === 'tesla') {
+            const jumps = t.tier >= 5 ? 6 : 2 + Math.floor(t.tier * 0.8);
+            let curr = target;
+            let px = t.x, py = t.y;
+            const visited = new Set();
+            for (let j = 0; j < jumps && curr; j++) {
+              visited.add(curr);
+              beams.push({ x1: px, y1: py, x2: curr.x, y2: curr.y, color: t.tier >= 5 ? '#facc15' : '#c084fc', width: 2.6, ttl: 0.16, maxTtl: 0.16 });
+              const dealt = damageEnemy(curr, stats.damage * Math.pow(0.86, j), TOWERS.tesla.armorPen, stats.critChance);
+              t.totalDamage += dealt || 0;
+              if (curr.hp <= 0) t.kills++;
+              if (t.tier >= 5 && Math.random() < 0.25) curr.freezeTimer = Math.max(curr.freezeTimer, 0.55);
+
+              px = curr.x; py = curr.y;
+              let nextEn = null, bestD = 125;
+              for (const cand of enemies) {
+                if (cand.hp <= 0 || visited.has(cand)) continue;
+                const d = Math.hypot(cand.x - px, cand.y - py);
+                if (d < bestD) { bestD = d; nextEn = cand; }
+              }
+              curr = nextEn;
+            }
+          } else if (t.kind === 'mortar') {
+            projectiles.push({
+              kind: 'mortar',
+              owner: t,
+              x: t.x,
+              y: t.y,
+              tx: target.x,
+              ty: target.y,
+              speed: 250,
+              damage: stats.damage,
+              splashRadius: stats.splashRadius,
+              armorPen: TOWERS.mortar.armorPen,
+              critChance: stats.critChance,
+              tier: t.tier,
+              color: '#f97316',
+              r: 5.5
+            });
+          } else if (t.kind === 'railgun') {
+            const endX = t.x + Math.cos(t.angle) * stats.range;
+            const endY = t.y + Math.sin(t.angle) * stats.range;
+            beams.push({ x1: t.x, y1: t.y, x2: endX, y2: endY, color: '#f43f5e', width: t.tier >= 5 ? 5 : 3.2, ttl: 0.2, maxTtl: 0.2 });
+            for (const en of enemies) {
+              if (en.hp <= 0) continue;
+              if (pointToSegmentDist(en.x, en.y, t.x, t.y, endX, endY) <= en.r + 7) {
+                const dealt = damageEnemy(en, stats.damage, TOWERS.railgun.armorPen, stats.critChance);
+                t.totalDamage += dealt || 0;
+                if (en.hp <= 0) t.kills++;
+              }
+            }
+          }
+        }
+
+        // Update Projectiles
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          const p = projectiles[i];
+          if (p.kind === 'vulcan') {
+            if (!p.target || p.target.hp <= 0) {
+              projectiles.splice(i, 1);
+              continue;
+            }
+            const dx = p.target.x - p.x;
+            const dy = p.target.y - p.y;
+            const d = Math.hypot(dx, dy);
+            const step = p.speed * dt;
+            if (d <= step + p.target.r) {
+              const dealt = damageEnemy(p.target, p.damage, p.armorPen, p.critChance);
+              p.owner.totalDamage += dealt || 0;
+              if (p.target.hp <= 0) p.owner.kills++;
+              addParticles(p.x, p.y, p.color, 4, 80);
+              projectiles.splice(i, 1);
+            } else {
+              p.x += (dx / d) * step;
+              p.y += (dy / d) * step;
+            }
+          } else if (p.kind === 'mortar') {
+            const dx = p.tx - p.x;
+            const dy = p.ty - p.y;
+            const d = Math.hypot(dx, dy);
+            const step = p.speed * dt;
+            if (d <= step) {
+              // Detonate AoE
+              shockwaves.push({ x: p.tx, y: p.ty, r: 8, maxR: p.splashRadius, color: '#f97316', ttl: 0.3, maxTtl: 0.3 });
+              addParticles(p.tx, p.ty, '#fb923c', 16, 170);
+              SFX.boom();
+              for (const en of enemies) {
+                if (en.hp > 0 && Math.hypot(en.x - p.tx, en.y - p.ty) <= p.splashRadius + en.r) {
+                  const dealt = damageEnemy(en, p.damage, p.armorPen, p.critChance);
+                  p.owner.totalDamage += dealt || 0;
+                  if (en.hp <= 0) p.owner.kills++;
+                  en.burnTimer = Math.max(en.burnTimer, 2.5);
+                  en.burnDps = Math.max(en.burnDps, p.damage * 0.22);
+                }
+              }
+              if (p.tier >= 3) {
+                hazards.push({ kind: 'napalm', x: p.tx, y: p.ty, r: p.splashRadius * 0.65, dps: p.damage * 0.3, ttl: 2.8 });
+              }
+              projectiles.splice(i, 1);
+            } else {
+              p.x += (dx / d) * step;
+              p.y += (dy / d) * step;
+            }
+          }
+        }
+
+        // Update Hazards (Napalm & Stasis)
+        for (let i = hazards.length - 1; i >= 0; i--) {
+          const hz = hazards[i];
+          hz.ttl -= dt;
+          if (hz.kind === 'napalm') {
+            for (const en of enemies) {
+              if (en.hp > 0 && Math.hypot(en.x - hz.x, en.y - hz.y) <= hz.r + en.r) {
+                en.hp -= hz.dps * dt;
+              }
+            }
+          }
+          if (hz.ttl <= 0) hazards.splice(i, 1);
+        }
+
+        // Visual FX
+        for (let i = beams.length - 1; i >= 0; i--) {
+          beams[i].ttl -= rawDt;
+          if (beams[i].ttl <= 0) beams.splice(i, 1);
+        }
+        for (let i = shockwaves.length - 1; i >= 0; i--) {
+          const sw = shockwaves[i];
+          sw.ttl -= rawDt;
+          sw.r = sw.maxR * (1 - sw.ttl / sw.maxTtl);
+          if (sw.ttl <= 0) shockwaves.splice(i, 1);
+        }
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const pt = particles[i];
+          pt.x += pt.vx * rawDt;
+          pt.y += pt.vy * rawDt;
+          pt.ttl -= rawDt;
+          if (pt.ttl <= 0) particles.splice(i, 1);
+        }
+        for (let i = floaters.length - 1; i >= 0; i--) {
+          const fl = floaters[i];
+          fl.y += fl.vy * rawDt;
+          fl.ttl -= rawDt;
+          if (fl.ttl <= 0) floaters.splice(i, 1);
+        }
+
+        updateHud();
+      }
+
+      function pointToSegmentDist(px, py, x1, y1, x2, y2) {
+        const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+        if (l2 === 0) return Math.hypot(px - x1, py - y1);
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+      }
+
+      // Render Battlefield
+      function render(ts) {
+        const sx = shake > 0.2 ? (Math.random() - 0.5) * shake * 2 : 0;
+        const sy = shake > 0.2 ? (Math.random() - 0.5) * shake * 2 : 0;
+
+        ctx.save();
+        ctx.fillStyle = '#070a14';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.translate(sx, sy);
+
+        // Tactical Grid
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const x = c * TILE;
+            const y = r * TILE;
+            if (roadMask[r][c]) {
+              ctx.fillStyle = '#14192b';
+              ctx.fillRect(x, y, TILE, TILE);
+              ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+              ctx.strokeRect(x + 0.5, y + 0.5, TILE - 1, TILE - 1);
+            } else {
+              ctx.fillStyle = (r + c) % 2 === 0 ? '#090d19' : '#0b101f';
+              ctx.fillRect(x, y, TILE, TILE);
+              ctx.strokeStyle = 'rgba(37, 46, 77, 0.35)';
+              ctx.strokeRect(x + 0.5, y + 0.5, TILE - 1, TILE - 1);
+            }
+          }
+        }
+
+        // Road Center Guide Line
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.14)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 8]);
+        pixelPaths.forEach(pts => {
+          ctx.beginPath();
+          pts.forEach((pt, idx) => {
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+          });
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+
+        // Crystal Power Nodes
+        Object.values(nodeMap).forEach(n => {
+          const cx = n.c * TILE + TILE / 2;
+          const cy = n.r * TILE + TILE / 2;
+          const col = n.kind === 'damage' ? '#f43f5e' : n.kind === 'haste' ? '#fbbf24' : '#38bdf8';
+          ctx.save();
+          ctx.fillStyle = col;
+          ctx.globalAlpha = 0.18 + Math.sin(ts * 0.004) * 0.06;
+          ctx.fillRect(n.c * TILE + 3, n.r * TILE + 3, TILE - 6, TILE - 6);
+          ctx.globalAlpha = 0.9;
+          ctx.font = '900 8px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(n.label, cx, cy + 3);
+          ctx.restore();
+        });
+
+        // Spawn Portals
+        spawnPositions.forEach(sp => {
+          ctx.save();
+          ctx.fillStyle = 'rgba(244, 63, 94, 0.25)';
+          ctx.beginPath();
+          ctx.arc(sp.x, sp.y, 16, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#f43f5e';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        // Bastion Core
+        ctx.save();
+        const coreGrad = ctx.createRadialGradient(corePos.x, corePos.y, 3, corePos.x, corePos.y, 24);
+        coreGrad.addColorStop(0, '#34d399');
+        coreGrad.addColorStop(1, 'rgba(52, 211, 153, 0)');
+        ctx.fillStyle = coreGrad;
+        ctx.beginPath();
+        ctx.arc(corePos.x, corePos.y, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#10b981';
+        ctx.strokeStyle = '#ecfdf5';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(corePos.x, corePos.y, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        // Hazards (Napalm / Stasis)
+        hazards.forEach(hz => {
+          ctx.save();
+          ctx.globalAlpha = Math.min(0.42, hz.ttl * 0.25);
+          ctx.fillStyle = hz.kind === 'stasis' ? '#38bdf8' : '#f97316';
+          ctx.beginPath();
+          ctx.arc(hz.x, hz.y, hz.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Hover Placement Preview
+        if (hoverTile && !armedAbility) {
+          const { c, r } = hoverTile;
+          const occupied = turrets.some(t => t.c === c && t.r === r);
+          const valid = !blockedMask[r]?.[c] && !occupied;
+          const cx = c * TILE + TILE / 2;
+          const cy = r * TILE + TILE / 2;
+
+          if (!occupied && selectedBlueprint) {
+            const bp = TOWERS[selectedBlueprint];
+            ctx.save();
+            ctx.fillStyle = valid ? 'rgba(56, 189, 248, 0.16)' : 'rgba(244, 63, 94, 0.22)';
+            ctx.fillRect(c * TILE + 2, r * TILE + 2, TILE - 4, TILE - 4);
+            if (valid) {
+              ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.arc(cx, cy, bp.range, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
+        }
+
+        // Selected Tower Range Ring
+        if (selectedTower) {
+          const stats = getTurretStats(selectedTower);
+          ctx.save();
+          ctx.strokeStyle = selectedTower.kind === 'beacon' ? 'rgba(52, 211, 153, 0.5)' : 'rgba(251, 191, 36, 0.45)';
+          ctx.fillStyle = selectedTower.kind === 'beacon' ? 'rgba(52, 211, 153, 0.08)' : 'rgba(251, 191, 36, 0.06)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(selectedTower.x, selectedTower.y, stats.range, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Turrets
+        turrets.forEach(t => {
+          const base = TOWERS[t.kind];
+          ctx.save();
+          ctx.translate(t.x, t.y);
+
+          // Pedestal
+          ctx.fillStyle = '#1a2238';
+          ctx.strokeStyle = t === selectedTower ? '#fbbf24' : base.color;
+          ctx.lineWidth = t === selectedTower ? 2.5 : 1.5;
+          ctx.beginPath();
+          ctx.roundRect(-14, -14, 28, 28, 7);
+          ctx.fill();
+          ctx.stroke();
+
+          // Turret Head
+          ctx.rotate(t.angle);
+          ctx.fillStyle = base.color;
+          if (t.kind === 'beacon') {
+            ctx.beginPath();
+            ctx.arc(0, 0, 7, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillRect(-5, -5, 16, 10);
+          }
+          ctx.restore();
+
+          // Tier Stars
+          ctx.fillStyle = t.tier >= 5 ? '#fbbf24' : '#e2e8f0';
+          ctx.font = '900 9px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(t.tier >= 5 ? '★' : `T${t.tier}`, t.x, t.y + 13);
+        });
+
+        // Enemies
+        enemies.forEach(en => {
+          ctx.save();
+          ctx.translate(en.x, en.y);
+          ctx.fillStyle = en.hitFlash > 0 ? '#ffffff' : en.color;
+          ctx.beginPath();
+          ctx.arc(0, 0, en.r, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (en.freezeTimer > 0) {
+            ctx.strokeStyle = '#67e8f9';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+          } else if (en.slowTimer > 0) {
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+
+          if (en.shield > 0) {
+            ctx.strokeStyle = '#c084fc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, en.r + 3, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          // HP Bar
+          const bw = en.r * 2.2;
+          ctx.fillStyle = '#070912';
+          ctx.fillRect(-bw / 2, -en.r - 8, bw, 4);
+          ctx.fillStyle = en.kind === 'boss' ? '#fbbf24' : '#f43f5e';
+          ctx.fillRect(-bw / 2, -en.r - 8, bw * Math.max(0, en.hp / en.maxHp), 4);
+          ctx.restore();
+        });
+
+        // Projectiles
+        projectiles.forEach(p => {
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Beams
+        beams.forEach(bm => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, bm.ttl / bm.maxTtl);
+          ctx.strokeStyle = bm.color;
+          ctx.lineWidth = bm.width;
+          ctx.beginPath();
+          ctx.moveTo(bm.x1, bm.y1);
+          ctx.lineTo(bm.x2, bm.y2);
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        // Shockwaves
+        shockwaves.forEach(sw => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, sw.ttl / sw.maxTtl) * 0.75;
+          ctx.strokeStyle = sw.color;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        // Particles
+        particles.forEach(pt => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, pt.ttl * 2);
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Floaters
+        ctx.textAlign = 'center';
+        floaters.forEach(fl => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, fl.ttl / fl.maxTtl);
+          ctx.font = '900 12px Inter, sans-serif';
+          ctx.fillStyle = fl.color;
+          ctx.fillText(fl.text, fl.x, fl.y);
+          ctx.restore();
+        });
+
+        ctx.restore();
+      }
+
+      // UI Render Helpers
+      function updateHud() {
+        document.getElementById('coreHpVal').textContent = `${coreHp}/${maxCoreHp}${coreShield > 0 ? ` (+${coreShield})` : ''}`;
+        document.getElementById('goldVal').textContent = `$${gold}`;
+        document.getElementById('techVal').textContent = `${techCores} ◈`;
+        document.getElementById('waveVal').textContent = endlessMode ? `${waveNum} (∞)` : `${waveNum} / ${maxWaves}`;
+
+        const nextBtn = document.getElementById('nextWaveBtn');
+        nextBtn.disabled = waveActive || gameOver;
+        nextBtn.textContent = waveActive
+          ? `WAVE ${waveNum} IN PROGRESS...`
+          : `LAUNCH WAVE ${waveNum + 1}`;
+
+        const canAffordDoc = DOCTRINES.some(d => doctrines[d.id] < d.max && techCores >= d.cost);
+        document.getElementById('armoryDot').classList.toggle('show', canAffordDoc);
+
+        document.querySelectorAll('.tower-btn').forEach(btn => {
+          const t = TOWERS[btn.dataset.tkind];
+          btn.classList.toggle('unaffordable', gold < t.cost);
+          btn.classList.toggle('selected', selectedBlueprint === t.id && !selectedTower);
+        });
+      }
+
+      function renderBuildGrid() {
+        const grid = document.getElementById('buildGrid');
+        grid.innerHTML = Object.values(TOWERS).map((t, i) => `
+          <button type="button" class="tower-btn ${selectedBlueprint === t.id ? 'selected' : ''}" data-tkind="${t.id}">
+            <div class="tb-top">
+              <span style="color:${t.color};">${i + 1}. ${t.name.split(' ')[0]}</span>
+              <span class="tb-cost">$${t.cost}</span>
+            </div>
+            <div class="tb-role">${t.role}</div>
+          </button>
+        `).join('');
+
+        grid.querySelectorAll('.tower-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectedBlueprint = btn.dataset.tkind;
+            selectedTower = null;
+            armedAbility = null;
+            updateTargetBanner();
+            renderInspector();
+            updateHud();
+          });
+        });
+      }
+
+      function renderInspector() {
+        const box = document.getElementById('inspectorBox');
+        if (!selectedTower) {
+          const bp = TOWERS[selectedBlueprint];
+          box.innerHTML = `
+            <div class="insp-head">
+              <span class="insp-name" style="color:${bp.color};">${bp.name}</span>
+              <span class="insp-tier">Cost $${bp.cost}</span>
+            </div>
+            <p style="color:#cbd5e1; line-height:1.35;">${bp.role}</p>
+            <p style="color:#64748b; font-size:0.68rem; margin-top:5px;">Click any open grid tile to deploy.</p>
+          `;
+          return;
+        }
+
+        const base = TOWERS[selectedTower.kind];
+        const stats = getTurretStats(selectedTower);
+        const refund = Math.floor(selectedTower.invested * 0.75);
+        const title = selectedTower.tier >= 5 ? base.evoName : base.name;
+
+        box.innerHTML = `
+          <div class="insp-head">
+            <span class="insp-name" style="color:${base.color};">${title}</span>
+            <span class="insp-tier">${selectedTower.tier >= 5 ? 'TIER 5 EVO' : `TIER ${selectedTower.tier}/5`}</span>
+          </div>
+          <div class="insp-stats">
+            <span>DMG: <b>${stats.damage}</b></span>
+            <span>SPD: <b>${stats.fireRate.toFixed(2)}/s</b></span>
+            <span>RNG: <b>${stats.range}</b></span>
+            <span>KILLS: <b>${selectedTower.kills}</b></span>
+          </div>
+          ${selectedTower.kind !== 'beacon' ? `
+            <div class="priority-row">
+              ${['first', 'strong', 'close', 'fast'].map(p => `
+                <button type="button" class="prio-btn ${selectedTower.priority === p ? 'active' : ''}" data-prio="${p}">
+                  ${p.toUpperCase()}
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
+          <div class="insp-actions">
+            <button type="button" class="upg-btn" id="upgTowerBtn" ${selectedTower.tier >= 5 || gold < stats.upgradeCost ? 'disabled' : ''}>
+              ${selectedTower.tier >= 5 ? 'MAX EVOLVED' : `UPGRADE ($${stats.upgradeCost})`}
+            </button>
+            <button type="button" class="sell-btn" id="sellTowerBtn">SELL +$${refund}</button>
+          </div>
+        `;
+
+        box.querySelectorAll('.prio-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectedTower.priority = btn.dataset.prio;
+            renderInspector();
+          });
+        });
+
+        const upgBtn = document.getElementById('upgTowerBtn');
+        if (upgBtn) {
+          upgBtn.addEventListener('click', () => {
+            if (!selectedTower || selectedTower.tier >= 5 || gold < stats.upgradeCost) return;
+            gold -= stats.upgradeCost;
+            selectedTower.invested += stats.upgradeCost;
+            selectedTower.tier++;
+            SFX.build();
+            addParticles(selectedTower.x, selectedTower.y, '#fbbf24', 16, 150);
+            renderInspector();
+            updateHud();
+          });
+        }
+
+        const sellBtn = document.getElementById('sellTowerBtn');
+        if (sellBtn) {
+          sellBtn.addEventListener('click', () => {
+            if (!selectedTower) return;
+            gold += refund;
+            SFX.coin();
+            addParticles(selectedTower.x, selectedTower.y, '#f43f5e', 12, 130);
+            turrets = turrets.filter(t => t !== selectedTower);
+            selectedTower = null;
+            renderInspector();
+            updateHud();
+          });
+        }
+      }
+
+      function renderPowers() {
+        const grid = document.getElementById('powersGrid');
+        grid.innerHTML = Object.values(abilities).map(ab => `
+          <button type="button" class="power-btn ${armedAbility === ab.id ? 'armed' : ''}" data-ab="${ab.id}" ${ab.cd > 0 ? 'disabled' : ''}>
+            <span class="p-name">[${ab.key}] ${ab.name.split(' ')[0]}</span>
+            <span class="p-cd">${ab.cd > 0 ? ab.cd.toFixed(1) + 's' : 'READY'}</span>
+          </button>
+        `).join('');
+
+        grid.querySelectorAll('.power-btn').forEach(btn => {
+          btn.addEventListener('click', () => activateAbility(btn.dataset.ab));
+        });
+      }
+
+      function renderArmory() {
+        document.getElementById('armoryTechVal').textContent = `${techCores} ◈`;
+        const list = document.getElementById('doctrineList');
+        list.innerHTML = DOCTRINES.map(d => {
+          const rank = doctrines[d.id];
+          const maxed = rank >= d.max;
+          const afford = !maxed && techCores >= d.cost;
+          return `
+            <div class="doc-item">
+              <div>
+                <div style="font-weight:900; font-size:0.88rem;">${d.name} <span style="color:#fbbf24;">(${rank}/${d.max})</span></div>
+                <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${d.desc}</div>
+              </div>
+              <button type="button" class="ctrl-btn ${afford ? 'active' : ''}" data-doc="${d.id}" ${!afford ? 'disabled' : ''}>
+                ${maxed ? 'MAXED' : `Research (${d.cost} ◈)`}
+              </button>
+            </div>
+          `;
+        }).join('');
+
+        list.querySelectorAll('[data-doc]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const d = DOCTRINES.find(item => item.id === btn.dataset.doc);
+            if (!d || doctrines[d.id] >= d.max || techCores < d.cost) return;
+            techCores -= d.cost;
+            doctrines[d.id]++;
+            if (d.id === 'bastionHp') {
+              maxCoreHp += 5; coreHp += 5;
+              maxCoreShield += 5; coreShield += 5;
+            }
+            SFX.build();
+            renderArmory();
+            updateHud();
+          });
+        });
+      }
+
+      // Canvas Interaction
+      function getGridCoord(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+        const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+        const c = Math.floor(x / TILE);
+        const r = Math.floor(y / TILE);
+        return { x, y, c, r };
+      }
+
+      canvas.addEventListener('pointermove', e => {
+        const { c, r } = getGridCoord(e);
+        if (c >= 0 && c < COLS && r >= 0 && r < ROWS) hoverTile = { c, r };
+        else hoverTile = null;
+      });
+      canvas.addEventListener('pointerleave', () => { hoverTile = null; });
+
+      canvas.addEventListener('pointerdown', e => {
+        if (gameOver) return;
+        const { x, y, c, r } = getGridCoord(e);
+
+        if (armedAbility) {
+          deployTargetedAbility(x, y);
+          return;
+        }
+
+        if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
+
+        // Check existing turret click
+        const existing = turrets.find(t => t.c === c && t.r === r);
+        if (existing) {
+          selectedTower = existing;
+          renderInspector();
+          updateHud();
+          return;
+        }
+
+        // Build new turret
+        if (!blockedMask[r][c] && selectedBlueprint) {
+          const bp = TOWERS[selectedBlueprint];
+          if (gold < bp.cost) {
+            showToast(`NEED $${bp.cost} GOLD TO BUILD ${bp.name.toUpperCase()}`, 1.4);
+            return;
+          }
+          gold -= bp.cost;
+          const newTower = {
+            kind: bp.id,
+            c, r,
+            x: c * TILE + TILE / 2,
+            y: r * TILE + TILE / 2,
+            tier: 1,
+            invested: bp.cost,
+            cd: 0.1,
+            angle: 0,
+            priority: 'first',
+            kills: 0,
+            totalDamage: 0
+          };
+          turrets.push(newTower);
+          selectedTower = newTower;
+          SFX.build();
+          addParticles(newTower.x, newTower.y, bp.color, 14, 140);
+          renderInspector();
+          updateHud();
+        } else {
+          selectedTower = null;
+          renderInspector();
+          updateHud();
+        }
+      });
+
+      // Setup Modal UI
+      const mapGrid = document.getElementById('mapGrid');
+      mapGrid.innerHTML = MAPS.map(m => `
+        <div class="map-card ${m.id === selectedMapId ? 'selected' : ''}" data-map="${m.id}">
+          <h4>${m.name}</h4>
+          <p>${m.desc}</p>
+        </div>
+      `).join('');
+
+      mapGrid.querySelectorAll('.map-card').forEach(card => {
+        card.addEventListener('click', () => {
+          mapGrid.querySelectorAll('.map-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedMapId = card.dataset.map;
+        });
+      });
+
+      document.querySelectorAll('#diffRow .diff-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#diffRow .diff-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          difficulty = btn.dataset.diff;
+        });
+      });
+
+      document.getElementById('startBattleBtn').addEventListener('click', () => {
+        document.getElementById('setupModal').classList.remove('active');
+        initMap(selectedMapId, difficulty);
+      });
+
+      document.getElementById('openSetupBtn').addEventListener('click', () => {
+        document.getElementById('setupModal').classList.add('active');
+      });
+
+      document.getElementById('openArmoryBtn').addEventListener('click', () => {
+        renderArmory();
+        document.getElementById('armoryModal').classList.add('active');
+      });
+      document.getElementById('closeArmoryBtn').addEventListener('click', () => {
+        document.getElementById('armoryModal').classList.remove('active');
+      });
+
+      document.getElementById('nextWaveBtn').addEventListener('click', launchNextWave);
+      document.getElementById('cancelTargetBtn').addEventListener('click', () => {
+        armedAbility = null;
+        updateTargetBanner();
+        renderPowers();
+      });
+
+      document.getElementById('speedBtn').addEventListener('click', (e) => {
+        gameSpeed = gameSpeed === 1 ? 2 : gameSpeed === 2 ? 3 : 1;
+        e.target.textContent = `${gameSpeed}x Speed`;
+        e.target.classList.toggle('active', gameSpeed > 1);
+      });
+
+      document.getElementById('autoWaveBtn').addEventListener('click', (e) => {
+        autoWave = !autoWave;
+        e.target.textContent = autoWave ? 'Auto: ON' : 'Auto: OFF';
+        e.target.classList.toggle('active', autoWave);
+        if (autoWave && !waveActive && !gameOver) launchNextWave();
+      });
+
+      document.getElementById('pauseBtn').addEventListener('click', (e) => {
+        paused = !paused;
+        e.target.textContent = paused ? 'Resume' : 'Pause';
+        e.target.classList.toggle('active', paused);
+      });
+
+      document.getElementById('muteBtn').addEventListener('click', (e) => {
+        SFX.muted = !SFX.muted;
+        e.target.textContent = SFX.muted ? 'MUTED' : 'SFX ON';
+      });
+
+      document.getElementById('endlessBtn').addEventListener('click', () => {
+        endlessMode = true;
+        document.getElementById('outcomeModal').classList.remove('active');
+        updateHud();
+        launchNextWave();
+      });
+
+      document.getElementById('replayBtn').addEventListener('click', () => {
+        document.getElementById('outcomeModal').classList.remove('active');
+        document.getElementById('setupModal').classList.add('active');
+      });
+
+      window.addEventListener('keydown', e => {
+        const towerKeys = Object.keys(TOWERS);
+        if (['Digit1','Digit2','Digit3','Digit4','Digit5','Digit6'].includes(e.code)) {
+          const idx = Number(e.code.replace('Digit', '')) - 1;
+          if (towerKeys[idx]) {
+            selectedBlueprint = towerKeys[idx];
+            selectedTower = null;
+            renderInspector();
+            updateHud();
+          }
+        } else if (e.code === 'KeyQ') activateAbility('orbital');
+        else if (e.code === 'KeyW') activateAbility('stasis');
+        else if (e.code === 'KeyE') activateAbility('surge');
+        else if (e.code === 'Space') {
+          e.preventDefault();
+          if (!waveActive && !gameOver) launchNextWave();
+        } else if (e.code === 'Escape') {
+          armedAbility = null;
+          selectedTower = null;
+          updateTargetBanner();
+          renderInspector();
+          renderPowers();
+        }
+      });
+
+      // Boot
+      initMap('serpent', 'veteran');
+      let lastTs = performance.now();
+      function loop(ts) {
+        const dt = Math.min(0.05, (ts - lastTs) / 1000);
+        lastTs = ts;
+        update(dt);
+        render(ts);
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

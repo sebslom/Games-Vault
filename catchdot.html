@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Aim Trainer: Catch the Dot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 12px;
+      overflow: hidden;
+    }
+    .hud {
+      width: min(560px, 95vw);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #131520;
+      border: 1px solid #25293d;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+    .hud .hits { color: #38bdf8; }
+    .hud .time { color: #facc15; }
+    .hud .acc { color: #34d399; }
+    .arena {
+      position: relative;
+      width: min(560px, 95vw);
+      height: min(390px, 60dvh);
+      background: #0e1322;
+      border: 2px solid #25293d;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.65);
+      cursor: crosshair;
+    }
+    .dot {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #7dd3fc, #0284c7);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.75);
+      transform: translate(-50%, -50%);
+      display: none;
+      cursor: pointer;
+    }
+    .dot.active { display: block; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(9, 13, 22, 0.86);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .overlay.hidden { display: none; }
+    .start-btn {
+      background: #6842ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 0.98rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .start-btn:hover { background: #7c5cff; }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <span class="hits">HITS: <b id="hitsVal">0</b></span>
+    <span class="acc">ACC: <b id="accVal">100%</b></span>
+    <span class="time">TIME: <b id="timeVal">30</b>s</span>
+  </div>
+  <div class="arena" id="arena">
+    <div class="dot" id="dot"></div>
+    <div class="overlay" id="overlay">
+      <h2 id="overlayTitle">Aim Trainer</h2>
+      <p id="overlayDesc" style="color:#9aa0b8; font-size:0.92rem;">Hit as many targets as possible in 30 seconds!</p>
+      <button class="start-btn" id="startBtn">Start Session</button>
+    </div>
+  </div>
+
+  <script>
+    const arena = document.getElementById('arena');
+    const dot = document.getElementById('dot');
+    const hitsEl = document.getElementById('hitsVal');
+    const accEl = document.getElementById('accVal');
+    const timeEl = document.getElementById('timeVal');
+    const overlay = document.getElementById('overlay');
+    const overlayTitle = document.getElementById('overlayTitle');
+    const overlayDesc = document.getElementById('overlayDesc');
+    const startBtn = document.getElementById('startBtn');
+
+    let hits = 0;
+    let clicks = 0;
+    let timeLeft = 30;
+    let running = false;
+    let countdownId = null;
+
+    function updateHud() {
+      hitsEl.textContent = hits;
+      timeEl.textContent = timeLeft;
+      const acc = clicks === 0 ? 100 : Math.round((hits / clicks) * 100);
+      accEl.textContent = acc + '%';
+    }
+
+    function placeDot() {
+      const pad = 26;
+      const w = arena.clientWidth;
+      const h = arena.clientHeight;
+      const x = pad + Math.random() * Math.max(20, w - pad * 2);
+      const y = pad + Math.random() * Math.max(20, h - pad * 2);
+      dot.style.left = x + 'px';
+      dot.style.top = y + 'px';
+      dot.classList.add('active');
+    }
+
+    function endSession() {
+      running = false;
+      clearInterval(countdownId);
+      dot.classList.remove('active');
+      const acc = clicks === 0 ? 100 : Math.round((hits / clicks) * 100);
+      overlayTitle.textContent = 'Session Complete!';
+      overlayDesc.textContent = `Targets Hit: ${hits} · Accuracy: ${acc}%`;
+      startBtn.textContent = 'Play Again';
+      overlay.classList.remove('hidden');
+    }
+
+    function startSession() {
+      hits = 0;
+      clicks = 0;
+      timeLeft = 30;
+      running = true;
+      updateHud();
+      overlay.classList.add('hidden');
+      placeDot();
+      clearInterval(countdownId);
+      countdownId = setInterval(() => {
+        timeLeft--;
+        updateHud();
+        if (timeLeft <= 0) endSession();
+      }, 1000);
+    }
+
+    dot.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      if (!running) return;
+      clicks++;
+      hits++;
+      updateHud();
+      placeDot();
+    });
+
+    arena.addEventListener('pointerdown', () => {
+      if (!running) return;
+      clicks++;
+      updateHud();
+    });
+
+    startBtn.addEventListener('click', startSession);
+  </script>
+</body>
+</html>

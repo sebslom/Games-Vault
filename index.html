@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GamesVault · Free Online Games by Sebastian Słomnicki</title>
+    <style>
+        /* --- GamesGames-Inspired Theme & Reset --- */
+        :root {
+            --bg-main: #0c0d14;
+            --bg-sidebar: #131520;
+            --bg-header: #131520;
+            --bg-card: #1a1d2d;
+            --bg-card-hover: #24283d;
+            --accent-purple: #6842ff;
+            --accent-purple-hover: #7c5cff;
+            --accent-cyan: #00d2ff;
+            --text-primary: #ffffff;
+            --text-secondary: #9aa0b8;
+            --border-subtle: #25293d;
+            --sidebar-width: 220px;
+            --header-height: 64px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Top Navigation Bar --- */
+        .topbar {
+            height: var(--header-height);
+            background-color: var(--bg-header);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            gap: 14px;
+            z-index: 40;
+            flex-shrink: 0;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: #1f2336;
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-purple), #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.15rem;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(104, 66, 255, 0.4);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .logo-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            line-height: 1.1;
+        }
+        .logo-title span {
+            color: var(--accent-purple-hover);
+        }
+        .logo-author {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        /* Center Search Bar */
+        .search-wrapper {
+            flex: 1;
+            max-width: 460px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 40px 0 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border-subtle);
+            background-color: #1c1f30;
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .search-input::placeholder {
+            color: #6b728e;
+        }
+        .search-input:focus {
+            border-color: var(--accent-purple);
+            background-color: #22263b;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: none;
+        }
+        .search-clear.visible {
+            display: block;
+        }
+
+        /* Right Action Links */
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.15s, background-color 0.2s;
+            white-space: nowrap;
+        }
+        .nav-pill:hover {
+            transform: translateY(-1px);
+        }
+        .pill-author {
+            background-color: var(--accent-purple);
+            color: #ffffff;
+        }
+        .pill-author:hover {
+            background-color: var(--accent-purple-hover);
+        }
+        .pill-github {
+            background-color: #1f2336;
+            color: #e2e8f0;
+            border: 1px solid var(--border-subtle);
+        }
+        .pill-github:hover {
+            background-color: #2a2f47;
+        }
+
+        /* --- Main Workspace (Left Genre Sidebar + Game Feed) --- */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Genre Sidebar (GamesGames Style - Icons ONLY in Genres) */
+        .genre-sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-subtle);
+            overflow-y: auto;
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #2a2f47 transparent;
+        }
+
+        .sidebar-section-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #636a85;
+            padding: 8px 12px 4px;
+        }
+
+        .genre-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.15s, color 0.15s, transform 0.15s;
+            width: 100%;
+        }
+
+        .genre-item:hover {
+            background-color: #1d2133;
+            color: #ffffff;
+        }
+
+        .genre-item.active {
+            background-color: rgba(104, 66, 255, 0.18);
+            color: #ffffff;
+            box-shadow: inset 3px 0 0 var(--accent-purple);
+        }
+
+        .genre-icon {
+            font-size: 1.15rem;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .genre-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .genre-count {
+            font-size: 0.72rem;
+            background: #1e2235;
+            color: #7d85a1;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+        .genre-item.active .genre-count {
+            background: var(--accent-purple);
+            color: #fff;
+        }
+
+        /* --- Content Area --- */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px 36px;
+            scrollbar-width: thin;
+            scrollbar-color: #2a2f47 transparent;
+        }
+
+        .feed-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .feed-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feed-subtitle {
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- GamesGames-Style Thumbnail Grid --- */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 16px;
+        }
+
+        .game-tile {
+            position: relative;
+            aspect-ratio: 16 / 10;
+            border-radius: 14px;
+            overflow: hidden;
+            background-color: var(--bg-card);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s, box-shadow 0.22s;
+            user-select: none;
+        }
+
+        .game-tile:hover {
+            transform: scale(1.045);
+            border-color: var(--accent-purple-hover);
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.65), 0 0 0 2px rgba(104, 66, 255, 0.25);
+            z-index: 5;
+        }
+
+        /* Cover Artwork (Image or Typographic Cover - NO icons inside tiles) */
+        .tile-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.35s ease;
+        }
+        .game-tile:hover .tile-cover {
+            transform: scale(1.06);
+        }
+
+        .tile-art-fallback {
+            width: 100%;
+            height: 100%;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .tile-art-fallback::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.14), transparent 60%);
+            pointer-events: none;
+        }
+
+        .tile-genre-pill {
+            align-self: flex-start;
+            font-size: 0.66rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(12, 13, 20, 0.65);
+            backdrop-filter: blur(4px);
+            color: #e2e8f0;
+        }
+
+        .tile-live-wrap {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background: #090a0d;
+            pointer-events: none;
+        }
+        .tile-live-frame {
+            width: 400%;
+            height: 400%;
+            border: none;
+            transform: scale(0.25);
+            transform-origin: top left;
+            pointer-events: none;
+        }
+
+        /* Bottom Hover Title Overlay (Signature GamesGames Style) */
+        .tile-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to top,
+                rgba(9, 10, 18, 0.96) 0%,
+                rgba(9, 10, 18, 0.55) 45%,
+                rgba(9, 10, 18, 0.05) 100%
+            );
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 12px 14px;
+            transition: opacity 0.2s ease;
+        }
+
+        .tile-title {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        .tile-tags {
+            font-size: 0.72rem;
+            color: #cbd5e1;
+            margin-top: 4px;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .game-tile:hover .tile-tags {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tile-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.65rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .badge-hot { background: #ff4757; color: #fff; }
+        .badge-new { background: #00d2ff; color: #090d16; }
+        .badge-top { background: #ffa502; color: #090d16; }
+
+        .empty-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 64px 20px;
+            color: var(--text-secondary);
+        }
+
+        /* --- Maximized Full-Viewport Game Modal --- */
+        .game-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 6, 11, 0.96);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 100;
+        }
+        .game-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .game-stage {
+            width: 99vw;
+            height: 98vh;
+            height: 98dvh;
+            background: #000;
+            border-radius: 12px;
+            border: 1px solid #2a2f47;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Top-Right Corner Close Button Only */
+        .close-corner-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 300;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(13, 15, 24, 0.82);
+            backdrop-filter: blur(6px);
+            color: #ffffff;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s, transform 0.15s;
+        }
+        .close-corner-btn:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            transform: scale(1.07);
+        }
+
+        .game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            background: #090a0d;
+        }
+
+        /* --- Mobile & Tablet Responsiveness --- */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 30;
+        }
+        .sidebar-backdrop.active {
+            display: block;
+        }
+
+        @media (max-width: 900px) {
+            .mobile-menu-btn {
+                display: flex;
+            }
+            .genre-sidebar {
+                position: fixed;
+                top: var(--header-height);
+                bottom: 0;
+                left: 0;
+                transform: translateX(-100%);
+                transition: transform 0.24s ease;
+                z-index: 35;
+                width: 240px;
+            }
+            .genre-sidebar.open {
+                transform: translateX(0);
+            }
+            .pill-label-hide-sm {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .topbar {
+                padding: 0 12px;
+                gap: 8px;
+            }
+            .logo-author {
+                display: none;
+            }
+            .search-input {
+                height: 36px;
+                font-size: 0.84rem;
+                padding: 0 32px 0 12px;
+            }
+            .nav-pill {
+                padding: 0 10px;
+                font-size: 0.78rem;
+            }
+            .content-area {
+                padding: 14px 12px 28px;
+            }
+            .game-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .tile-title {
+                font-size: 0.86rem;
+            }
+            .game-stage {
+                width: 100vw;
+                height: 100dvh;
+                border-radius: 0;
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Header -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Genres">&#9776;</button>
+            <a href="#" class="logo-group" id="resetHomeBtn">
+                <div class="logo-badge">CV</div>
+                <div class="logo-text">
+                    <div class="logo-title">Games<span>Vault</span></div>
+                    <div class="logo-author">by Sebastian Słomnicki</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search 20+ games, genres, tags...">
+            <button class="search-clear" id="searchClearBtn" aria-label="Clear search">&times;</button>
+        </div>
+
+        <div class="topbar-right">
+            <a href="https://lucasvance.example.com" target="_blank" rel="noopener noreferrer" class="nav-pill pill-author">
+                Author<span class="pill-label-hide-sm">&nbsp;Portfolio</span>
+            </a>
+            <a href="https://github.com/lucasvance/Games-vault" target="_blank" rel="noopener noreferrer" class="nav-pill pill-github">
+                <svg height="15" width="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+                GitHub<span class="pill-label-hide-sm">&nbsp;Repo</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="workspace">
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Left Genre Navigation (Icons ONLY here) -->
+        <aside class="genre-sidebar" id="genreSidebar"></aside>
+
+        <!-- Game Tiles Grid -->
+        <main class="content-area">
+            <div class="feed-header">
+                <h2 class="feed-title" id="feedTitle">All Games</h2>
+                <span class="feed-subtitle" id="feedCount">0 games available</span>
+            </div>
+            <div class="game-grid" id="gameGrid"></div>
+        </main>
+    </div>
+
+    <!-- Maximized Game Modal -->
+    <div class="game-modal" id="gameModal">
+        <div class="game-stage">
+            <button class="close-corner-btn" id="closeModalBtn" title="Close Game (ESC)" aria-label="Close Game">&times;</button>
+            <iframe id="gameIframe" class="game-iframe" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. GENRES LIST (Icons are ONLY used in this genre sidebar!)
+        // =========================================================================
+        const GENRES = [
+            { id: 'All',         label: 'All Games',      icon: '🔥' },
+            { id: 'RPG',         label: 'RPG & Fantasy',  icon: '⚔️' },
+            { id: 'Action',      label: 'Action',         icon: '💥' },
+            { id: 'Shooter',     label: 'Shooter & FPS',  icon: '🎯' },
+            { id: 'Arcade',      label: 'Arcade',         icon: '🕹️' },
+            { id: 'Puzzle',      label: 'Puzzle & Logic', icon: '🧩' },
+            { id: 'Strategy',    label: 'Strategy',       icon: '♟️' },
+            { id: 'Racing',      label: 'Racing & Drift', icon: '🏎️' },
+            { id: 'Platformer',  label: 'Platformer',     icon: '🏃' },
+            { id: 'Survival',    label: 'Survival',       icon: '🏕️' },
+            { id: 'Space',       label: 'Sci-Fi & Space', icon: '🚀' },
+            { id: 'Board',       label: 'Board & Cards',  icon: '🎲' },
+            { id: 'Clicker',     label: 'Idle & Clicker', icon: '⚡' },
+            { id: 'Rhythm',      label: 'Rhythm & Reflex',icon: '🎵' },
+            { id: '2 Player',    label: '2 Player',       icon: '👥' }
+        ];
+
+        // =========================================================================
+        // 2. GAMES CATALOG (Standalone .html files — NO icons inside game tiles!)
+        // =========================================================================
+        // Tip: Add `image: 'covers/your-cover.jpg'` to any game to display a thumbnail image.
+        // Without `image`, a sleek GamesGames-style gradient cover is rendered automatically.
+
+        const GAMES = [
+            // --- YOUR EXISTING GAMES (To be saved as separate .html files) ---
+            {
+                id: 'grimglyf',
+                title: 'Grimglyf: ASCII Action RPG',
+                genre: 'RPG',
+                badge: 'hot',
+                tags: ['rpg', 'ascii', 'diablo', 'dungeon', 'coop'],
+                livePreview: true, // Set `image: 'covers/grimglyf.png'` to override live HTML preview with a picture
+                url: './grimglyf.html'
+            },
+            {
+                id: 'minifps',
+                title: 'Mini FPS Raycaster',
+                genre: 'Shooter',
+                badge: 'hot',
+                tags: ['3d', 'fps', 'doom', 'shooter', 'retro'],
+                coverGradient: 'linear-gradient(135deg, #1e1b4b 0%, #991b1b 100%)',
+                url: './minifps.html'
+            },
+            {
+                id: 'snake',
+                title: 'Neon Grid Snake',
+                genre: 'Arcade',
+                tags: ['retro', 'grid', 'classic', 'endless'],
+                coverGradient: 'linear-gradient(135deg, #064e3b 0%, #0284c7 100%)',
+                url: './snake.html'
+            },
+            {
+                id: 'tictactoe',
+                title: 'Tic Tac Toe Arena',
+                genre: '2 Player',
+                tags: ['board', 'strategy', '2player', 'classic'],
+                coverGradient: 'linear-gradient(135deg, #1e3a8a 0%, #6d28d9 100%)',
+                url: './tictactoe.html'
+            },
+            {
+                id: 'reaction',
+                title: 'Reflex Reaction Test',
+                genre: 'Rhythm',
+                tags: ['speed', 'reflex', 'focus', 'ms'],
+                coverGradient: 'linear-gradient(135deg, #065f46 0%, #b91c1c 100%)',
+                url: './reaction.html'
+            },
+            {
+                id: 'catchdot',
+                title: 'Aim Trainer: Catch the Dot',
+                genre: 'Action',
+                tags: ['aim', 'mouse', 'speed', 'precision'],
+                coverGradient: 'linear-gradient(135deg, #0c4a6e 0%, #4338ca 100%)',
+                url: './catchdot.html'
+            },
+
+            // --- NEW PLANNED GAMES FOR NEXT MESSAGES ---
+            {
+                id: 'cyber-drift',
+                title: 'Cyber Drift Overdrive',
+                genre: 'Racing',
+                badge: 'new',
+                tags: ['cars', 'drift', 'neon', 'endless'],
+                coverGradient: 'linear-gradient(135deg, #3b0764 0%, #db2777 100%)',
+                url: './cyber-drift.html'
+            },
+            {
+                id: 'void-defender',
+                title: 'Void Star Defender',
+                genre: 'Space',
+                badge: 'top',
+                tags: ['spaceship', 'galaga', 'laser', 'boss'],
+                coverGradient: 'linear-gradient(135deg, #090d16 0%, #1d4ed8 100%)',
+                url: './void-defender.html'
+            },
+            {
+                id: 'blockguy-2048',
+                title: 'Blockguy 2048',
+                genre: 'Puzzle',
+                tags: ['numbers', 'brain', 'logic', 'tiles'],
+                coverGradient: 'linear-gradient(135deg, #713f12 0%, #d97706 100%)',
+                url: './blockguy-2048.html'
+            },
+            {
+                id: 'tetrix-blox',
+                title: 'Tetrix blox',
+                genre: 'Arcade',
+                badge: 'top',
+                tags: ['shapes', 'blocks', 'retro', 'high-score'],
+                coverGradient: 'linear-gradient(135deg, #312e81 0%, #0891b2 100%)',
+                url: './tetrix-blox.html'
+            },
+            {
+                id: 'minesweeper-pro',
+                title: 'Cyber Minefield',
+                genre: 'Strategy',
+                tags: ['minesweeper', 'tactical', 'grid', 'logic'],
+                coverGradient: 'linear-gradient(135deg, #1f2937 0%, #059669 100%)',
+                url: './minefield.html'
+            },
+            {
+                id: 'breakout-prism',
+                title: 'Prism Brick Breaker',
+                genre: 'Arcade',
+                tags: ['arkanoid', 'paddle', 'ball', 'powerups'],
+                coverGradient: 'linear-gradient(135deg, #701a75 0%, #ea580c 100%)',
+                url: './brick-breaker.html'
+            },
+            {
+                id: 'shadow-jumper',
+                title: 'Shadow Spire Jumper',
+                genre: 'Platformer',
+                badge: 'new',
+                tags: ['jump', 'parkour', 'spikes', 'ninja'],
+                coverGradient: 'linear-gradient(135deg, #111827 0%, #4f46e5 100%)',
+                url: './shadow-jumper.html'
+            },
+            {
+                id: 'zombie-horde',
+                title: 'Crimson Horde Survival',
+                genre: 'Survival',
+                badge: 'hot',
+                tags: ['vampire-survivors', 'waves', 'upgrades', 'topdown'],
+                coverGradient: 'linear-gradient(135deg, #4c0519 0%, #be123c 100%)',
+                url: './crimson-horde.html'
+            },
+            {
+                id: 'star-forge-idle',
+                title: 'Star Forge Tycoon',
+                genre: 'Clicker',
+                tags: ['idle', 'upgrades', 'automation', 'economy'],
+                coverGradient: 'linear-gradient(135deg, #172554 0%, #0d9488 100%)',
+                url: './star-forge.html'
+            },
+            {
+                id: 'memory-matrix',
+                title: 'Neural Memory Matrix',
+                genre: 'Puzzle',
+                tags: ['memory', 'cards', 'pattern', 'brain'],
+                coverGradient: 'linear-gradient(135deg, #4a044e 0%, #7e22ce 100%)',
+                url: './memory-matrix.html'
+            },
+            {
+                id: 'pong-duel',
+                title: 'Plasma Pong 2P',
+                genre: '2 Player',
+                tags: ['pong', 'local-multiplayer', 'arcade', 'versus'],
+                coverGradient: 'linear-gradient(135deg, #0f172a 0%, #0284c7 100%)',
+                url: './pong-duel.html'
+            },
+            {
+                id: 'flappy-drone',
+                title: 'Aether Drone Dash',
+                genre: 'Platformer',
+                tags: ['flappy', 'one-button', 'obstacles', 'hard'],
+                coverGradient: 'linear-gradient(135deg, #064e3b 0%, #15803d 100%)',
+                url: './flappy-drone.html'
+            },
+            {
+                id: 'tower-bastion',
+                title: 'Bastion Micro Defense',
+                genre: 'Strategy',
+                badge: 'new',
+                tags: ['tower-defense', 'turrets', 'waves', 'tactics'],
+                coverGradient: 'linear-gradient(135deg, #3f2e21 0%, #b45309 100%)',
+                url: './bastion-defense.html'
+            },
+            {
+                id: 'blackjack-vault',
+                title: 'High-Stakes Blackjack 21',
+                genre: 'Board',
+                tags: ['cards', 'casino', '21', 'strategy'],
+                coverGradient: 'linear-gradient(135deg, #052e16 0%, #166534 100%)',
+                url: './blackjack.html'
+            }
+
+            /* =====================================================================
+               👇 EXAMPLE HIDDEN GAME TILE (Copy, uncomment, and paste to add more) 👇
+               =====================================================================
+            , {
+                id: 'your-new-game-id',
+                title: 'Your New Game Title',
+                genre: 'Action', // Must match one of the GENRES ids above
+                badge: 'new',    // Optional: 'new', 'hot', or 'top'
+                tags: ['tag1', 'tag2', 'tag3'],
+                coverGradient: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%)',
+                // image: 'covers/your-game-thumbnail.jpg', // Optional cover image
+                url: './your-new-game.html'
+            }
+            ===================================================================== */
+        ];
+
+        // =========================================================================
+        // 3. UI & INTERACTION ENGINE
+        // =========================================================================
+
+        const genreSidebar = document.getElementById('genreSidebar');
+        const gameGrid = document.getElementById('gameGrid');
+        const searchInput = document.getElementById('searchInput');
+        const searchClearBtn = document.getElementById('searchClearBtn');
+        const feedTitle = document.getElementById('feedTitle');
+        const feedCount = document.getElementById('feedCount');
+        const gameModal = document.getElementById('gameModal');
+        const gameIframe = document.getElementById('gameIframe');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+        const resetHomeBtn = document.getElementById('resetHomeBtn');
+
+        let selectedGenre = 'All';
+
+        function countGamesInGenre(genreId) {
+            if (genreId === 'All') return GAMES.length;
+            return GAMES.filter(g => g.genre === genreId).length;
+        }
+
+        function renderSidebar() {
+            const html = [
+                `<div class="sidebar-section-label">Genres</div>`,
+                ...GENRES.map(g => {
+                    const count = countGamesInGenre(g.id);
+                    const isActive = g.id === selectedGenre;
+                    return `
+                        <button class="genre-item ${isActive ? 'active' : ''}" data-genre="${g.id}">
+                            <span class="genre-icon">${g.icon}</span>
+                            <span class="genre-name">${g.label}</span>
+                            <span class="genre-count">${count}</span>
+                        </button>
+                    `;
+                })
+            ].join('');
+
+            genreSidebar.innerHTML = html;
+
+            genreSidebar.querySelectorAll('.genre-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedGenre = btn.dataset.genre;
+                    closeMobileSidebar();
+                    renderSidebar();
+                    renderGames();
+                });
+            });
+        }
+
+        function renderGames() {
+            const query = searchInput.value.trim().toLowerCase();
+            searchClearBtn.classList.toggle('visible', query.length > 0);
+
+            const filtered = GAMES.filter(game => {
+                const matchGenre = selectedGenre === 'All' || game.genre === selectedGenre;
+                const matchQuery =
+                    !query ||
+                    game.title.toLowerCase().includes(query) ||
+                    game.genre.toLowerCase().includes(query) ||
+                    game.tags.some(t => t.toLowerCase().includes(query));
+                return matchGenre && matchQuery;
+            });
+
+            const genreObj = GENRES.find(g => g.id === selectedGenre);
+            feedTitle.textContent = query
+                ? `Search results for "${searchInput.value.trim()}"`
+                : (genreObj ? genreObj.label : 'All Games');
+            feedCount.textContent = `${filtered.length} ${filtered.length === 1 ? 'game' : 'games'}`;
+
+            if (filtered.length === 0) {
+                gameGrid.innerHTML = `<div class="empty-results">No games found matching your filter.</div>`;
+                return;
+            }
+
+            gameGrid.innerHTML = filtered.map(game => {
+                const badgeHtml = game.badge
+                    ? `<span class="tile-badge badge-${game.badge}">${game.badge}</span>`
+                    : '';
+
+                // Priority 1: Custom image (`game.image`) if set
+                // Priority 2: Live scaled HTML preview (`game.livePreview !== false`)
+                // Priority 3: Styled cover gradient
+                let visualHtml = '';
+                if (game.image) {
+                    visualHtml = `<img src="${game.image}" alt="${game.title}" class="tile-cover" loading="lazy">`;
+                } else if (game.livePreview !== false && game.url) {
+                    visualHtml = `
+                        <div class="tile-live-wrap" aria-hidden="true">
+                            <iframe class="tile-live-frame" src="${game.url}" loading="lazy" tabindex="-1"></iframe>
+                        </div>
+                    `;
+                } else {
+                    visualHtml = `
+                        <div class="tile-art-fallback" style="background: ${game.coverGradient || 'linear-gradient(135deg, #1e293b, #0f172a)'};">
+                            <span class="tile-genre-pill">${game.genre}</span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <article class="game-tile" data-id="${game.id}" tabindex="0" role="button" aria-label="Play ${game.title}">
+                        ${badgeHtml}
+                        ${visualHtml}
+                        <div class="tile-overlay">
+                            <div class="tile-title">${game.title}</div>
+                            <div class="tile-tags">${game.tags.map(t => '#' + t).join(' ')}</div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            gameGrid.querySelectorAll('.game-tile').forEach(tile => {
+                const launch = () => {
+                    const game = GAMES.find(g => g.id === tile.dataset.id);
+                    if (game) openGame(game);
+                };
+                tile.addEventListener('click', launch);
+                tile.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        launch();
+                    }
+                });
+            });
+        }
+
+        function openGame(game) {
+            gameIframe.src = game.url;
+            gameModal.classList.add('active');
+            setTimeout(() => gameIframe.focus(), 60);
+        }
+
+        function closeGame() {
+            gameModal.classList.remove('active');
+            setTimeout(() => {
+                if (!gameModal.classList.contains('active')) {
+                    gameIframe.src = 'about:blank';
+                }
+            }, 200);
+        }
+
+        function openMobileSidebar() {
+            genreSidebar.classList.add('open');
+            sidebarBackdrop.classList.add('active');
+        }
+
+        function closeMobileSidebar() {
+            genreSidebar.classList.remove('open');
+            sidebarBackdrop.classList.remove('active');
+        }
+
+        // Event Bindings
+        closeModalBtn.addEventListener('click', closeGame);
+
+        gameModal.addEventListener('click', (e) => {
+            if (e.target === gameModal) closeGame();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && gameModal.classList.contains('active')) {
+                closeGame();
+            }
+        });
+
+        searchInput.addEventListener('input', renderGames);
+
+        searchClearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            renderGames();
+            searchInput.focus();
+        });
+
+        mobileMenuBtn.addEventListener('click', () => {
+            if (genreSidebar.classList.contains('open')) closeMobileSidebar();
+            else openMobileSidebar();
+        });
+
+        sidebarBackdrop.addEventListener('click', closeMobileSidebar);
+
+        resetHomeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            selectedGenre = 'All';
+            searchInput.value = '';
+            closeMobileSidebar();
+            renderSidebar();
+            renderGames();
+        });
+
+        // Boot
+        renderSidebar();
+        renderGames();
+    </script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Shadow Spire Jumper</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .hud {
+      width: min(520px, 95vw);
+      display: flex;
+      justify-content: space-between;
+      background: #131520;
+      border: 1px solid #25293d;
+      border-radius: 12px;
+      padding: 9px 16px;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+    .hud .score { color: #a78bfa; }
+    .hud .best { color: #38bdf8; }
+    .stage-box {
+      position: relative;
+      width: min(520px, 95vw);
+      height: min(360px, 62dvh);
+      background: #0c1020;
+      border: 2px solid #25293d;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+      touch-action: none;
+    }
+    canvas { width: 100%; height: 100%; display: block; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(9, 13, 22, 0.85);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 20px;
+    }
+    .overlay.visible { display: flex; }
+    .btn {
+      background: #6842ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .jump-btn {
+      width: min(520px, 95vw);
+      background: #1a1d2d;
+      border: 1px solid #6842ff;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 11px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .jump-btn:active { background: #6842ff; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <span class="score">DISTANCE: <b id="scoreVal">0</b></span>
+    <span class="best">BEST: <b id="bestVal">0</b></span>
+  </div>
+  <div class="stage-box">
+    <canvas id="jmpCanvas" width="520" height="320"></canvas>
+    <div class="overlay" id="overlay">
+      <h2 id="ovTitle" style="font-size:1.55rem; color:#a78bfa;">SHADOW SPIRE</h2>
+      <p id="ovSub" style="color:#9aa0b8; font-size:0.88rem;">Double-jump over abyss gaps and crimson spikes!</p>
+      <button class="btn" id="startBtn">Run</button>
+    </div>
+  </div>
+  <button class="jump-btn" id="jumpBtn">JUMP / DOUBLE JUMP (SPACE / TAP)</button>
+
+  <script>
+    const canvas = document.getElementById('jmpCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('scoreVal');
+    const bestEl = document.getElementById('bestVal');
+    const overlay = document.getElementById('overlay');
+    const ovTitle = document.getElementById('ovTitle');
+    const ovSub = document.getElementById('ovSub');
+    const startBtn = document.getElementById('startBtn');
+    const jumpBtn = document.getElementById('jumpBtn');
+
+    let best = Number(localStorage.getItem('cv_spire_best') || 0);
+    bestEl.textContent = best;
+
+    const groundY = 274;
+    let player = { x: 84, y: groundY - 28, w: 22, h: 28, vy: 0, jumps: 0 };
+    let obstacles = [];
+    let speed = 4.6;
+    let score = 0;
+    let spawnDist = 180;
+    let running = false;
+
+    function reset() {
+      player.y = groundY - player.h;
+      player.vy = 0;
+      player.jumps = 0;
+      obstacles = [];
+      speed = 4.6;
+      score = 0;
+      spawnDist = 140;
+      running = true;
+      overlay.classList.add('hidden');
+    }
+
+    function jump() {
+      if (!running) return;
+      if (player.jumps < 2) {
+        player.vy = player.jumps === 0 ? -10.8 : -9.5;
+        player.jumps++;
+      }
+    }
+
+    window.addEventListener('keydown', e => {
+      if (['Space','ArrowUp','KeyW'].includes(e.code)) {
+        e.preventDefault();
+        if (!running) reset();
+        else jump();
+      }
+    });
+
+    canvas.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
+    jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
+    startBtn.addEventListener('click', reset);
+
+    function spawnObstacle() {
+      const isGap = Math.random() < 0.36;
+      if (isGap) {
+        obstacles.push({ type: 'gap', x: 540, y: groundY, w: 58 + Math.random() * 24, h: 46 });
+      } else {
+        const tall = Math.random() < 0.45;
+        obstacles.push({
+          type: 'spike',
+          x: 540,
+          y: groundY - (tall ? 26 : 18),
+          w: tall ? 22 : 28,
+          h: tall ? 26 : 18
+        });
+      }
+    }
+
+    function update() {
+      if (!running) return;
+
+      speed = Math.min(9.5, speed + 0.0015);
+      score += speed * 0.15;
+      scoreEl.textContent = Math.floor(score);
+
+      spawnDist -= speed;
+      if (spawnDist <= 0) {
+        spawnObstacle();
+        spawnDist = 175 + Math.random() * 125;
+      }
+
+      player.vy += 0.56;
+      player.y += player.vy;
+
+      let overGap = false;
+      for (const ob of obstacles) {
+        ob.x -= speed;
+        if (ob.type === 'gap') {
+          if (player.x + player.w * 0.7 > ob.x && player.x + player.w * 0.3 < ob.x + ob.w) {
+            overGap = true;
+          }
+        } else if (ob.type === 'spike') {
+          if (
+            player.x + player.w - 4 > ob.x + 3 &&
+            player.x + 4 < ob.x + ob.w - 3 &&
+            player.y + player.h > ob.y + 3
+          ) {
+            failRun();
+            return;
+          }
+        }
+      }
+
+      if (!overGap && player.y + player.h >= groundY) {
+        player.y = groundY - player.h;
+        player.vy = 0;
+        player.jumps = 0;
+      }
+
+      if (player.y > 330) {
+        failRun();
+        return;
+      }
+
+      obstacles = obstacles.filter(ob => ob.x + ob.w > -40);
+    }
+
+    function failRun() {
+      running = false;
+      const finalPts = Math.floor(score);
+      if (finalPts > best) {
+        best = finalPts;
+        localStorage.setItem('cv_spire_best', best);
+        bestEl.textContent = best;
+      }
+      ovTitle.textContent = 'RUN ENDED';
+      ovSub.textContent = `Distance: ${finalPts} · Best: ${best}`;
+      startBtn.textContent = 'Run Again';
+      overlay.classList.remove('hidden');
+    }
+
+    function render() {
+      ctx.fillStyle = '#0c1020';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Ground strip
+      ctx.fillStyle = '#1e243b';
+      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+      ctx.strokeStyle = '#6842ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY);
+      ctx.lineTo(canvas.width, groundY);
+      ctx.stroke();
+
+      obstacles.forEach(ob => {
+        if (ob.type === 'gap') {
+          ctx.fillStyle = '#05070d';
+          ctx.fillRect(ob.x, groundY - 1, ob.w, canvas.height - groundY + 2);
+        } else {
+          ctx.fillStyle = '#f43f5e';
+          ctx.beginPath();
+          ctx.moveTo(ob.x, ob.y + ob.h);
+          ctx.lineTo(ob.x + ob.w / 2, ob.y);
+          ctx.lineTo(ob.x + ob.w, ob.y + ob.h);
+          ctx.closePath();
+          ctx.fill();
+        }
+      });
+
+      // Shadow runner
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.roundRect(player.x, player.y, player.w, player.h, 5);
+      ctx.fill();
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(player.x + player.w - 8, player.y + 6, 4, 4);
+    }
+
+    function loop() {
+      update();
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    startBtn.addEventListener('click', reset);
+    loop();
+  </script>
+</body>
+</html>

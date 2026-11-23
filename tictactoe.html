@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic Tac Toe Arena</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 16px;
+    }
+    .mode-bar {
+      display: flex;
+      gap: 8px;
+      background: #131520;
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid #25293d;
+    }
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: #9aa0b8;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .mode-btn.active { background: #6842ff; color: #fff; }
+    .scoreboard {
+      display: flex;
+      gap: 24px;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+    .x-score { color: #38bdf8; }
+    .o-score { color: #f43f5e; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 96px);
+      grid-template-rows: repeat(3, 96px);
+      gap: 10px;
+      background: #131520;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid #25293d;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+    }
+    .cell {
+      background: #1a1d2d;
+      border: 1px solid #2a2f47;
+      border-radius: 12px;
+      font-size: 2.8rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.12s, background 0.15s;
+    }
+    .cell:hover { background: #23283f; transform: scale(1.02); }
+    .cell.win { background: rgba(104, 66, 255, 0.28); border-color: #a78bfa; }
+    .status { font-size: 1.1rem; font-weight: 700; min-height: 26px; }
+    .reset-btn {
+      background: #38bdf8;
+      color: #090d16;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 420px) {
+      .board { grid-template-columns: repeat(3, 78px); grid-template-rows: repeat(3, 78px); gap: 8px; }
+      .cell { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mode-bar">
+    <button class="mode-btn active" data-mode="ai">vs Smart AI</button>
+    <button class="mode-btn" data-mode="2p">2 Players</button>
+  </div>
+  <div class="scoreboard">
+    <span class="x-score">Player X: <b id="xWins">0</b></span>
+    <span class="o-score"><span id="oLabel">AI (O)</span>: <b id="oWins">0</b></span>
+  </div>
+  <div class="board" id="board"></div>
+  <div class="status" id="statusText">Player X's turn</div>
+  <button class="reset-btn" id="resetBtn">New Round</button>
+
+  <script>
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('statusText');
+    const resetBtn = document.getElementById('resetBtn');
+    const xWinsEl = document.getElementById('xWins');
+    const oWinsEl = document.getElementById('oWins');
+    const oLabelEl = document.getElementById('oLabel');
+
+    const lines = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    let cells = Array(9).fill('');
+    let turn = 'X';
+    let over = false;
+    let mode = 'ai';
+    let scores = { X: 0, O: 0 };
+
+    function renderBoard(winLine = []) {
+      boardEl.innerHTML = '';
+      cells.forEach((val, idx) => {
+        const div = document.createElement('div');
+        div.className = 'cell' + (winLine.includes(idx) ? ' win' : '');
+        div.textContent = val;
+        div.style.color = val === 'X' ? '#38bdf8' : '#f43f5e';
+        div.addEventListener('click', () => handleMove(idx));
+        boardEl.appendChild(div);
+      });
+    }
+
+    function checkWinner(state) {
+      for (const l of lines) {
+        const [a, b, c] = l;
+        if (state[a] && state[a] === state[b] && state[a] === state[c]) {
+          return { winner: state[a], line: l };
+        }
+      }
+      if (!state.includes('')) return { winner: 'DRAW', line: [] };
+      return null;
+    }
+
+    function aiPickMove() {
+      for (let i = 0; i < 9; i++) {
+        if (!cells[i]) {
+          const copy = [...cells]; copy[i] = 'O';
+          if (checkWinner(copy)?.winner === 'O') return i;
+        }
+      }
+      for (let i = 0; i < 9; i++) {
+        if (!cells[i]) {
+          const copy = [...cells]; copy[i] = 'X';
+          if (checkWinner(copy)?.winner === 'X') return i;
+        }
+      }
+      if (!cells[4]) return 4;
+      const open = cells.map((v, i) => v ? null : i).filter(v => v !== null);
+      return open[Math.floor(Math.random() * open.length)];
+    }
+
+    function handleMove(idx) {
+      if (over || cells[idx]) return;
+      cells[idx] = turn;
+      const res = checkWinner(cells);
+      if (res) {
+        finishRound(res);
+        return;
+      }
+      turn = turn === 'X' ? 'O' : 'X';
+      statusEl.textContent = turn === 'O' && mode === 'ai' ? 'AI is thinking...' : `Player ${turn}'s turn`;
+      renderBoard();
+
+      if (mode === 'ai' && turn === 'O' && !over) {
+        setTimeout(() => {
+          const aiIdx = aiPickMove();
+          if (aiIdx !== undefined && !over) {
+            cells[aiIdx] = 'O';
+            const aiRes = checkWinner(cells);
+            if (aiRes) finishRound(aiRes);
+            else {
+              turn = 'X';
+              statusEl.textContent = "Player X's turn";
+              renderBoard();
+            }
+          }
+        }, 220);
+      }
+    }
+
+    function finishRound(res) {
+      over = true;
+      renderBoard(res.line);
+      if (res.winner === 'DRAW') {
+        statusEl.textContent = "It's a draw!";
+      } else {
+        scores[res.winner]++;
+        xWinsEl.textContent = scores.X;
+        oWinsEl.textContent = scores.O;
+        statusEl.textContent = res.winner === 'O' && mode === 'ai' ? 'AI (O) Wins!' : `Player ${res.winner} Wins!`;
+      }
+    }
+
+    function resetRound() {
+      cells = Array(9).fill('');
+      turn = 'X';
+      over = false;
+      statusEl.textContent = "Player X's turn";
+      renderBoard();
+    }
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        mode = btn.dataset.mode;
+        oLabelEl.textContent = mode === 'ai' ? 'AI (O)' : 'Player O';
+        scores = { X: 0, O: 0 };
+        xWinsEl.textContent = '0';
+        oWinsEl.textContent = '0';
+        resetRound();
+      });
+    });
+
+    resetBtn.addEventListener('click', resetRound);
+    renderBoard();
+  </script>
+</body>
+</html>

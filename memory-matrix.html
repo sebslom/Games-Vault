@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Neural Memory Matrix</title>
+  <style>
+    :root {
+      --bg: #080a12;
+      --panel: #121524;
+      --border: #262b44;
+      --purple: #7c3aed;
+      --purple-glow: rgba(124, 58, 237, 0.45);
+      --cyan: #38bdf8;
+      --emerald: #34d399;
+      --amber: #fbbf24;
+      --rose: #f43f5e;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 15%, #16122e 0%, var(--bg) 70%);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px 16px;
+      overflow-x: hidden;
+    }
+
+    /* Top Bar */
+    .topbar {
+      width: min(760px, 96vw);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(18, 21, 36, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      padding-right: 48px; /* Space for hub close button */
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand h1 {
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      color: #c4b5fd;
+    }
+    .brand span {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .mode-switch {
+      display: flex;
+      gap: 6px;
+      background: #0b0e18;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn.active {
+      background: var(--purple);
+      color: #fff;
+      box-shadow: 0 2px 10px var(--purple-glow);
+    }
+
+    .controls-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    select, .action-btn {
+      background: #1a1f35;
+      color: var(--text);
+      border: 1px solid #313859;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .action-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .action-btn.scan {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: var(--cyan);
+      color: #7dd3fc;
+    }
+    .action-btn.scan:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Stats Strip */
+    .hud-stats {
+      width: min(760px, 96vw);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .stat-pill {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 10px;
+      text-align: center;
+    }
+    .stat-pill span {
+      display: block;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .stat-pill b {
+      font-size: 1rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Arena */
+    .arena {
+      flex: 1;
+      width: min(760px, 96vw);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Pair Match Grid */
+    .cards-grid {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+      max-width: 620px;
+      perspective: 1000px;
+    }
+
+    .card {
+      aspect-ratio: 1 / 1;
+      position: relative;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .card.flipped, .card.matched, .card.peeking {
+      transform: rotateY(180deg);
+    }
+    .card.matched {
+      cursor: default;
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--border);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+    }
+
+    .card-back {
+      background: linear-gradient(145deg, #171b30 0%, #0e1120 100%);
+      border-color: #2c3354;
+    }
+    .card-back::before {
+      content: '';
+      width: 42%;
+      height: 42%;
+      border-radius: 8px;
+      border: 2px solid rgba(124, 58, 237, 0.45);
+      transform: rotate(45deg);
+      box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+    .card:hover:not(.flipped):not(.matched) .card-back {
+      border-color: var(--purple);
+      box-shadow: 0 0 18px var(--purple-glow);
+    }
+
+    .card-front {
+      transform: rotateY(180deg);
+      background: #14192d;
+      border-color: var(--cyan);
+    }
+    .card.matched .card-front {
+      background: rgba(16, 185, 129, 0.14);
+      border-color: var(--emerald);
+      box-shadow: 0 0 18px rgba(52, 211, 153, 0.3);
+    }
+
+    .glyph-symbol {
+      font-size: clamp(1.5rem, 4vw, 2.3rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+    .glyph-code {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-top: 5px;
+      text-transform: uppercase;
+    }
+
+    /* Sequence Pattern Mode */
+    .seq-wrap {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+    .seq-wrap.active { display: flex; }
+
+    .seq-status {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--cyan);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      border-radius: 999px;
+    }
+
+    .seq-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: min(360px, 86vw);
+      aspect-ratio: 1 / 1;
+    }
+    .seq-node {
+      background: #14182b;
+      border: 2px solid #2b3252;
+      border-radius: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #475569;
+      transition: transform 0.1s, background 0.12s, box-shadow 0.12s, border-color 0.12s;
+    }
+    .seq-node:active { transform: scale(0.95); }
+    .seq-node.lit {
+      background: var(--node-color, #38bdf8);
+      border-color: #ffffff;
+      color: #080a12;
+      box-shadow: 0 0 28px var(--node-color, #38bdf8);
+      transform: scale(1.03);
+    }
+    .seq-node.err {
+      background: var(--rose);
+      border-color: #fecdd3;
+      box-shadow: 0 0 28px var(--rose);
+    }
+
+    /* Victory Modal */
+    .win-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 14, 0.86);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 40;
+    }
+    .win-modal.active { display: flex; }
+    .win-box {
+      width: min(420px, 92vw);
+      background: #131729;
+      border: 1px solid var(--purple);
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+    }
+    .rank-badge {
+      display: inline-block;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--amber);
+      background: rgba(251, 191, 36, 0.14);
+      border: 2px solid var(--amber);
+      border-radius: 14px;
+      padding: 6px 22px;
+      margin: 10px 0;
+    }
+    .primary-btn {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 24px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 540px) {
+      .hud-stats { grid-template-columns: repeat(2, 1fr); }
+      .cards-grid { gap: 7px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>NEURAL MEMORY MATRIX</h1>
+      <span>Synaptic Decryption &amp; Sequence Recall</span>
+    </div>
+
+    <div class="mode-switch">
+      <button class="tab-btn active" data-mode="pairs">Pair Matrix</button>
+      <button class="tab-btn" data-mode="sequence">Sequence Override</button>
+    </div>
+
+    <div class="controls-strip" id="pairControls">
+      <select id="gridSizeSelect" aria-label="Grid Size">
+        <option value="4x3">4x3 (Easy)</option>
+        <option value="4x4" selected>4x4 (Normal)</option>
+        <option value="5x4">5x4 (Hard)</option>
+        <option value="6x4">6x4 (Master)</option>
+      </select>
+      <button class="action-btn scan" id="scanBtn" title="Briefly reveal all cards">Scan (2)</button>
+      <button class="action-btn" id="restartBtn">Reset</button>
+    </div>
+  </header>
+
+  <section class="hud-stats">
+    <div class="stat-pill"><span id="stat1Label">Score</span><b id="stat1Val" style="color:#38bdf8;">0</b></div>
+    <div class="stat-pill"><span id="stat2Label">Combo Streak</span><b id="stat2Val" style="color:#fbbf24;">x1</b></div>
+    <div class="stat-pill"><span id="stat3Label">Moves</span><b id="stat3Val">0</b></div>
+    <div class="stat-pill"><span id="stat4Label">Time</span><b id="stat4Val" style="color:#34d399;">00:00</b></div>
+  </section>
+
+  <main class="arena">
+    <div class="cards-grid" id="cardsGrid"></div>
+
+    <div class="seq-wrap" id="seqWrap">
+      <div class="seq-status" id="seqStatus">Press Start Sequence to begin</div>
+      <div class="seq-grid" id="seqGrid"></div>
+      <button class="primary-btn" id="seqStartBtn" style="margin-top:4px;">Start Sequence</button>
+    </div>
+  </main>
+
+  <div class="win-modal" id="winModal">
+    <div class="win-box">
+      <h2 style="font-size:1.45rem; color:#34d399;">MATRIX DECRYPTED!</h2>
+      <div class="rank-badge" id="rankBadge">S</div>
+      <p id="winSummary" style="color:#cbd5e1; font-size:0.88rem; line-height:1.5;"></p>
+      <button class="primary-btn" id="winNextBtn">Next Matrix</button>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const SYMBOLS = [
+        { glyph: '◈', code: 'PRISM', color: '#38bdf8' },
+        { glyph: '⚡', code: 'VOLT',  color: '#facc15' },
+        { glyph: '❖', code: 'NEXUS', color: '#a855f7' },
+        { glyph: '☼', code: 'SOLAR', color: '#fb923c' },
+        { glyph: 'Ψ', code: 'ABYSS', color: '#2dd4bf' },
+        { glyph: '✦', code: 'NOVA',  color: '#f43f5e' },
+        { glyph: '⬡', code: 'CORE',  color: '#34d399' },
+        { glyph: 'Ж', code: 'SIGIL', color: '#e879f9' },
+        { glyph: 'Ω', code: 'OMEGA', color: '#fbbf24' },
+        { glyph: '⚔', code: 'BLADE', color: '#f87171' },
+        { glyph: '❄', code: 'FROST', color: '#67e8f9' },
+        { glyph: '♾', code: 'LOOP',  color: '#818cf8' }
+      ];
+
+      const NODE_COLORS = [
+        '#38bdf8', '#a855f7', '#f43f5e',
+        '#34d399', '#fbbf24', '#fb923c',
+        '#2dd4bf', '#e879f9', '#60a5fa'
+      ];
+
+      // WebAudio Synth
+      let audioCtx = null;
+      function playTone(freq, dur = 0.08, type = 'sine', vol = 0.06) {
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          g.gain.setValueAtTime(vol, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + dur);
+        } catch {}
+      }
+
+      // DOM Refs
+      const cardsGrid = document.getElementById('cardsGrid');
+      const seqWrap = document.getElementById('seqWrap');
+      const seqGrid = document.getElementById('seqGrid');
+      const seqStatus = document.getElementById('seqStatus');
+      const seqStartBtn = document.getElementById('seqStartBtn');
+      const pairControls = document.getElementById('pairControls');
+      const gridSizeSelect = document.getElementById('gridSizeSelect');
+      const scanBtn = document.getElementById('scanBtn');
+      const restartBtn = document.getElementById('restartBtn');
+      const winModal = document.getElementById('winModal');
+      const rankBadge = document.getElementById('rankBadge');
+      const winSummary = document.getElementById('winSummary');
+      const winNextBtn = document.getElementById('winNextBtn');
+
+      const s1Label = document.getElementById('stat1Label');
+      const s2Label = document.getElementById('stat2Label');
+      const s3Label = document.getElementById('stat3Label');
+      const s4Label = document.getElementById('stat4Label');
+      const s1Val = document.getElementById('stat1Val');
+      const s2Val = document.getElementById('stat2Val');
+      const s3Val = document.getElementById('stat3Val');
+      const s4Val = document.getElementById('stat4Val');
+
+      let activeMode = 'pairs'; // pairs | sequence
+
+      // --- PAIR MATRIX STATE ---
+      let deck = [];
+      let flipped = [];
+      let matchedCount = 0;
+      let moves = 0;
+      let streak = 1;
+      let score = 0;
+      let scansLeft = 2;
+      let lockBoard = false;
+      let elapsedSec = 0;
+      let timerId = null;
+      let started = false;
+
+      function fmtClock(sec) {
+        const m = String(Math.floor(sec / 60)).padStart(2, '0');
+        const s = String(sec % 60).padStart(2, '0');
+        return `${m}:${s}`;
+      }
+
+      function initPairGame() {
+        const [cols, rows] = gridSizeSelect.value.split('x').map(Number);
+        const totalCards = cols * rows;
+        const pairCount = totalCards / 2;
+
+        const chosen = [...SYMBOLS].sort(() => Math.random() - 0.5).slice(0, pairCount);
+        deck = [...chosen, ...chosen]
+          .map((item, idx) => ({ ...item, uid: idx, matched: false }))
+          .sort(() => Math.random() - 0.5);
+
+        flipped = [];
+        matchedCount = 0;
+        moves = 0;
+        streak = 1;
+        score = 0;
+        scansLeft = 2;
+        lockBoard = false;
+        elapsedSec = 0;
+        started = false;
+        clearInterval(timerId);
+
+        winModal.classList.remove('active');
+        cardsGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        cardsGrid.style.maxWidth = cols >= 6 ? '660px' : cols === 5 ? '560px' : '460px';
+
+        updatePairHud();
+        renderDeck();
+      }
+
+      function updatePairHud() {
+        s1Label.textContent = 'Score';
+        s2Label.textContent = 'Combo Streak';
+        s3Label.textContent = 'Moves';
+        s4Label.textContent = 'Time';
+
+        s1Val.textContent = score;
+        s2Val.textContent = `x${streak}`;
+        s3Val.textContent = moves;
+        s4Val.textContent = fmtClock(elapsedSec);
+        scanBtn.textContent = `Scan (${scansLeft})`;
+        scanBtn.disabled = scansLeft <= 0 || lockBoard;
+      }
+
+      function startPairTimer() {
+        if (started) return;
+        started = true;
+        timerId = setInterval(() => {
+          elapsedSec++;
+          s4Val.textContent = fmtClock(elapsedSec);
+        }, 1000);
+      }
+
+      function renderDeck() {
+        cardsGrid.innerHTML = deck.map((card, index) => `
+          <div class="card" data-idx="${index}">
+            <div class="card-face card-back"></div>
+            <div class="card-face card-front">
+              <div class="glyph-symbol" style="color:${card.color};">${card.glyph}</div>
+              <div class="glyph-code">${card.code}</div>
+            </div>
+          </div>
+        `).join('');
+
+        cardsGrid.querySelectorAll('.card').forEach(el => {
+          el.addEventListener('click', () => handleCardClick(Number(el.dataset.idx), el));
+        });
+      }
+
+      function handleCardClick(idx, cardEl) {
+        if (lockBoard || activeMode !== 'pairs') return;
+        const item = deck[idx];
+        if (!item || item.matched || flipped.some(f => f.idx === idx)) return;
+
+        startPairTimer();
+        playTone(460, 0.05, 'triangle', 0.05);
+        cardEl.classList.add('flipped');
+        flipped.push({ idx, item, el: cardEl });
+
+        if (flipped.length === 2) {
+          moves++;
+          lockBoard = true;
+          const [a, b] = flipped;
+
+          if (a.item.code === b.item.code) {
+            a.item.matched = true;
+            b.item.matched = true;
+            a.el.classList.add('matched');
+            b.el.classList.add('matched');
+            matchedCount += 2;
+            score += 100 * streak;
+            playTone(520 + streak * 70, 0.11, 'sine', 0.07);
+            streak = Math.min(8, streak + 1);
+            flipped = [];
+            lockBoard = false;
+            updatePairHud();
+
+            if (matchedCount === deck.length) {
+              clearInterval(timerId);
+              finishPairGame();
+            }
+          } else {
+            streak = 1;
+            updatePairHud();
+            setTimeout(() => {
+              a.el.classList.remove('flipped');
+              b.el.classList.remove('flipped');
+              flipped = [];
+              lockBoard = false;
+              updatePairHud();
+            }, 640);
+          }
+        }
+      }
+
+      function triggerNeuralScan() {
+        if (scansLeft <= 0 || lockBoard || activeMode !== 'pairs') return;
+        scansLeft--;
+        lockBoard = true;
+        updatePairHud();
+        playTone(780, 0.16, 'sine', 0.06);
+
+        const allEls = cardsGrid.querySelectorAll('.card');
+        allEls.forEach(el => el.classList.add('peeking'));
+        setTimeout(() => {
+          allEls.forEach(el => el.classList.remove('peeking'));
+          lockBoard = false;
+          updatePairHud();
+        }, 1150);
+      }
+
+      function finishPairGame() {
+        const pairCount = deck.length / 2;
+        const parMoves = Math.round(pairCount * 1.65);
+        const rank = moves <= parMoves ? 'S' : moves <= parMoves + 4 ? 'A' : 'B';
+        const timeBonus = Math.max(0, 300 - elapsedSec * 3);
+        const total = score + timeBonus;
+
+        rankBadge.textContent = `RANK ${rank}`;
+        winSummary.innerHTML = `
+          Total Score: <b style="color:#38bdf8;">${total}</b> (incl. +${timeBonus} speed bonus)<br>
+          Completed in <b>${moves} moves</b> and <b>${fmtClock(elapsedSec)}</b>
+        `;
+        winModal.classList.add('active');
+        playTone(587, 0.1, 'triangle', 0.07);
+        setTimeout(() => playTone(784, 0.18, 'triangle', 0.08), 110);
+      }
+
+      // --- SEQUENCE OVERRIDE STATE ---
+      let sequence = [];
+      let playerStep = 0;
+      let seqPlayingBack = false;
+      let seqActive = false;
+      let seqBest = Number(localStorage.getItem('cv_neural_seq_best') || 0);
+
+      function buildSeqGrid() {
+        seqGrid.innerHTML = Array.from({ length: 9 }, (_, i) => `
+          <button type="button" class="seq-node" data-node="${i}" style="--node-color:${NODE_COLORS[i]};">
+            0${i + 1}
+          </button>
+        `).join('');
+
+        seqGrid.querySelectorAll('.seq-node').forEach(btn => {
+          btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            handleSeqTap(Number(btn.dataset.node));
+          });
+        });
+      }
+
+      function updateSeqHud() {
+        s1Label.textContent = 'Layer';
+        s2Label.textContent = 'Best Layer';
+        s3Label.textContent = 'Sequence Len';
+        s4Label.textContent = 'Input Progress';
+
+        s1Val.textContent = Math.max(1, sequence.length);
+        s2Val.textContent = seqBest;
+        s3Val.textContent = sequence.length;
+        s4Val.textContent = `${playerStep}/${sequence.length}`;
+      }
+
+      function flashNode(idx, dur = 340, isErr = false) {
+        const el = seqGrid.querySelector(`[data-node="${idx}"]`);
+        if (!el) return;
+        el.classList.add(isErr ? 'err' : 'lit');
+        playTone(isErr ? 140 : 280 + idx * 55, dur / 1000, isErr ? 'sawtooth' : 'sine', 0.07);
+        setTimeout(() => {
+          el.classList.remove('lit', 'err');
+        }, dur);
+      }
+
+      function startSequenceGame() {
+        sequence = [];
+        playerStep = 0;
+        seqActive = true;
+        seqStartBtn.style.display = 'none';
+        nextSequenceRound();
+      }
+
+      function nextSequenceRound() {
+        playerStep = 0;
+        sequence.push(Math.floor(Math.random() * 9));
+        if (sequence.length - 1 > seqBest) {
+          seqBest = sequence.length - 1;
+          localStorage.setItem('cv_neural_seq_best', seqBest);
+        }
+        updateSeqHud();
+        seqStatus.textContent = 'Memorize the neural pattern...';
+        seqStatus.style.color = '#fbbf24';
+        seqPlayingBack = true;
+
+        const stepDelay = Math.max(340, 560 - sequence.length * 18);
+        sequence.forEach((nodeIdx, i) => {
+          setTimeout(() => {
+            flashNode(nodeIdx, Math.round(stepDelay * 0.65));
+            if (i === sequence.length - 1) {
+              setTimeout(() => {
+                seqPlayingBack = false;
+                seqStatus.textContent = 'Repeat the sequence!';
+                seqStatus.style.color = '#34d399';
+              }, stepDelay * 0.75);
+            }
+          }, 420 + i * stepDelay);
+        });
+      }
+
+      function handleSeqTap(nodeIdx) {
+        if (!seqActive || seqPlayingBack || activeMode !== 'sequence') return;
+        const expected = sequence[playerStep];
+        if (nodeIdx === expected) {
+          flashNode(nodeIdx, 220, false);
+          playerStep++;
+          updateSeqHud();
+          if (playerStep === sequence.length) {
+            seqPlayingBack = true;
+            seqStatus.textContent = 'Layer bypassed! Advancing...';
+            setTimeout(nextSequenceRound, 650);
+          }
+        } else {
+          flashNode(nodeIdx, 450, true);
+          seqActive = false;
+          seqStatus.textContent = `Sync lost at Layer ${sequence.length}!`;
+          seqStatus.style.color = '#f43f5e';
+          seqStartBtn.textContent = 'Retry Override';
+          seqStartBtn.style.display = 'inline-block';
+        }
+      }
+
+      // Mode Switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeMode = btn.dataset.mode;
+
+          if (activeMode === 'pairs') {
+            pairControls.style.display = 'flex';
+            cardsGrid.style.display = 'grid';
+            seqWrap.classList.remove('active');
+            initPairGame();
+          } else {
+            clearInterval(timerId);
+            pairControls.style.display = 'none';
+            cardsGrid.style.display = 'none';
+            seqWrap.classList.add('active');
+            seqActive = false;
+            sequence = [];
+            playerStep = 0;
+            seqStartBtn.textContent = 'Start Sequence';
+            seqStartBtn.style.display = 'inline-block';
+            seqStatus.textContent = 'Press Start Sequence to begin';
+            seqStatus.style.color = '#38bdf8';
+            updateSeqHud();
+          }
+        });
+      });
+
+      gridSizeSelect.addEventListener('change', initPairGame);
+      scanBtn.addEventListener('click', triggerNeuralScan);
+      restartBtn.addEventListener('click', initPairGame);
+      winNextBtn.addEventListener('click', initPairGame);
+      seqStartBtn.addEventListener('click', startSequenceGame);
+
+      buildSeqGrid();
+      initPairGame();
+    })();
+  </script>
+</body>
+</html>

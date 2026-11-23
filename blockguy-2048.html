@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BLOCKGUY (1993 MS-DOS Block-Man Clone)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #07090f;
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .dos-bar {
+      width: min(640px, 96vw);
+      background: #0000aa;
+      border: 2px solid #55ffff;
+      color: #ffffff;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 800;
+      font-size: 0.86rem;
+      box-shadow: 0 6px 20px rgba(0, 0, 170, 0.45);
+    }
+    .dos-bar .hl { color: #ffff55; }
+    .dos-bar .cyan { color: #55ffff; }
+    .screen-frame {
+      position: relative;
+      width: min(640px, 96vw);
+      aspect-ratio: 16 / 10;
+      background: #000000;
+      border: 3px solid #555555;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      display: block;
+    }
+    .banner {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 20px;
+    }
+    .banner.visible { display: flex; }
+    .dos-btn {
+      background: #00aaaa;
+      color: #000000;
+      border: 2px solid #55ffff;
+      padding: 9px 18px;
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    .dos-btn:hover { background: #55ffff; }
+    .controls-row {
+      width: min(640px, 96vw);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .hint {
+      font-size: 0.76rem;
+      color: #94a3b8;
+    }
+    .touch-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .t-btn {
+      background: #131826;
+      border: 1px solid #38bdf8;
+      color: #55ffff;
+      padding: 9px 13px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.82rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .t-btn:active { background: #0000aa; color: #ffff55; }
+  </style>
+</head>
+<body>
+  <div class="dos-bar">
+    <span>BLOCKGUY <span class="cyan">// 1993 DOS</span></span>
+    <span>STAGE: <span class="hl" id="stageVal">1/8</span></span>
+    <span>MOVES: <span class="hl" id="movesVal">0</span></span>
+    <span>CARRY: <span class="cyan" id="carryVal">EMPTY</span></span>
+  </div>
+
+  <div class="screen-frame">
+    <canvas id="dosCanvas" width="320" height="200"></canvas>
+    <div class="banner" id="stageBanner">
+      <h2 id="bannerTitle" style="color:#ffff55; font-size:1.35rem;">STAGE CLEAR!</h2>
+      <p id="bannerSub" style="color:#55ffff; font-size:0.88rem;">Press Enter or Click to continue</p>
+      <button class="dos-btn" id="nextStageBtn">NEXT STAGE</button>
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <span class="hint">Left/Right: Move &amp; Climb 1-Step · Space/Down: Lift/Drop Block · R: Retry Stage</span>
+    <div class="touch-btns">
+      <button class="t-btn" id="btnLeft">◀</button>
+      <button class="t-btn" id="btnRight">▶</button>
+      <button class="t-btn" id="btnAct">LIFT / DROP</button>
+      <button class="t-btn" id="btnReset">RETRY</button>
+    </div>
+  </div>
+
+  <script>
+    // Block-Man (1993 MS-DOS) faithful mechanics:
+    // Grid: 20 cols x 12 rows (each tile 16x16 in classic 320x200 VGA mode 13h)
+    // Legend:
+    // '#' = Solid brick wall
+    // 'B' = Movable push/lift block
+    // 'P' = Player start
+    // 'E' = Exit Door
+    // '.' = Empty air
+
+    const LEVELS = [
+      // Stage 1: Basic Step & Lift
+      [
+        "####################",
+        "#..................#",
+        "#..................#",
+        "#..................#",
+        "#..................#",
+        "#..............E...#",
+        "#.............###..#",
+        "#..................#",
+        "#......B...........#",
+        "#.....###..........#",
+        "#..P..###..........#",
+        "####################"
+      ],
+      // Stage 2: Staircase Builder
+      [
+        "####################",
+        "#..................#",
+        "#..................#",
+        "#.................E#",
+        "#................###",
+        "#...............####",
+        "#..............#####",
+        "#.....B..B....######",
+        "#....#######.#######",
+        "#..P.###############",
+        "#..#################",
+        "####################"
+      ],
+      // Stage 3: Pit Bridge
+      [
+        "####################",
+        "#..................#",
+        "#..................#",
+        "#..................#",
+        "#................E.#",
+        "#...............###.",
+        "#...B..B............",
+        "#.#######.....######",
+        "#..P..###.....######",
+        "#.....###.....######",
+        "#.....###.....######",
+        "####################"
+      ],
+      // Stage 4: Double Retrieval
+      [
+        "####################",
+        "#..................#",
+        "#.................E#",
+        "#................###",
+        "#......B........####",
+        "#.....###......#####",
+        "#.............######",
+        "#.....B......#######",
+        "#....###....########",
+        "#..P.###...#########",
+        "#....###..##########",
+        "####################"
+      ],
+      // Stage 5: High Wall Climb
+      [
+        "####################",
+        "#..................#",
+        "#.................E#",
+        "#................###",
+        "#...............####",
+        "#..B...........#####",
+        "#.###.........######",
+        "#............#######",
+        "#..B..B.....########",
+        "#.######...#########",
+        "#..P.###..##########",
+        "####################"
+      ],
+      // Stage 6: Canyon Vault
+      [
+        "####################",
+        "#..................#",
+        "#..................#",
+        "#..E...............#",
+        "#.###..............#",
+        "#..................#",
+        "#.......B...B......#",
+        "#......#######.....#",
+        "#............###...#",
+        "#......B......###.P#",
+        "#.....###......#####",
+        "####################"
+      ],
+      // Stage 7: Pyramid Ascent
+      [
+        "####################",
+        "#..................#",
+        "#.................E#",
+        "#................###",
+        "#...............####",
+        "#..............#####",
+        "#..B..........######",
+        "#.###........#######",
+        "#.....B.....########",
+        "#....###...#########",
+        "#..P.###..##########",
+        "####################"
+      ],
+      // Stage 8: Grand Master Vault
+      [
+        "####################",
+        "#..................#",
+        "#.................E#",
+        "#................###",
+        "#...............####",
+        "#......B.......#####",
+        "#.....###.....######",
+        "#............#######",
+        "#..B...B....########",
+        "#.###.###..#########",
+        "#..P..###.##########",
+        "####################"
+      ]
+    ];
+
+    const canvas = document.getElementById('dosCanvas');
+    const ctx = canvas.getContext('2d');
+    const stageVal = document.getElementById('stageVal');
+    const movesVal = document.getElementById('movesVal');
+    const carryVal = document.getElementById('carryVal');
+    const stageBanner = document.getElementById('stageBanner');
+    const bannerTitle = document.getElementById('bannerTitle');
+    const bannerSub = document.getElementById('bannerSub');
+    const nextStageBtn = document.getElementById('nextStageBtn');
+
+    const COLS = 20;
+    const ROWS = 12;
+    const TILE = 16;
+
+    let stageIdx = 0;
+    let grid = [];
+    let player = { x: 2, y: 10, dir: 1, carrying: false };
+    let exitPos = { x: 17, y: 5 };
+    let moves = 0;
+    let stageWon = false;
+
+    // Retro PC Speaker Beeps via WebAudio
+    let audioCtx = null;
+    function beep(freq, dur = 0.06, type = 'square') {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch {}
+    }
+
+    function isSolid(x, y) {
+      if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return true;
+      return grid[y][x] === '#' || grid[y][x] === 'B';
+    }
+
+    function applyGravityToBlocks() {
+      let moved = true;
+      while (moved) {
+        moved = false;
+        for (let y = ROWS - 2; y >= 0; y--) {
+          for (let x = 0; x < COLS; x++) {
+            if (grid[y][x] === 'B') {
+              const belowEmpty = grid[y + 1][x] === '.' && !(player.x === x && player.y === y + 1);
+              if (belowEmpty) {
+                grid[y][x] = '.';
+                grid[y + 1][x] = 'B';
+                moved = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function applyGravityToPlayer() {
+      while (player.y + 1 < ROWS && !isSolid(player.x, player.y + 1)) {
+        player.y++;
+      }
+    }
+
+    function loadStage(idx) {
+      stageIdx = idx % LEVELS.length;
+      const raw = LEVELS[stageIdx];
+      grid = Array.from({ length: ROWS }, () => Array(COLS).fill('.'));
+      player = { x: 2, y: 10, dir: 1, carrying: false };
+      moves = 0;
+      stageWon = false;
+      stageBanner.classList.remove('visible');
+
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          const ch = raw[y]?.[x] || '.';
+          if (ch === '#') grid[y][x] = '#';
+          else if (ch === 'B') grid[y][x] = 'B';
+          else if (ch === 'P') { player.x = x; player.y = y; }
+          else if (ch === 'E') { exitPos = { x, y }; }
+        }
+      }
+      applyGravityToBlocks();
+      applyGravityToPlayer();
+      syncHud();
+      draw();
+    }
+
+    function syncHud() {
+      stageVal.textContent = `${stageIdx + 1}/${LEVELS.length}`;
+      movesVal.textContent = moves;
+      carryVal.textContent = player.carrying ? 'BLOCK [1]' : 'EMPTY';
+      carryVal.style.color = player.carrying ? '#ffff55' : '#55ffff';
+    }
+
+    function movePlayer(dx) {
+      if (stageWon) return;
+      player.dir = dx;
+      const nx = player.x + dx;
+      if (nx < 0 || nx >= COLS) return;
+
+      // Case 1: Space in front is open -> walk forward & fall if needed
+      if (!isSolid(nx, player.y)) {
+        if (player.carrying && isSolid(nx, player.y - 1)) {
+          beep(130, 0.06);
+          return;
+        }
+        player.x = nx;
+        applyGravityToPlayer();
+        moves++;
+        beep(320, 0.04);
+      }
+      // Case 2: 1-tile step up in front -> climb automatically (signature Block-Man mechanic!)
+      else if (!isSolid(nx, player.y - 1) && !isSolid(player.x, player.y - 1)) {
+        if (player.carrying && (isSolid(player.x, player.y - 2) || isSolid(nx, player.y - 2))) {
+          beep(130, 0.06);
+          return;
+        }
+        player.x = nx;
+        player.y -= 1;
+        moves++;
+        beep(440, 0.05);
+      } else {
+        beep(140, 0.04);
+      }
+
+      syncHud();
+      checkWin();
+      draw();
+    }
+
+    function toggleBlock() {
+      if (stageWon) return;
+      const fx = player.x + player.dir;
+      if (fx < 0 || fx >= COLS) return;
+
+      if (!player.carrying) {
+        // Lift block directly in front (at feet level) if space above both player and block is clear
+        if (grid[player.y][fx] === 'B' && !isSolid(fx, player.y - 1) && !isSolid(player.x, player.y - 1)) {
+          grid[player.y][fx] = '.';
+          player.carrying = true;
+          moves++;
+          applyGravityToBlocks();
+          beep(520, 0.07);
+        } else {
+          beep(140, 0.05);
+        }
+      } else {
+        // Drop carried block in front of player (either at player.y or onto a step at player.y - 1)
+        if (!isSolid(fx, player.y)) {
+          grid[player.y][fx] = 'B';
+          player.carrying = false;
+          moves++;
+          applyGravityToBlocks();
+          beep(260, 0.07);
+        } else if (!isSolid(fx, player.y - 1) && !isSolid(player.x, player.y - 1)) {
+          grid[player.y - 1][fx] = 'B';
+          player.carrying = false;
+          moves++;
+          applyGravityToBlocks();
+          beep(280, 0.07);
+        } else {
+          beep(130, 0.06);
+        }
+      }
+
+      syncHud();
+      checkWin();
+      draw();
+    }
+
+    function checkWin() {
+      if (player.x === exitPos.x && player.y === exitPos.y) {
+        stageWon = true;
+        beep(523, 0.08);
+        setTimeout(() => beep(659, 0.08), 90);
+        setTimeout(() => beep(784, 0.16), 180);
+
+        if (stageIdx === LEVELS.length - 1) {
+          bannerTitle.textContent = 'ALL 8 DOS STAGES CLEARED!';
+          bannerSub.textContent = `Completed final vault in ${moves} moves!`;
+          nextStageBtn.textContent = 'PLAY FROM STAGE 1';
+        } else {
+          bannerTitle.textContent = `STAGE ${stageIdx + 1} COMPLETE!`;
+          bannerSub.textContent = `Solved in ${moves} moves.`;
+          nextStageBtn.textContent = `ENTER STAGE ${stageIdx + 2}`;
+        }
+        stageBanner.classList.add('visible');
+      }
+    }
+
+    function drawBrick(gx, gy) {
+      const px = gx * TILE, py = gy * TILE;
+      ctx.fillStyle = '#aa5500';
+      ctx.fillRect(px, py, TILE, TILE);
+      ctx.fillStyle = '#ff5555';
+      ctx.fillRect(px + 1, py + 1, 6, 6);
+      ctx.fillRect(px + 9, py + 1, 6, 6);
+      ctx.fillRect(px + 5, py + 9, 6, 6);
+      ctx.strokeStyle = '#550000';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px + 0.5, py + 0.5, TILE - 1, TILE - 1);
+    }
+
+    function drawMovableBlock(px, py) {
+      ctx.fillStyle = '#00aaaa';
+      ctx.fillRect(px + 1, py + 1, TILE - 2, TILE - 2);
+      ctx.strokeStyle = '#55ffff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px + 1.5, py + 1.5, TILE - 3, TILE - 3);
+      ctx.fillStyle = '#ffff55';
+      ctx.fillRect(px + 6, py + 6, 4, 4);
+    }
+
+    function drawExit(gx, gy) {
+      const px = gx * TILE, py = gy * TILE;
+      ctx.fillStyle = '#00aa00';
+      ctx.fillRect(px + 2, py + 1, TILE - 4, TILE - 1);
+      ctx.strokeStyle = '#55ff55';
+      ctx.strokeRect(px + 2.5, py + 1.5, TILE - 5, TILE - 2);
+      ctx.fillStyle = '#ffff55';
+      ctx.fillRect(px + 10, py + 8, 2, 2);
+    }
+
+    function drawPlayer() {
+      const px = player.x * TILE;
+      const py = player.y * TILE;
+
+      // Helmet / Head
+      ctx.fillStyle = '#ffff55';
+      ctx.fillRect(px + 4, py + 1, 8, 6);
+      // Eyes facing direction
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(player.dir === 1 ? px + 9 : px + 5, py + 3, 2, 2);
+
+      // Torso (EGA Cyan Suit)
+      ctx.fillStyle = '#55ffff';
+      ctx.fillRect(px + 4, py + 7, 8, 5);
+
+      // Boots
+      ctx.fillStyle = '#ff55ff';
+      ctx.fillRect(px + 3, py + 12, 4, 4);
+      ctx.fillRect(px + 9, py + 12, 4, 4);
+
+      // Carried block overhead
+      if (player.carrying) {
+        drawMovableBlock(px, py - TILE);
+      }
+    }
+
+    function draw() {
+      // Classic EGA dark grid background
+      ctx.fillStyle = '#000018';
+      ctx.fillRect(0, 0, 320, 200);
+
+      // Subtle DOS grid lines
+      ctx.strokeStyle = '#0a0f2c';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= 320; x += TILE) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 192); ctx.stroke();
+      }
+      for (let y = 0; y <= 192; y += TILE) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(320, y); ctx.stroke();
+      }
+
+      drawExit(exitPos.x, exitPos.y);
+
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          if (grid[y][x] === '#') drawBrick(x, y);
+          else if (grid[y][x] === 'B') drawMovableBlock(x * TILE, y * TILE);
+        }
+      }
+
+      drawPlayer();
+
+      // Bottom DOS status strip inside canvas
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 192, 320, 8);
+      ctx.fillStyle = '#55ffff';
+      ctx.font = '7px monospace';
+      ctx.fillText('BLOCK-MAN (C) 1993 · REACH GREEN DOOR', 6, 198);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space'].includes(e.code)) e.preventDefault();
+      if (stageWon && (e.code === 'Enter' || e.code === 'Space')) {
+        loadStage(stageIdx + 1);
+        return;
+      }
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') movePlayer(-1);
+      else if (e.code === 'ArrowRight' || e.code === 'KeyD') movePlayer(1);
+      else if (e.code === 'Space' || e.code === 'ArrowDown' || e.code === 'ArrowUp' || e.code === 'KeyS' || e.code === 'KeyW') toggleBlock();
+      else if (e.code === 'KeyR') loadStage(stageIdx);
+    });
+
+    document.getElementById('btnLeft').addEventListener('pointerdown', (e) => { e.preventDefault(); movePlayer(-1); });
+    document.getElementById('btnRight').addEventListener('pointerdown', (e) => { e.preventDefault(); movePlayer(1); });
+    document.getElementById('btnAct').addEventListener('pointerdown', (e) => { e.preventDefault(); toggleBlock(); });
+    document.getElementById('btnReset').addEventListener('pointerdown', (e) => { e.preventDefault(); loadStage(stageIdx); });
+    nextStageBtn.addEventListener('click', () => loadStage(stageIdx + 1));
+
+    loadStage(0);
+  </script>
+</body>
+</html>

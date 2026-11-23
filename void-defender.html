@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Void Star Defender</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .hud {
+      width: min(460px, 95vw);
+      display: flex;
+      justify-content: space-between;
+      background: #131520;
+      border: 1px solid #25293d;
+      border-radius: 12px;
+      padding: 9px 16px;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+    .hud .score { color: #38bdf8; }
+    .hud .wave { color: #a78bfa; }
+    .hud .lives { color: #f43f5e; }
+    .stage {
+      position: relative;
+      width: min(460px, 95vw);
+      height: min(560px, 70dvh);
+      border-radius: 16px;
+      border: 2px solid #25293d;
+      overflow: hidden;
+      background: #05070e;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+    }
+    canvas { width: 100%; height: 100%; display: block; }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 7, 14, 0.86);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 20px;
+    }
+    .overlay.hidden { display: none; }
+    .btn {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pad {
+      width: min(460px, 95vw);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 8px;
+    }
+    .p-btn {
+      background: #1a1d2d;
+      border: 1px solid #2d334d;
+      color: #fff;
+      border-radius: 10px;
+      padding: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .p-btn.fire { background: #dc2626; border-color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <span class="score">SCORE: <b id="scoreVal">0</b></span>
+    <span class="wave">WAVE: <b id="waveVal">1</b></span>
+    <span class="lives">HULL: <b id="livesVal">3</b></span>
+  </div>
+  <div class="stage">
+    <canvas id="spaceCanvas" width="420" height="520"></canvas>
+    <div class="overlay" id="overlay">
+      <h2 id="ovTitle" style="font-size:1.6rem; color:#38bdf8;">VOID STAR DEFENDER</h2>
+      <p id="ovSub" style="color:#9aa0b8; font-size:0.9rem;">Destroy alien squadrons! Move with A/D or Arrows, Fire with Space.</p>
+      <button class="btn" id="startBtn">Launch Fighter</button>
+    </div>
+  </div>
+  <div class="pad">
+    <button class="p-btn" id="leftBtn">◀ LEFT</button>
+    <button class="p-btn" id="rightBtn">RIGHT ▶</button>
+    <button class="p-btn fire" id="fireBtn">FIRE LASER</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('spaceCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('scoreVal');
+    const waveEl = document.getElementById('waveVal');
+    const livesEl = document.getElementById('livesVal');
+    const overlay = document.getElementById('overlay');
+    const ovTitle = document.getElementById('ovTitle');
+    const ovSub = document.getElementById('ovSub');
+    const startBtn = document.getElementById('startBtn');
+
+    let stars = Array.from({ length: 55 }, () => ({
+      x: Math.random() * 420,
+      y: Math.random() * 520,
+      s: 0.6 + Math.random() * 1.8
+    }));
+
+    let ship = { x: 210, y: 475, w: 30, h: 26, cd: 0 };
+    let bullets = [];
+    let enemyBullets = [];
+    let aliens = [];
+    let alienDir = 1;
+    let score = 0;
+    let wave = 1;
+    let lives = 3;
+    let running = false;
+    let keys = {};
+
+    function spawnWave(w) {
+      aliens = [];
+      const rows = Math.min(5, 3 + Math.floor(w / 2));
+      const cols = 7;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          aliens.push({
+            x: 56 + c * 50,
+            y: 55 + r * 38,
+            w: 28,
+            h: 22,
+            hp: r === 0 && w >= 2 ? 2 : 1,
+            color: r === 0 ? '#f43f5e' : r === 1 ? '#a855f7' : '#38bdf8'
+          });
+        }
+      }
+      alienDir = 1;
+    }
+
+    function startGame() {
+      score = 0; wave = 1; lives = 3;
+      ship.x = 210;
+      bullets = []; enemyBullets = [];
+      spawnWave(1);
+      running = true;
+      overlay.classList.add('hidden');
+      syncHud();
+    }
+
+    function syncHud() {
+      scoreEl.textContent = score;
+      waveEl.textContent = wave;
+      livesEl.textContent = lives;
+    }
+
+    window.addEventListener('keydown', e => {
+      if (['ArrowLeft','ArrowRight','KeyA','KeyD','Space'].includes(e.code)) e.preventDefault();
+      keys[e.code] = true;
+      if (!running && (e.code === 'Space' || e.code === 'Enter')) startGame();
+    });
+    window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+    function bindHold(id, code) {
+      const el = document.getElementById(id);
+      el.addEventListener('pointerdown', e => { e.preventDefault(); keys[code] = true; });
+      const off = e => { e.preventDefault(); keys[code] = false; };
+      el.addEventListener('pointerup', off);
+      el.addEventListener('pointerleave', off);
+      el.addEventListener('pointercancel', off);
+    }
+    bindHold('leftBtn', 'ArrowLeft');
+    bindHold('rightBtn', 'ArrowRight');
+    bindHold('fireBtn', 'Space');
+
+    function update() {
+      stars.forEach(st => {
+        st.y += st.s;
+        if (st.y > 520) { st.y = 0; st.x = Math.random() * 420; }
+      });
+
+      if (!running) return;
+
+      if (keys['ArrowLeft'] || keys['KeyA']) ship.x -= 5.2;
+      if (keys['ArrowRight'] || keys['KeyD']) ship.x += 5.2;
+      ship.x = Math.max(24, Math.min(396, ship.x));
+
+      if (ship.cd > 0) ship.cd--;
+      if (keys['Space'] && ship.cd <= 0) {
+        bullets.push({ x: ship.x, y: ship.y - 16, vy: -8.5 });
+        ship.cd = 13;
+      }
+
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        bullets[i].y += bullets[i].vy;
+        if (bullets[i].y < -10) bullets.splice(i, 1);
+      }
+
+      let hitEdge = false;
+      const moveSpeed = (1.15 + wave * 0.25) * alienDir;
+      aliens.forEach(a => {
+        a.x += moveSpeed;
+        if (a.x > 395 || a.x < 25) hitEdge = true;
+        if (Math.random() < 0.0022 + wave * 0.0006) {
+          enemyBullets.push({ x: a.x, y: a.y + 12, vy: 4.2 + wave * 0.25 });
+        }
+      });
+
+      if (hitEdge) {
+        alienDir *= -1;
+        aliens.forEach(a => { a.y += 14; });
+      }
+
+      // Bullet vs Alien
+      for (let bi = bullets.length - 1; bi >= 0; bi--) {
+        const b = bullets[bi];
+        for (let ai = aliens.length - 1; ai >= 0; ai--) {
+          const a = aliens[ai];
+          if (Math.abs(b.x - a.x) < 17 && Math.abs(b.y - a.y) < 14) {
+            bullets.splice(bi, 1);
+            a.hp--;
+            if (a.hp <= 0) {
+              aliens.splice(ai, 1);
+              score += 25 * wave;
+            } else {
+              a.color = '#fbbf24';
+            }
+            syncHud();
+            break;
+          }
+        }
+      }
+
+      // Enemy bullets vs Ship
+      for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        const eb = enemyBullets[i];
+        eb.y += eb.vy;
+        if (Math.abs(eb.x - ship.x) < 16 && Math.abs(eb.y - ship.y) < 14) {
+          enemyBullets.splice(i, 1);
+          lives--;
+          syncHud();
+          if (lives <= 0) {
+            running = false;
+            ovTitle.textContent = 'SHIP DESTROYED';
+            ovSub.textContent = `Final Score: ${score} · Reached Wave ${wave}`;
+            startBtn.textContent = 'Play Again';
+            overlay.classList.remove('hidden');
+            return;
+          }
+        } else if (eb.y > 530) {
+          enemyBullets.splice(i, 1);
+        }
+      }
+
+      if (aliens.some(a => a.y > 445)) {
+        running = false;
+        ovTitle.textContent = 'SECTOR BREACHED';
+        ovSub.textContent = `Final Score: ${score}`;
+        startBtn.textContent = 'Try Again';
+        overlay.classList.remove('hidden');
+        return;
+      }
+
+      if (aliens.length === 0) {
+        wave++;
+        syncHud();
+        spawnWave(wave);
+      }
+    }
+
+    function render() {
+      ctx.fillStyle = '#05070e';
+      ctx.fillRect(0, 0, 420, 520);
+
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.65)';
+      stars.forEach(st => ctx.fillRect(st.x, st.y, st.s, st.s));
+
+      // Player ship
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.moveTo(ship.x, ship.y - 16);
+      ctx.lineTo(ship.x + 16, ship.y + 12);
+      ctx.lineTo(ship.x, ship.y + 6);
+      ctx.lineTo(ship.x - 16, ship.y + 12);
+      ctx.closePath();
+      ctx.fill();
+
+      // Lasers
+      ctx.fillStyle = '#22d3ee';
+      bullets.forEach(b => ctx.fillRect(b.x - 2, b.y - 8, 4, 14));
+
+      ctx.fillStyle = '#fb7185';
+      enemyBullets.forEach(eb => ctx.fillRect(eb.x - 2.5, eb.y - 6, 5, 12));
+
+      // Aliens
+      aliens.forEach(a => {
+        ctx.fillStyle = a.color;
+        ctx.fillRect(a.x - 13, a.y - 9, 26, 18);
+        ctx.fillStyle = '#05070e';
+        ctx.fillRect(a.x - 7, a.y - 3, 4, 4);
+        ctx.fillRect(a.x + 3, a.y - 3, 4, 4);
+      });
+    }
+
+    function loop() {
+      update();
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    startBtn.addEventListener('click', startGame);
+    loop();
+  </script>
+</body>
+</html>

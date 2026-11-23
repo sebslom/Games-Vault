@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Plasma Pong 1P / 2P</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #070911;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .hud-top {
+      width: min(860px, 96vw);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #111524;
+      border: 1px solid #252b44;
+      border-radius: 12px;
+      padding: 8px 16px;
+      padding-right: 48px; /* Clear of hub close button */
+    }
+
+    .score-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 900;
+    }
+    .p1-score { color: #38bdf8; font-size: 1.45rem; }
+    .p2-score { color: #f43f5e; font-size: 1.45rem; }
+    .vs-tag { font-size: 0.75rem; color: #64748b; letter-spacing: 1px; }
+
+    .mid-status {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #a78bfa;
+      text-align: center;
+    }
+
+    .menu-btn {
+      background: #1e243b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .menu-btn:hover { border-color: #38bdf8; color: #38bdf8; }
+
+    .arena-wrap {
+      position: relative;
+      width: min(860px, 96vw);
+      aspect-ratio: 16 / 10;
+      max-height: 78dvh;
+      background: #090c17;
+      border: 2px solid #252b44;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 9, 17, 0.88);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    .overlay.hidden { display: none; }
+
+    .title {
+      font-size: clamp(1.5rem, 3.6vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      background: linear-gradient(90deg, #38bdf8, #a855f7, #f43f5e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .option-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .pill-opt {
+      background: #161b2e;
+      border: 2px solid #2a314d;
+      color: #cbd5e1;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pill-opt.active {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.16);
+      color: #ffffff;
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, #0284c7, #7c3aed);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 30px;
+      font-size: 0.98rem;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4);
+    }
+
+    .controls-hint {
+      font-size: 0.76rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="hud-top">
+    <div class="score-box">
+      <span class="p1-score" id="p1Score">0</span>
+      <span class="vs-tag" id="modeBadge">1P VS AI</span>
+      <span class="p2-score" id="p2Score">0</span>
+    </div>
+    <div class="mid-status" id="powerStatus">PLASMA ARENA READY</div>
+    <button class="menu-btn" id="openMenuBtn">Mode / Setup</button>
+  </div>
+
+  <div class="arena-wrap">
+    <canvas id="pongCanvas" width="800" height="500"></canvas>
+
+    <div class="overlay" id="setupOverlay">
+      <div class="title" id="overlayTitle">PLASMA PONG DUEL</div>
+      <p id="overlaySub" style="color:#94a3b8; font-size:0.86rem;">Choose 1-Player AI Challenge or 2-Player Local Arena</p>
+
+      <div class="option-group" id="playerModeGroup">
+        <button class="pill-opt active" data-pmode="1p">1 Player (vs AI)</button>
+        <button class="pill-opt" data-pmode="2p">2 Players (Local)</button>
+      </div>
+
+      <div class="option-group" id="aiDiffGroup">
+        <button class="pill-opt" data-diff="easy">AI: Cadet</button>
+        <button class="pill-opt active" data-diff="medium">AI: Veteran</button>
+        <button class="pill-opt" data-diff="hard">AI: Overdrive</button>
+      </div>
+
+      <div class="option-group" id="targetGroup">
+        <button class="pill-opt" data-target="5">First to 5</button>
+        <button class="pill-opt active" data-target="7">First to 7</button>
+        <button class="pill-opt" data-target="11">First to 11</button>
+      </div>
+
+      <button class="start-btn" id="launchBtn">LAUNCH MATCH</button>
+      <div class="controls-hint">
+        1P: W/S or Arrows or Mouse/Touch · 2P: P1 (W/S or Left Touch) vs P2 (Up/Down or Right Touch)
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById('pongCanvas');
+      const ctx = canvas.getContext('2d');
+      const p1ScoreEl = document.getElementById('p1Score');
+      const p2ScoreEl = document.getElementById('p2Score');
+      const modeBadge = document.getElementById('modeBadge');
+      const powerStatus = document.getElementById('powerStatus');
+      const setupOverlay = document.getElementById('setupOverlay');
+      const overlayTitle = document.getElementById('overlayTitle');
+      const overlaySub = document.getElementById('overlaySub');
+      const aiDiffGroup = document.getElementById('aiDiffGroup');
+
+      // Synth Audio
+      let audioCtx = null;
+      function beep(freq, dur = 0.06, type = 'square', vol = 0.05) {
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          g.gain.setValueAtTime(vol, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + dur);
+        } catch {}
+      }
+
+      // Config
+      let playerMode = '1p'; // 1p | 2p
+      let aiDiff = 'medium'; // easy | medium | hard
+      let winTarget = 7;
+
+      // State
+      const W = 800, H = 500;
+      let running = false;
+      let shake = 0;
+      let powerOrb = null;
+      let orbTimer = 4.0;
+      let particles = [];
+      let balls = [];
+
+      const p1 = { x: 26, y: H / 2, w: 14, h: 92, baseH: 92, vy: 0, score: 0, buffTimer: 0, color: '#38bdf8' };
+      const p2 = { x: W - 26, y: H / 2, w: 14, h: 92, baseH: 92, vy: 0, score: 0, buffTimer: 0, color: '#f43f5e' };
+
+      const keys = {};
+      const pointers = new Map();
+
+      function spawnParticles(x, y, color, count = 12, spd = 220) {
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const s = (0.3 + Math.random() * 0.8) * spd;
+          particles.push({
+            x, y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s,
+            r: 2.5 + Math.random() * 2.5,
+            color,
+            ttl: 0.25 + Math.random() * 0.25
+          });
+        }
+      }
+
+      function createBall(dir = 1) {
+        const angle = (Math.random() * 0.6 - 0.3);
+        const speed = 410;
+        return {
+          x: W / 2,
+          y: H / 2,
+          vx: Math.cos(angle) * speed * dir,
+          vy: Math.sin(angle) * speed,
+          spin: 0,
+          r: 8,
+          lastHitter: null,
+          trail: []
+        };
+      }
+
+      function startMatch() {
+        p1.score = 0;
+        p2.score = 0;
+        p1.y = H / 2;
+        p2.y = H / 2;
+        p1.h = p1.baseH;
+        p2.h = p2.baseH;
+        p1.buffTimer = 0;
+        p2.buffTimer = 0;
+        powerOrb = null;
+        orbTimer = 3.5;
+        particles = [];
+        balls = [createBall(Math.random() < 0.5 ? 1 : -1)];
+        running = true;
+        setupOverlay.classList.add('hidden');
+        modeBadge.textContent = playerMode === '1p' ? `1P VS AI (${aiDiff.toUpperCase()})` : '2P LOCAL DUEL';
+        powerStatus.textContent = `FIRST TO ${winTarget} WINS`;
+        syncScore();
+      }
+
+      function syncScore() {
+        p1ScoreEl.textContent = p1.score;
+        p2ScoreEl.textContent = p2.score;
+      }
+
+      function spawnPowerOrb() {
+        const types = [
+          { kind: 'expand', label: 'EXPAND PADDLE', color: '#34d399' },
+          { kind: 'multiball', label: 'MULTI-BALL SPLIT', color: '#fbbf24' },
+          { kind: 'overdrive', label: 'PLASMA SMASH', color: '#a855f7' }
+        ];
+        const pick = types[Math.floor(Math.random() * types.length)];
+        powerOrb = {
+          ...pick,
+          x: W * (0.3 + Math.random() * 0.4),
+          y: 70 + Math.random() * (H - 140),
+          r: 16,
+          pulse: 0
+        };
+      }
+
+      function applyOrb(orb, ball) {
+        const hitter = ball.lastHitter || (ball.vx > 0 ? p1 : p2);
+        powerStatus.textContent = `${hitter === p1 ? 'P1' : (playerMode === '1p' ? 'AI' : 'P2')}: ${orb.label}!`;
+        spawnParticles(orb.x, orb.y, orb.color, 20, 260);
+        beep(740, 0.14, 'triangle', 0.07);
+
+        if (orb.kind === 'expand') {
+          hitter.h = 142;
+          hitter.buffTimer = 9.0;
+        } else if (orb.kind === 'multiball' && balls.length < 3) {
+          balls.push({
+            x: ball.x,
+            y: ball.y,
+            vx: ball.vx * 0.96,
+            vy: -ball.vy * 1.05,
+            spin: -ball.spin,
+            r: 8,
+            lastHitter: ball.lastHitter,
+            trail: []
+          });
+        } else if (orb.kind === 'overdrive') {
+          ball.vx *= 1.28;
+          ball.vy *= 1.15;
+          shake = 7;
+        }
+      }
+
+      function update(dt) {
+        if (!running) return;
+        shake = Math.max(0, shake - dt * 24);
+
+        // Buff timers
+        [p1, p2].forEach(pad => {
+          if (pad.buffTimer > 0) {
+            pad.buffTimer -= dt;
+            if (pad.buffTimer <= 0) pad.h = pad.baseH;
+          }
+        });
+
+        // P1 Input
+        const padSpeed = 520;
+        let p1Dir = 0;
+        if (keys['KeyW'] || (playerMode === '1p' && keys['ArrowUp'])) p1Dir -= 1;
+        if (keys['KeyS'] || (playerMode === '1p' && keys['ArrowDown'])) p1Dir += 1;
+
+        let pointerP1Y = null;
+        let pointerP2Y = null;
+        pointers.forEach((pt) => {
+          if (playerMode === '1p') pointerP1Y = pt.y;
+          else if (pt.x < W / 2) pointerP1Y = pt.y;
+          else pointerP2Y = pt.y;
+        });
+
+        if (pointerP1Y !== null) {
+          const diff = pointerP1Y - p1.y;
+          p1.vy = Math.max(-padSpeed * 1.35, Math.min(padSpeed * 1.35, diff * 14));
+          p1.y += p1.vy * dt;
+        } else {
+          p1.vy = p1Dir * padSpeed;
+          p1.y += p1.vy * dt;
+        }
+        p1.y = Math.max(p1.h / 2 + 8, Math.min(H - p1.h / 2 - 8, p1.y));
+
+        // P2 Input or AI
+        if (playerMode === '2p') {
+          let p2Dir = 0;
+          if (keys['ArrowUp']) p2Dir -= 1;
+          if (keys['ArrowDown']) p2Dir += 1;
+          if (pointerP2Y !== null) {
+            const diff = pointerP2Y - p2.y;
+            p2.vy = Math.max(-padSpeed * 1.35, Math.min(padSpeed * 1.35, diff * 14));
+            p2.y += p2.vy * dt;
+          } else {
+            p2.vy = p2Dir * padSpeed;
+            p2.y += p2.vy * dt;
+          }
+        } else {
+          // Track nearest incoming ball
+          let targetBall = balls[0];
+          for (const b of balls) {
+            if (b.vx > 0 && (!targetBall || b.x > targetBall.x)) targetBall = b;
+          }
+          const aiSpeed = aiDiff === 'easy' ? 290 : aiDiff === 'hard' ? 530 : 405;
+          const deadzone = aiDiff === 'easy' ? 26 : aiDiff === 'hard' ? 6 : 14;
+          const aimY = targetBall ? targetBall.y : H / 2;
+          const diff = aimY - p2.y;
+          if (Math.abs(diff) > deadzone) {
+            p2.vy = Math.sign(diff) * aiSpeed;
+            p2.y += p2.vy * dt;
+          } else {
+            p2.vy = 0;
+          }
+        }
+        p2.y = Math.max(p2.h / 2 + 8, Math.min(H - p2.h / 2 - 8, p2.y));
+
+        // Power Orb Spawner
+        if (!powerOrb) {
+          orbTimer -= dt;
+          if (orbTimer <= 0) {
+            spawnPowerOrb();
+            orbTimer = 7.5;
+          }
+        } else {
+          powerOrb.pulse += dt * 4;
+        }
+
+        // Update Balls
+        for (let i = balls.length - 1; i >= 0; i--) {
+          const b = balls[i];
+          b.trail.push({ x: b.x, y: b.y });
+          if (b.trail.length > 10) b.trail.shift();
+
+          b.vy += b.spin * dt;
+          b.x += b.vx * dt;
+          b.y += b.vy * dt;
+
+          // Wall bounce
+          if (b.y - b.r < 6) {
+            b.y = 6 + b.r;
+            b.vy = Math.abs(b.vy);
+            beep(260, 0.04, 'triangle', 0.04);
+          } else if (b.y + b.r > H - 6) {
+            b.y = H - 6 - b.r;
+            b.vy = -Math.abs(b.vy);
+            beep(260, 0.04, 'triangle', 0.04);
+          }
+
+          // Orb pickup
+          if (powerOrb && Math.hypot(b.x - powerOrb.x, b.y - powerOrb.y) < b.r + powerOrb.r) {
+            const caught = powerOrb;
+            powerOrb = null;
+            applyOrb(caught, b);
+          }
+
+          // Paddle collisions
+          if (
+            b.vx < 0 &&
+            b.x - b.r <= p1.x + p1.w / 2 &&
+            b.x + b.r >= p1.x - p1.w / 2 &&
+            Math.abs(b.y - p1.y) <= p1.h / 2 + b.r
+          ) {
+            const rel = (b.y - p1.y) / (p1.h / 2);
+            const speed = Math.min(880, Math.hypot(b.vx, b.vy) * 1.045);
+            const ang = rel * 0.92;
+            b.vx = Math.cos(ang) * speed;
+            b.vy = Math.sin(ang) * speed;
+            b.spin = p1.vy * 0.32;
+            b.x = p1.x + p1.w / 2 + b.r;
+            b.lastHitter = p1;
+            shake = Math.max(shake, 4);
+            spawnParticles(b.x, b.y, p1.color, 10, 190);
+            beep(440, 0.06, 'square', 0.05);
+          } else if (
+            b.vx > 0 &&
+            b.x + b.r >= p2.x - p2.w / 2 &&
+            b.x - b.r <= p2.x + p2.w / 2 &&
+            Math.abs(b.y - p2.y) <= p2.h / 2 + b.r
+          ) {
+            const rel = (b.y - p2.y) / (p2.h / 2);
+            const speed = Math.min(880, Math.hypot(b.vx, b.vy) * 1.045);
+            const ang = rel * 0.92;
+            b.vx = -Math.cos(ang) * speed;
+            b.vy = Math.sin(ang) * speed;
+            b.spin = p2.vy * 0.32;
+            b.x = p2.x - p2.w / 2 - b.r;
+            b.lastHitter = p2;
+            shake = Math.max(shake, 4);
+            spawnParticles(b.x, b.y, p2.color, 10, 190);
+            beep(490, 0.06, 'square', 0.05);
+          }
+
+          // Goal Scored
+          if (b.x < -20 || b.x > W + 20) {
+            const p1Scored = b.x > W + 20;
+            if (p1Scored) p1.score++;
+            else p2.score++;
+            syncScore();
+            shake = 10;
+            spawnParticles(p1Scored ? W - 15 : 15, b.y, p1Scored ? p1.color : p2.color, 26, 280);
+            beep(180, 0.22, 'sawtooth', 0.07);
+
+            balls.splice(i, 1);
+
+            if (p1.score >= winTarget || p2.score >= winTarget) {
+              running = false;
+              const p1Won = p1.score >= winTarget;
+              overlayTitle.textContent = p1Won
+                ? 'PLAYER 1 VICTORY!'
+                : (playerMode === '1p' ? 'AI OVERLORD WINS!' : 'PLAYER 2 VICTORY!');
+              overlaySub.textContent = `Final Score: ${p1.score} — ${p2.score}`;
+              document.getElementById('launchBtn').textContent = 'REMATCH';
+              setupOverlay.classList.remove('hidden');
+              return;
+            }
+
+            if (balls.length === 0) {
+              balls.push(createBall(p1Scored ? -1 : 1));
+            }
+          }
+        }
+
+        // Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const pt = particles[i];
+          pt.x += pt.vx * dt;
+          pt.y += pt.vy * dt;
+          pt.ttl -= dt;
+          if (pt.ttl <= 0) particles.splice(i, 1);
+        }
+      }
+
+      function render() {
+        const sx = shake > 0.2 ? (Math.random() - 0.5) * shake * 2 : 0;
+        const sy = shake > 0.2 ? (Math.random() - 0.5) * shake * 2 : 0;
+
+        ctx.save();
+        ctx.fillStyle = '#090c17';
+        ctx.fillRect(0, 0, W, H);
+        ctx.translate(sx, sy);
+
+        // Center court line & circle
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([12, 12]);
+        ctx.beginPath();
+        ctx.moveTo(W / 2, 0);
+        ctx.lineTo(W / 2, H);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.arc(W / 2, H / 2, 64, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Power Orb
+        if (powerOrb) {
+          const r = powerOrb.r + Math.sin(powerOrb.pulse) * 2.5;
+          ctx.save();
+          ctx.fillStyle = powerOrb.color;
+          ctx.shadowColor = powerOrb.color;
+          ctx.shadowBlur = 16;
+          ctx.beginPath();
+          ctx.arc(powerOrb.x, powerOrb.y, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#070911';
+          ctx.font = '900 11px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('★', powerOrb.x, powerOrb.y + 0.5);
+          ctx.restore();
+        }
+
+        // Paddles
+        [p1, p2].forEach(pad => {
+          ctx.save();
+          ctx.fillStyle = pad.color;
+          ctx.shadowColor = pad.color;
+          ctx.shadowBlur = 14;
+          ctx.beginPath();
+          ctx.roundRect(pad.x - pad.w / 2, pad.y - pad.h / 2, pad.w, pad.h, 7);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Balls & Trails
+        balls.forEach(b => {
+          b.trail.forEach((pt, idx) => {
+            const alpha = ((idx + 1) / b.trail.length) * 0.35;
+            ctx.fillStyle = `rgba(224, 242, 254, ${alpha})`;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, b.r * ((idx + 1) / b.trail.length), 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          ctx.save();
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 14;
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Particles
+        particles.forEach(pt => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, pt.ttl * 2);
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        ctx.restore();
+      }
+
+      let lastTs = performance.now();
+      function loop(ts) {
+        const dt = Math.min(0.05, (ts - lastTs) / 1000);
+        lastTs = ts;
+        update(dt);
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      // Keyboard Events
+      window.addEventListener('keydown', e => {
+        if (['ArrowUp','ArrowDown','KeyW','KeyS','Space'].includes(e.code)) e.preventDefault();
+        keys[e.code] = true;
+      });
+      window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+      // Multi-touch & Mouse Paddle Control
+      function canvasCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: ((e.clientX - rect.left) / rect.width) * W,
+          y: ((e.clientY - rect.top) / rect.height) * H
+        };
+      }
+      canvas.addEventListener('pointerdown', e => {
+        const pos = canvasCoords(e);
+        pointers.set(e.pointerId, pos);
+      });
+      canvas.addEventListener('pointermove', e => {
+        if (pointers.has(e.pointerId) || e.pointerType === 'mouse') {
+          pointers.set(e.pointerId, canvasCoords(e));
+        }
+      });
+      const clearPointer = e => { pointers.delete(e.pointerId); };
+      canvas.addEventListener('pointerup', clearPointer);
+      canvas.addEventListener('pointercancel', clearPointer);
+
+      // Option Pills
+      document.querySelectorAll('#playerModeGroup .pill-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#playerModeGroup .pill-opt').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          playerMode = btn.dataset.pmode;
+          aiDiffGroup.style.display = playerMode === '1p' ? 'flex' : 'none';
+        });
+      });
+
+      document.querySelectorAll('#aiDiffGroup .pill-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#aiDiffGroup .pill-opt').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          aiDiff = btn.dataset.diff;
+        });
+      });
+
+      document.querySelectorAll('#targetGroup .pill-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#targetGroup .pill-opt').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          winTarget = Number(btn.dataset.target);
+        });
+      });
+
+      document.getElementById('launchBtn').addEventListener('click', startMatch);
+      document.getElementById('openMenuBtn').addEventListener('click', () => {
+        running = false;
+        overlayTitle.textContent = 'PLASMA PONG DUEL';
+        overlaySub.textContent = 'Select 1-Player AI or 2-Player Local Mode';
+        document.getElementById('launchBtn').textContent = 'START MATCH';
+        setupOverlay.classList.remove('hidden');
+      });
+
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

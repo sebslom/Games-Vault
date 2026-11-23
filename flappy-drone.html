@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Aether Drone Dash (1-4 Players)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #070b12;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .hud {
+      width: min(920px, 96vw);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #101726;
+      border: 1px solid #23304a;
+      border-radius: 12px;
+      padding: 8px 14px;
+      padding-right: 48px; /* Space for hub close button */
+    }
+
+    .player-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .p-chip {
+      background: #090e18;
+      border: 1px solid #26344f;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .p-chip.dead { opacity: 0.42; text-decoration: line-through; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+    .right-hud {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+    .menu-btn {
+      background: #1c273d;
+      color: #e2e8f0;
+      border: 1px solid #33466b;
+      border-radius: 8px;
+      padding: 6px 11px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .stage-wrap {
+      position: relative;
+      flex: 1;
+      width: min(920px, 96vw);
+      margin: 8px 0;
+      border-radius: 16px;
+      border: 2px solid #23304a;
+      overflow: hidden;
+      background: #060a12;
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.8);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 10, 18, 0.88);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    .overlay.hidden { display: none; }
+
+    .title {
+      font-size: clamp(1.5rem, 3.8vw, 2.3rem);
+      font-weight: 900;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #38bdf8, #34d399, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .count-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .count-btn {
+      background: #141d2e;
+      border: 2px solid #293856;
+      color: #cbd5e1;
+      border-radius: 10px;
+      padding: 9px 16px;
+      font-size: 0.86rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .count-btn.active {
+      border-color: #34d399;
+      background: rgba(52, 211, 153, 0.16);
+      color: #ffffff;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+      width: min(680px, 92vw);
+    }
+    .legend-card {
+      background: #0e1524;
+      border: 1px solid #24324d;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.76rem;
+      text-align: left;
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, #059669, #0284c7);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 30px;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 26px rgba(5, 150, 105, 0.4);
+    }
+
+    /* Multi-Player Bottom Touch Thrusters */
+    .thruster-bar {
+      width: min(920px, 96vw);
+      display: grid;
+      gap: 8px;
+    }
+    .thrust-pad {
+      height: 54px;
+      border-radius: 12px;
+      border: 2px solid var(--p-col);
+      background: rgba(16, 23, 38, 0.92);
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .thrust-pad:active {
+      background: var(--p-col);
+      color: #060a12;
+      transform: scale(0.98);
+    }
+    .thrust-pad.dead {
+      opacity: 0.32;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div class="player-chips" id="playerChips"></div>
+    <div class="right-hud">
+      <span style="color:#fbbf24;">SOLO BEST: <b id="bestVal">0</b></span>
+      <button class="menu-btn" id="setupBtn">Players (1-4)</button>
+    </div>
+  </div>
+
+  <div class="stage-wrap">
+    <canvas id="droneCanvas" width="900" height="500"></canvas>
+
+    <div class="overlay" id="menuOverlay">
+      <div class="title" id="ovTitle">AETHER DRONE DASH</div>
+      <p id="ovSub" style="color:#94a3b8; font-size:0.88rem;">Fly through laser pylons, grab Aether Batteries (+5), and outlast your rivals!</p>
+
+      <div class="count-row" id="countRow">
+        <button class="count-btn active" data-count="1">1 Player</button>
+        <button class="count-btn" data-count="2">2 Players</button>
+        <button class="count-btn" data-count="3">3 Players</button>
+        <button class="count-btn" data-count="4">4 Players</button>
+      </div>
+
+      <div class="legend-grid" id="legendGrid"></div>
+
+      <button class="start-btn" id="launchBtn">LAUNCH DRONES</button>
+    </div>
+  </div>
+
+  <div class="thruster-bar" id="thrusterBar"></div>
+
+  <script>
+    (() => {
+      const PLAYER_CONFIGS = [
+        { id: 0, name: 'P1 Cyan',    color: '#38bdf8', keyLabel: 'W / SPACE / CLICK', codes: ['KeyW', 'Space'] },
+        { id: 1, name: 'P2 Amber',   color: '#fbbf24', keyLabel: 'UP ARROW',          codes: ['ArrowUp'] },
+        { id: 2, name: 'P3 Emerald', color: '#34d399', keyLabel: 'I KEY',             codes: ['KeyI'] },
+        { id: 3, name: 'P4 Crimson', color: '#f43f5e', keyLabel: 'ENTER / P',         codes: ['Enter', 'KeyP', 'Numpad0'] }
+      ];
+
+      const canvas = document.getElementById('droneCanvas');
+      const ctx = canvas.getContext('2d');
+      const playerChips = document.getElementById('playerChips');
+      const bestVal = document.getElementById('bestVal');
+      const menuOverlay = document.getElementById('menuOverlay');
+      const ovTitle = document.getElementById('ovTitle');
+      const ovSub = document.getElementById('ovSub');
+      const legendGrid = document.getElementById('legendGrid');
+      const thrusterBar = document.getElementById('thrusterBar');
+
+      let bestSolo = Number(localStorage.getItem('cv_drone_best') || 0);
+      bestVal.textContent = bestSolo;
+
+      // Retro Synth
+      let audioCtx = null;
+      function tone(freq, dur = 0.06, type = 'triangle', vol = 0.045) {
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          g.gain.setValueAtTime(vol, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + dur);
+        } catch {}
+      }
+
+      const W = 900, H = 500;
+      let playerCount = 1;
+      let drones = [];
+      let gates = [];
+      let batteries = [];
+      let particles = [];
+      let skyline = Array.from({ length: 24 }, (_, i) => ({
+        x: i * 44,
+        w: 36 + (i % 3) * 14,
+        h: 70 + ((i * 53) % 150)
+      }));
+
+      let running = false;
+      let speed = 250;
+      let gateSpawnDist = 0;
+      let gateCounter = 0;
+
+      function renderLegend() {
+        const active = PLAYER_CONFIGS.slice(0, playerCount);
+        legendGrid.innerHTML = active.map(p => `
+          <div class="legend-card" style="border-left: 3px solid ${p.color};">
+            <div style="font-weight:900; color:${p.color};">${p.name}</div>
+            <div style="color:#94a3b8; margin-top:2px;">Key: <b style="color:#e2e8f0;">${p.keyLabel}</b></div>
+          </div>
+        `).join('');
+      }
+
+      function buildThrusterPads() {
+        const active = PLAYER_CONFIGS.slice(0, playerCount);
+        thrusterBar.style.gridTemplateColumns = `repeat(${playerCount}, 1fr)`;
+        thrusterBar.innerHTML = active.map(p => `
+          <button type="button" class="thrust-pad" data-pid="${p.id}" style="--p-col:${p.color};">
+            <span class="dot" style="background:${p.color};"></span>
+            <span>${p.name.toUpperCase()} BOOST</span>
+          </button>
+        `).join('');
+
+        thrusterBar.querySelectorAll('.thrust-pad').forEach(btn => {
+          btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            boostDrone(Number(btn.dataset.pid));
+          });
+        });
+      }
+
+      function syncHud() {
+        playerChips.innerHTML = drones.map(d => `
+          <div class="p-chip ${d.alive ? '' : 'dead'}">
+            <span class="dot" style="background:${d.color};"></span>
+            <span style="color:${d.color};">${d.name}:</span>
+            <b>${d.score}</b>
+            ${d.shield ? '<span style="color:#38bdf8;">[SHIELD]</span>' : ''}
+          </div>
+        `).join('');
+
+        thrusterBar.querySelectorAll('.thrust-pad').forEach(btn => {
+          const d = drones[Number(btn.dataset.pid)];
+          if (d) btn.classList.toggle('dead', !d.alive);
+        });
+      }
+
+      function addBurst(x, y, color, count = 14, spd = 180) {
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const s = (0.25 + Math.random() * 0.85) * spd;
+          particles.push({
+            x, y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s,
+            r: 2.5 + Math.random() * 3,
+            color,
+            ttl: 0.3 + Math.random() * 0.25
+          });
+        }
+      }
+
+      function boostDrone(pid) {
+        if (!running) return;
+        const d = drones[pid];
+        if (!d || !d.alive) return;
+        d.vy = -345;
+        tone(340 + pid * 65, 0.06, 'triangle', 0.04);
+        addBurst(d.x - 14, d.y + 4, d.color, 5, 95);
+      }
+
+      function spawnGate() {
+        gateCounter++;
+        const gapH = Math.max(126, 168 - gateCounter * 1.4);
+        const minTop = 58;
+        const maxTop = H - 58 - gapH;
+        const topH = minTop + Math.random() * Math.max(20, maxTop - minTop);
+        const moving = gateCounter >= 5 && gateCounter % 3 === 0;
+
+        gates.push({
+          id: gateCounter,
+          x: W + 50,
+          w: 54,
+          topH,
+          gapH,
+          moving,
+          moveDir: Math.random() < 0.5 ? 1 : -1,
+          scoredBy: new Set()
+        });
+
+        if (Math.random() < 0.45) {
+          batteries.push({
+            x: W + 50 + 150,
+            y: 90 + Math.random() * (H - 180),
+            r: 11,
+            collected: false
+          });
+        }
+      }
+
+      function startGame() {
+        drones = PLAYER_CONFIGS.slice(0, playerCount).map((cfg, idx) => ({
+          ...cfg,
+          x: 155 + idx * 34,
+          y: H * (0.34 + idx * 0.09),
+          vy: -120,
+          r: 14,
+          alive: true,
+          score: 0,
+          shield: false
+        }));
+
+        gates = [];
+        batteries = [];
+        particles = [];
+        speed = 255;
+        gateSpawnDist = 120;
+        gateCounter = 0;
+        running = true;
+
+        menuOverlay.classList.add('hidden');
+        buildThrusterPads();
+        syncHud();
+        spawnGate();
+      }
+
+      function crashDrone(d) {
+        if (d.shield) {
+          d.shield = false;
+          d.vy = -260;
+          addBurst(d.x, d.y, '#38bdf8', 18, 220);
+          tone(520, 0.12, 'sine', 0.06);
+          syncHud();
+          return;
+        }
+        d.alive = false;
+        addBurst(d.x, d.y, d.color, 26, 260);
+        tone(135, 0.22, 'sawtooth', 0.07);
+        syncHud();
+
+        if (playerCount === 1 && d.score > bestSolo) {
+          bestSolo = d.score;
+          localStorage.setItem('cv_drone_best', bestSolo);
+          bestVal.textContent = bestSolo;
+        }
+
+        if (drones.every(dr => !dr.alive)) {
+          running = false;
+          const sorted = [...drones].sort((a, b) => b.score - a.score);
+          const winner = sorted[0];
+          if (winner.score > bestSolo) {
+            bestSolo = winner.score;
+            localStorage.setItem('cv_drone_best', bestSolo);
+            bestVal.textContent = bestSolo;
+          }
+          ovTitle.textContent = playerCount === 1
+            ? `FLIGHT ENDED · SCORE ${winner.score}`
+            : `${winner.name.toUpperCase()} WINS (${winner.score} PTS)!`;
+          ovSub.textContent = sorted.map(s => `${s.name}: ${s.score}`).join('  ·  ');
+          document.getElementById('launchBtn').textContent = 'FLY AGAIN';
+          menuOverlay.classList.remove('hidden');
+        }
+      }
+
+      function update(dt) {
+        // Scroll skyline
+        skyline.forEach(b => {
+          b.x -= (running ? speed * 0.22 : 35) * dt;
+          if (b.x + b.w < 0) b.x = W + 20;
+        });
+
+        if (!running) return;
+
+        speed = Math.min(430, speed + dt * 4.5);
+        gateSpawnDist -= speed * dt;
+        if (gateSpawnDist <= 0) {
+          spawnGate();
+          gateSpawnDist = 310;
+        }
+
+        // Update Gates
+        for (let i = gates.length - 1; i >= 0; i--) {
+          const g = gates[i];
+          g.x -= speed * dt;
+          if (g.moving) {
+            g.topH += g.moveDir * 58 * dt;
+            if (g.topH < 52) { g.topH = 52; g.moveDir = 1; }
+            if (g.topH + g.gapH > H - 52) { g.topH = H - 52 - g.gapH; g.moveDir = -1; }
+          }
+          if (g.x + g.w < -40) gates.splice(i, 1);
+        }
+
+        // Update Batteries
+        for (let i = batteries.length - 1; i >= 0; i--) {
+          const bat = batteries[i];
+          bat.x -= speed * dt;
+          if (bat.x < -30 || bat.collected) batteries.splice(i, 1);
+        }
+
+        // Update Drones
+        drones.forEach(d => {
+          if (!d.alive) return;
+          d.vy += 940 * dt;
+          d.y += d.vy * dt;
+
+          if (d.y - d.r < 6) {
+            d.y = 6 + d.r;
+            d.vy = 0;
+          }
+          if (d.y + d.r > H - 18) {
+            crashDrone(d);
+            return;
+          }
+
+          // Battery pickup
+          for (const bat of batteries) {
+            if (!bat.collected && Math.hypot(d.x - bat.x, d.y - bat.y) < d.r + bat.r) {
+              bat.collected = true;
+              d.score += 5;
+              d.shield = true;
+              addBurst(bat.x, bat.y, '#38bdf8', 14, 170);
+              tone(680, 0.12, 'sine', 0.06);
+              syncHud();
+            }
+          }
+
+          // Gate pass & collision
+          for (const g of gates) {
+            if (!g.scoredBy.has(d.id) && g.x + g.w / 2 < d.x) {
+              g.scoredBy.add(d.id);
+              d.score += 1;
+              tone(540 + d.id * 45, 0.07, 'sine', 0.045);
+              syncHud();
+            }
+
+            const withinX = d.x + d.r - 3 > g.x && d.x - d.r + 3 < g.x + g.w;
+            if (withinX) {
+              const hitTop = d.y - d.r + 3 < g.topH;
+              const hitBottom = d.y + d.r - 3 > g.topH + g.gapH;
+              if (hitTop || hitBottom) {
+                crashDrone(d);
+                return;
+              }
+            }
+          }
+        });
+
+        // Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const pt = particles[i];
+          pt.x += pt.vx * dt;
+          pt.y += pt.vy * dt;
+          pt.ttl -= dt;
+          if (pt.ttl <= 0) particles.splice(i, 1);
+        }
+      }
+
+      function render() {
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+        bgGrad.addColorStop(0, '#070b14');
+        bgGrad.addColorStop(1, '#0f1c2e');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Distant Skyline
+        ctx.fillStyle = '#0b1322';
+        skyline.forEach(b => {
+          ctx.fillRect(b.x, H - 18 - b.h, b.w, b.h);
+        });
+
+        // Ground Strip
+        ctx.fillStyle = '#132036';
+        ctx.fillRect(0, H - 18, W, 18);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(0, H - 19, W, 2);
+
+        // Gates
+        gates.forEach(g => {
+          ctx.fillStyle = '#162238';
+          ctx.strokeStyle = g.moving ? '#fbbf24' : '#38bdf8';
+          ctx.lineWidth = 2;
+
+          // Top pylon
+          ctx.fillRect(g.x, 0, g.w, g.topH);
+          ctx.strokeRect(g.x + 1, -2, g.w - 2, g.topH + 2);
+
+          // Bottom pylon
+          const botY = g.topH + g.gapH;
+          ctx.fillRect(g.x, botY, g.w, H - 18 - botY);
+          ctx.strokeRect(g.x + 1, botY, g.w - 2, H - 18 - botY);
+        });
+
+        // Batteries
+        batteries.forEach(bat => {
+          ctx.save();
+          ctx.fillStyle = '#38bdf8';
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(bat.x, bat.y, bat.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#060a12';
+          ctx.font = '900 11px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('⚡', bat.x, bat.y + 0.5);
+          ctx.restore();
+        });
+
+        // Drones
+        drones.forEach(d => {
+          if (!d.alive) return;
+          ctx.save();
+          ctx.translate(d.x, d.y);
+          const tilt = Math.max(-0.45, Math.min(0.65, d.vy / 580));
+          ctx.rotate(tilt);
+
+          if (d.shield) {
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(0, 0, d.r + 6, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          // Drone hull
+          ctx.fillStyle = d.color;
+          ctx.beginPath();
+          ctx.roundRect(-16, -9, 32, 18, 7);
+          ctx.fill();
+
+          // Cockpit visor
+          ctx.fillStyle = '#060a12';
+          ctx.fillRect(3, -5, 9, 7);
+
+          // Rotor bar
+          ctx.fillStyle = '#e2e8f0';
+          ctx.fillRect(-13, -13, 26, 2.5);
+          ctx.restore();
+        });
+
+        // Particles
+        particles.forEach(pt => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, pt.ttl * 2.2);
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+
+      let lastTs = performance.now();
+      function loop(ts) {
+        const dt = Math.min(0.05, (ts - lastTs) / 1000);
+        lastTs = ts;
+        update(dt);
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      // Keyboard Controls for P1..P4
+      window.addEventListener('keydown', e => {
+        if (['Space', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
+        if (e.repeat) return;
+        for (const cfg of PLAYER_CONFIGS.slice(0, playerCount)) {
+          if (cfg.codes.includes(e.code)) {
+            boostDrone(cfg.id);
+          }
+        }
+      });
+
+      // Mouse / Single-tap on canvas boosts P1
+      canvas.addEventListener('pointerdown', e => {
+        if (!running) return;
+        e.preventDefault();
+        boostDrone(0);
+      });
+
+      // Player Count Selector
+      document.querySelectorAll('#countRow .count-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#countRow .count-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          playerCount = Number(btn.dataset.count);
+          renderLegend();
+        });
+      });
+
+      document.getElementById('launchBtn').addEventListener('click', startGame);
+      document.getElementById('setupBtn').addEventListener('click', () => {
+        running = false;
+        ovTitle.textContent = 'AETHER DRONE DASH';
+        ovSub.textContent = 'Select 1 to 4 players on the same screen!';
+        document.getElementById('launchBtn').textContent = 'START FLIGHT';
+        menuOverlay.classList.remove('hidden');
+      });
+
+      renderLegend();
+      buildThrusterPads();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

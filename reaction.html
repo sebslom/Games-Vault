@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reflex Reaction Test</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 16px;
+    }
+    .stats-bar {
+      width: min(460px, 94vw);
+      display: flex;
+      justify-content: space-between;
+      background: #131520;
+      border: 1px solid #25293d;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+    .stats-bar .best { color: #38bdf8; }
+    .stats-bar .avg { color: #a78bfa; }
+    .pad {
+      width: min(460px, 94vw);
+      height: min(340px, 56dvh);
+      border-radius: 18px;
+      background: #1e293b;
+      border: 2px solid #334155;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      cursor: pointer;
+      transition: background-color 0.12s ease, transform 0.1s ease;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.65);
+    }
+    .pad:active { transform: scale(0.99); }
+    .pad.ready { background: #7f1d1d; border-color: #ef4444; }
+    .pad.go { background: #065f46; border-color: #10b981; }
+    .pad.early { background: #1e3a8a; border-color: #3b82f6; }
+    .pad-title { font-size: 1.75rem; font-weight: 900; margin-bottom: 8px; }
+    .pad-sub { font-size: 0.95rem; color: #e2e8f0; opacity: 0.9; }
+    .ms-readout { font-size: 2.6rem; font-weight: 900; color: #38bdf8; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <div class="stats-bar">
+    <span>ATTEMPTS: <b id="attemptCount">0</b></span>
+    <span class="avg">AVG: <b id="avgMs">-</b></span>
+    <span class="best">BEST: <b id="bestMs">-</b></span>
+  </div>
+  <div class="pad" id="pad">
+    <div class="pad-title" id="padTitle">Reflex Reaction Test</div>
+    <div class="pad-sub" id="padSub">Click or press Space to begin. Wait for green!</div>
+  </div>
+
+  <script>
+    const pad = document.getElementById('pad');
+    const padTitle = document.getElementById('padTitle');
+    const padSub = document.getElementById('padSub');
+    const attemptEl = document.getElementById('attemptCount');
+    const avgEl = document.getElementById('avgMs');
+    const bestEl = document.getElementById('bestMs');
+
+    let state = 'idle'; // idle | waiting | go | result
+    let timer = null;
+    let startTime = 0;
+    let history = [];
+    let best = Number(localStorage.getItem('cv_reaction_best') || 0) || null;
+
+    if (best) bestEl.textContent = best + ' ms';
+
+    function updateStats() {
+      attemptEl.textContent = history.length;
+      if (history.length > 0) {
+        const avg = Math.round(history.reduce((a, b) => a + b, 0) / history.length);
+        avgEl.textContent = avg + ' ms';
+      }
+      if (best) bestEl.textContent = best + ' ms';
+    }
+
+    function startWaiting() {
+      clearTimeout(timer);
+      state = 'waiting';
+      pad.className = 'pad ready';
+      padTitle.textContent = 'WAIT FOR GREEN...';
+      padSub.textContent = 'Do not click yet!';
+      const delay = 1100 + Math.random() * 2800;
+      timer = setTimeout(() => {
+        state = 'go';
+        pad.className = 'pad go';
+        padTitle.textContent = 'CLICK NOW!';
+        padSub.textContent = 'Tap / Click / Space as fast as possible!';
+        startTime = performance.now();
+      }, delay);
+    }
+
+    function triggerAction() {
+      if (state === 'idle' || state === 'result') {
+        startWaiting();
+      } else if (state === 'waiting') {
+        clearTimeout(timer);
+        state = 'result';
+        pad.className = 'pad early';
+        padTitle.textContent = 'TOO EARLY!';
+        padSub.textContent = 'You clicked before green. Click or press Space to retry.';
+      } else if (state === 'go') {
+        const ms = Math.max(1, Math.round(performance.now() - startTime));
+        history.push(ms);
+        if (!best || ms < best) {
+          best = ms;
+          localStorage.setItem('cv_reaction_best', best);
+        }
+        updateStats();
+        state = 'result';
+        pad.className = 'pad';
+        padTitle.innerHTML = `<div class="ms-readout">${ms} ms</div>`;
+        padSub.textContent = 'Click or press Space for another test.';
+      }
+    }
+
+    pad.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      triggerAction();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        triggerAction();
+      }
+    });
+  </script>
+</body>
+</html>

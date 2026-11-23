@@ -16,7 +16,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       padding: 12px;
       overflow: hidden;
     }
@@ -25,15 +25,27 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
       background: #131520;
       border: 1px solid #25293d;
       border-radius: 12px;
-      padding: 10px 16px;
+      padding: 10px 14px;
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
     .hud .score { color: #38bdf8; }
     .hud .best { color: #a78bfa; }
+    .diff-select {
+      background: #1c2033;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
     .canvas-wrap {
       position: relative;
       width: min(460px, 94vw);
@@ -94,6 +106,12 @@
 <body>
   <div class="hud">
     <span class="score">SCORE: <b id="scoreVal">0</b></span>
+    <select id="diffSelect" class="diff-select" aria-label="Difficulty">
+      <option value="easy">Easy (Slow)</option>
+      <option value="normal" selected>Normal</option>
+      <option value="hard">Hard (Fast)</option>
+      <option value="insane">Insane (Turbo)</option>
+    </select>
     <span class="best">BEST: <b id="bestVal">0</b></span>
   </div>
   <div class="canvas-wrap">
@@ -118,17 +136,39 @@
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('scoreVal');
     const bestEl = document.getElementById('bestVal');
+    const diffSelect = document.getElementById('diffSelect');
     const overlay = document.getElementById('gameOverOverlay');
     const finalSummary = document.getElementById('finalSummary');
     const restartBtn = document.getElementById('restartBtn');
+
+    const DIFF_SPEEDS = {
+      easy: 135,
+      normal: 95,
+      hard: 66,
+      insane: 45
+    };
 
     const gridSize = 20;
     const cols = canvas.width / gridSize;
     const rows = canvas.height / gridSize;
 
     let snake, food, bonusOrb, dir, nextDir, score, best, loopId, alive;
-    best = Number(localStorage.getItem('cv_snake_best') || 0);
+    let currentDiff = diffSelect.value;
+    best = Number(localStorage.getItem(`cv_snake_best_${currentDiff}`) || 0);
     bestEl.textContent = best;
+
+    function getTickInterval() {
+      const base = DIFF_SPEEDS[currentDiff] || 95;
+      const speedup = Math.min(22, Math.floor(score / 60) * 3);
+      return Math.max(32, base - speedup);
+    }
+
+    function scheduleLoop() {
+      clearInterval(loopId);
+      if (alive) {
+        loopId = setInterval(tick, getTickInterval());
+      }
+    }
 
     function randCell() {
       return {
@@ -144,6 +184,10 @@
     }
 
     function resetGame() {
+      currentDiff = diffSelect.value;
+      best = Number(localStorage.getItem(`cv_snake_best_${currentDiff}`) || 0);
+      bestEl.textContent = best;
+
       snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
       dir = 'RIGHT';
       nextDir = 'RIGHT';
@@ -153,8 +197,8 @@
       food = spawnFood();
       scoreEl.textContent = score;
       overlay.classList.remove('visible');
-      clearInterval(loopId);
-      loopId = setInterval(tick, 95);
+      scheduleLoop();
+      draw();
     }
 
     function setDirection(newDir) {
@@ -181,6 +225,10 @@
       });
     });
 
+    diffSelect.addEventListener('change', () => {
+      resetGame();
+    });
+
     function tick() {
       dir = nextDir;
       const head = { ...snake[0] };
@@ -192,21 +240,17 @@
       if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) {
         alive = false;
         clearInterval(loopId);
-        finalSummary.textContent = `Final Score: ${score} · Best: ${best}`;
+        finalSummary.textContent = `Difficulty: ${currentDiff.toUpperCase()} · Score: ${score} · Best: ${best}`;
         overlay.classList.add('visible');
         return;
       }
 
       snake.unshift(head);
+      let ate = false;
 
       if (head.x === food.x && head.y === food.y) {
         score += 10;
-        if (score > best) {
-          best = score;
-          localStorage.setItem('cv_snake_best', best);
-          bestEl.textContent = best;
-        }
-        scoreEl.textContent = score;
+        ate = true;
         food = spawnFood();
         if (!bonusOrb && Math.random() < 0.35) {
           bonusOrb = { ...spawnFood(), ttl: 65 };
@@ -218,17 +262,22 @@
       if (bonusOrb) {
         if (head.x === bonusOrb.x && head.y === bonusOrb.y) {
           score += 25;
-          if (score > best) {
-            best = score;
-            localStorage.setItem('cv_snake_best', best);
-            bestEl.textContent = best;
-          }
-          scoreEl.textContent = score;
+          ate = true;
           bonusOrb = null;
         } else {
           bonusOrb.ttl--;
           if (bonusOrb.ttl <= 0) bonusOrb = null;
         }
+      }
+
+      if (ate) {
+        if (score > best) {
+          best = score;
+          localStorage.setItem(`cv_snake_best_${currentDiff}`, best);
+          bestEl.textContent = best;
+        }
+        scoreEl.textContent = score;
+        scheduleLoop();
       }
 
       draw();

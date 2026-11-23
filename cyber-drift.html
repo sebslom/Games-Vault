@@ -97,7 +97,7 @@
     <canvas id="raceCanvas" width="360" height="540"></canvas>
     <div class="overlay" id="overlay">
       <h2 id="ovTitle" style="font-size:1.6rem; color:#f472b6;">CYBER DRIFT</h2>
-      <p id="ovSub" style="color:#9aa0b8; font-size:0.9rem;">Dodge synth-traffic and collect Neon Cells! Use A/D, Arrows, or tap buttons.</p>
+      <p id="ovSub" style="color:#9aa0b8; font-size:0.9rem;">No lane-line camping! Stay in lanes, weave through dynamic blockers &amp; grab Neon Cells.</p>
       <button class="btn" id="startBtn">Start Engine</button>
     </div>
   </div>
@@ -121,15 +121,18 @@
     bestEl.textContent = best;
 
     const lanes = [68, 142, 218, 292];
+    const laneBounds = [105, 180, 255]; // exact center lines between lanes
     let player = { x: 180, y: 455, w: 34, h: 58, vx: 0 };
     let traffic = [];
     let orbs = [];
     let roadOffset = 0;
     let score = 0;
-    let speed = 5.2;
+    let speed = 5.6;
     let running = false;
     let keys = {};
     let spawnTimer = 0;
+    let straddleTimer = 0;
+    let waveIndex = 0;
 
     function reset() {
       player.x = 180;
@@ -137,8 +140,10 @@
       traffic = [];
       orbs = [];
       score = 0;
-      speed = 5.2;
+      speed = 5.6;
       spawnTimer = 0;
+      straddleTimer = 0;
+      waveIndex = 0;
       running = true;
       overlay.classList.add('hidden');
     }
@@ -162,24 +167,80 @@
     bindHold('rightBtn', 'ArrowRight');
 
     function spawnWave() {
-      const freeLane = Math.floor(Math.random() * lanes.length);
+      waveIndex++;
       const colors = ['#ef4444', '#f59e0b', '#a855f7', '#06b6d4'];
+
+      // Every 3rd wave, send a wider dual-lane / weaving obstacle so line-camping cannot bypass waves
+      if (waveIndex % 3 === 0) {
+        const blockPair = Math.floor(Math.random() * 3); // 0:(0,1), 1:(1,2), 2:(2,3)
+        const openLane = [0, 1, 2, 3].find(idx => idx !== blockPair && idx !== blockPair + 1);
+        [blockPair, blockPair + 1].forEach(idx => {
+          traffic.push({
+            x: lanes[idx],
+            y: -60,
+            w: 44,
+            h: 58,
+            vy: speed * 0.42,
+            color: '#f43f5e'
+          });
+        });
+        if (openLane !== undefined) {
+          orbs.push({ x: lanes[openLane], y: -50, r: 10 });
+        }
+        return;
+      }
+
+      // Standard wave: block 2 or 3 lanes, leave 1 or 2 clear lanes, and place occasional line-sentry drones
+      const freeLane = Math.floor(Math.random() * lanes.length);
+      const secondFree = (freeLane + 1 + Math.floor(Math.random() * 2)) % lanes.length;
+      const allowSecond = Math.random() < 0.35;
+
       lanes.forEach((lx, idx) => {
-        if (idx === freeLane) {
-          if (Math.random() < 0.65) {
-            orbs.push({ x: lx, y: -40, r: 10 });
-          }
-        } else if (Math.random() < 0.68) {
+        const isFree = idx === freeLane || (allowSecond && idx === secondFree);
+        if (isFree) {
+          if (Math.random() < 0.6) orbs.push({ x: lx, y: -40, r: 10 });
+        } else {
           traffic.push({
             x: lx,
-            y: -60 - Math.random() * 45,
-            w: 34,
+            y: -58 - Math.random() * 32,
+            w: 38,
             h: 56,
-            vy: speed * (0.45 + Math.random() * 0.25),
+            vy: speed * (0.4 + Math.random() * 0.25),
             color: colors[Math.floor(Math.random() * colors.length)]
           });
         }
       });
+
+      // Periodic boundary bumper / line-sentry to punish sitting directly on a lane divider
+      if (waveIndex % 2 === 0) {
+        const lineX = laneBounds[Math.floor(Math.random() * laneBounds.length)];
+        traffic.push({
+          x: lineX,
+          y: -115,
+          w: 30,
+          h: 46,
+          vy: speed * 0.52,
+          color: '#eab308'
+        });
+      }
+    }
+
+    function isStraddlingLine(x) {
+      return laneBounds.some(bx => Math.abs(x - bx) < 11);
+    }
+
+    function finishRun(reason) {
+      running = false;
+      const finalScore = Math.floor(score);
+      if (finalScore > best) {
+        best = finalScore;
+        localStorage.setItem('cv_drift_best', best);
+        bestEl.textContent = best;
+      }
+      ovTitle.textContent = reason;
+      ovSub.textContent = `Distance Score: ${finalScore} · Best: ${best}`;
+      startBtn.textContent = 'Race Again';
+      overlay.classList.remove('hidden');
     }
 
     function drawCar(x, y, w, h, bodyColor, isPlayer = false) {
@@ -196,10 +257,8 @@
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Windshield
       ctx.fillStyle = '#090d16';
       ctx.fillRect(-w * 0.34, -h * 0.24, w * 0.68, h * 0.22);
-      // Headlights / Taillights
       ctx.fillStyle = isPlayer ? '#38bdf8' : '#fef08a';
       ctx.fillRect(-w * 0.38, isPlayer ? -h * 0.48 : h * 0.42, 7, 4);
       ctx.fillRect(w * 0.38 - 7, isPlayer ? -h * 0.48 : h * 0.42, 7, 4);
@@ -209,21 +268,32 @@
     function update() {
       if (!running) return;
 
-      const accel = 0.72;
+      const accel = 0.78;
       if (keys['ArrowLeft'] || keys['KeyA']) player.vx -= accel;
       if (keys['ArrowRight'] || keys['KeyD']) player.vx += accel;
-      player.vx *= 0.86;
+      player.vx *= 0.85;
       player.x += player.vx;
       player.x = Math.max(46, Math.min(314, player.x));
 
-      speed = Math.min(13.5, speed + 0.0018);
-      score += speed * 0.12;
+      // Anti-exploit check: staying parked right on a lane dividing line for > 1.3s overheats/penalizes
+      if (isStraddlingLine(player.x)) {
+        straddleTimer += 1 / 60;
+        if (straddleTimer > 1.35) {
+          finishRun('LINE CAMP PENALTY!');
+          return;
+        }
+      } else {
+        straddleTimer = Math.max(0, straddleTimer - 0.04);
+      }
+
+      speed = Math.min(14.0, speed + 0.0022);
+      score += speed * 0.13;
       roadOffset = (roadOffset + speed * 1.4) % 48;
 
       spawnTimer -= speed;
       if (spawnTimer <= 0) {
         spawnWave();
-        spawnTimer = 215;
+        spawnTimer = 185;
       }
 
       for (let i = orbs.length - 1; i >= 0; i--) {
@@ -239,19 +309,9 @@
 
       for (let i = traffic.length - 1; i >= 0; i--) {
         const t = traffic[i];
-        t.y += speed - t.vy * 0.35;
-        if (Math.abs(t.x - player.x) < (t.w + player.w) * 0.42 && Math.abs(t.y - player.y) < (t.h + player.h) * 0.44) {
-          running = false;
-          const finalScore = Math.floor(score);
-          if (finalScore > best) {
-            best = finalScore;
-            localStorage.setItem('cv_drift_best', best);
-            bestEl.textContent = best;
-          }
-          ovTitle.textContent = 'CRASHED!';
-          ovSub.textContent = `Distance Score: ${finalScore} · Best: ${best}`;
-          startBtn.textContent = 'Race Again';
-          overlay.classList.remove('hidden');
+        t.y += speed - t.vy * 0.32;
+        if (Math.abs(t.x - player.x) < (t.w + player.w) * 0.46 && Math.abs(t.y - player.y) < (t.h + player.h) * 0.45) {
+          finishRun('CRASHED!');
           return;
         }
         if (t.y > 600) traffic.splice(i, 1);
@@ -265,21 +325,18 @@
       ctx.fillStyle = '#090b14';
       ctx.fillRect(0, 0, 360, 540);
 
-      // Asphalt
       ctx.fillStyle = '#141829';
       ctx.fillRect(28, 0, 304, 540);
 
-      // Neon Guardrails
       ctx.fillStyle = '#db2777';
       ctx.fillRect(24, 0, 4, 540);
       ctx.fillRect(332, 0, 4, 540);
 
-      // Lane dividers
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
+      ctx.strokeStyle = straddleTimer > 0.45 ? 'rgba(244, 63, 94, 0.7)' : 'rgba(148, 163, 184, 0.28)';
       ctx.lineWidth = 2;
       ctx.setLineDash([24, 24]);
       ctx.lineDashOffset = -roadOffset;
-      [105, 180, 255].forEach(lx => {
+      laneBounds.forEach(lx => {
         ctx.beginPath();
         ctx.moveTo(lx, 0);
         ctx.lineTo(lx, 540);

@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>BLOCKGUY 2048 · 1993 MS-DOS Block-Man Edition</title>
+  <title>BLOCKGUY: CUBE TRAPPER</title>
   <style>
     :root {
-      --bg: #05070e;
-      --dos-blue: #0000aa;
-      --dos-cyan: #55ffff;
-      --dos-yellow: #ffff55;
-      --dos-green: #55ff55;
-      --dos-red: #ff5555;
-      --dos-magenta: #ff55ff;
-      --panel: #0c1022;
-      --border: #2b3866;
+      --bg: #070a14;
+      --panel: #101628;
+      --border: #28365e;
+      --cyan: #38bdf8;
+      --yellow: #facc15;
+      --pink: #f472b6;
+      --green: #4ade80;
+      --red: #fb7185;
+      --text: #f8fafc;
+      --muted: #94a3b8;
     }
 
     * {
@@ -26,90 +27,81 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
-      background: radial-gradient(circle at 50% 25%, #0e1430 0%, var(--bg) 75%);
-      color: #f8fafc;
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 20%, #121b38 0%, var(--bg) 78%);
+      color: var(--text);
       font-family: 'JetBrains Mono', 'Courier New', monospace;
-      height: 100vh;
-      height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 12px 12px;
-      overflow: hidden;
-      touch-action: manipulation;
+      padding: 8px 10px 10px;
+      touch-action: none;
     }
 
-    .dos-header {
-      width: min(860px, 97vw);
-      background: var(--dos-blue);
-      border: 2px solid var(--dos-cyan);
-      padding: 7px 12px;
+    .hud {
+      width: min(760px, 96vw);
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 14px;
       padding-right: 48px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      box-shadow: 0 6px 24px rgba(0, 0, 170, 0.5);
-      z-index: 15;
+      font-size: 0.84rem;
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+      z-index: 10;
     }
 
-    .dos-brand {
+    .hud-group {
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-    .dos-brand h1 {
-      font-size: 0.98rem;
-      font-weight: 900;
-      color: var(--dos-yellow);
-      letter-spacing: 0.8px;
-    }
-    .dos-brand span {
-      font-size: 0.72rem;
-      color: var(--dos-cyan);
+      gap: 14px;
     }
 
-    .hud-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 0.8rem;
-      font-weight: 800;
-    }
-    .hud-stats b { color: var(--dos-yellow); }
-    .hud-stats .cyan { color: var(--dos-cyan); }
-    .hud-stats .green { color: var(--dos-green); }
+    .hud b.score { color: var(--yellow); }
+    .hud b.stage { color: var(--cyan); }
+    .hud b.lives { color: var(--red); }
+    .hud b.best  { color: var(--green); }
 
-    .top-actions {
+    .audio-btns {
       display: flex;
       gap: 6px;
     }
-    .dos-mini-btn {
-      background: #000066;
-      border: 1px solid var(--dos-cyan);
-      color: #ffffff;
+    .mini-btn {
+      background: #19223d;
+      border: 1.5px solid #3a4d82;
+      color: var(--text);
+      border-radius: 6px;
       padding: 4px 9px;
       font-family: inherit;
       font-size: 0.72rem;
       font-weight: 800;
       cursor: pointer;
     }
-    .dos-mini-btn:hover { background: var(--dos-cyan); color: #000044; }
-    .dos-mini-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .mini-btn.active {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(56, 189, 248, 0.14);
+    }
 
-    .crt-wrap {
+    .stage-box {
       position: relative;
       flex: 1;
-      width: min(860px, 97vw);
+      width: min(760px, 96vw);
       margin: 8px 0;
-      background: #000010;
-      border: 3px solid #475569;
-      border-radius: 6px;
+      background: #060913;
+      border: 3px solid var(--border);
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.85), inset 0 0 30px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -120,1151 +112,1066 @@
       height: 100%;
       object-fit: contain;
       image-rendering: pixelated;
-      image-rendering: crisp-edges;
       display: block;
     }
-
-    .crt-scanlines {
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0) 0px,
-        rgba(255, 255, 255, 0) 2px,
-        rgba(0, 0, 0, 0.22) 3px,
-        rgba(0, 0, 0, 0.22) 4px
-      );
-      pointer-events: none;
-      z-index: 4;
-    }
-    .crt-scanlines.off { display: none; }
 
     .overlay {
       position: absolute;
       inset: 0;
-      background: rgba(2, 4, 14, 0.9);
+      background: rgba(6, 9, 19, 0.88);
+      backdrop-filter: blur(4px);
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 18px;
       text-align: center;
+      padding: 20px;
+      gap: 12px;
       z-index: 20;
-      overflow-y: auto;
     }
     .overlay.active { display: flex; }
 
-    .dos-dialog {
-      width: min(620px, 94vw);
-      background: var(--dos-blue);
-      border: 3px solid var(--dos-cyan);
-      padding: 18px;
-      box-shadow: 10px 10px 0 #000000;
-    }
-    .dos-dialog h2 {
-      color: var(--dos-yellow);
-      font-size: 1.3rem;
-      margin-bottom: 6px;
-      letter-spacing: 1px;
-    }
-    .dos-dialog p {
-      color: #ffffff;
-      font-size: 0.82rem;
-      line-height: 1.45;
-      margin-bottom: 12px;
-    }
-
-    .stage-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-      gap: 7px;
-      margin-bottom: 14px;
-      max-height: 44dvh;
-      overflow-y: auto;
-    }
-    .stage-card {
-      background: #000055;
-      border: 1.5px solid var(--dos-cyan);
-      color: #ffffff;
-      padding: 7px 6px;
-      font-family: inherit;
-      font-size: 0.72rem;
-      cursor: pointer;
-      text-align: left;
-    }
-    .stage-card:hover { background: #000088; border-color: var(--dos-yellow); }
-    .stage-card.cleared { border-color: var(--dos-green); }
-    .stage-card b { display: block; color: var(--dos-yellow); font-size: 0.78rem; }
-    .stage-card span { color: var(--dos-cyan); font-size: 0.66rem; }
-
-    .legend-box {
-      background: #000044;
-      border: 1px solid var(--dos-cyan);
-      padding: 10px;
-      text-align: left;
-      font-size: 0.74rem;
-      line-height: 1.55;
-      margin-bottom: 14px;
-    }
-    .legend-box b { color: var(--dos-yellow); }
-
-    .dos-cta {
-      background: #00aaaa;
-      color: #000000;
-      border: 2px solid #ffffff;
-      padding: 9px 20px;
-      font-family: inherit;
+    .title-logo {
+      font-size: clamp(1.5rem, 4vw, 2.3rem);
       font-weight: 900;
-      font-size: 0.86rem;
-      cursor: pointer;
+      letter-spacing: 1.5px;
+      color: var(--yellow);
+      text-shadow: 0 3px 0 #1e3a8a, 0 0 18px rgba(250, 204, 21, 0.45);
     }
-    .dos-cta:hover { background: var(--dos-yellow); }
 
-    .controls-dock {
-      width: min(860px, 97vw);
+    .sub-text {
+      font-size: 0.84rem;
+      color: #cbd5e1;
+      max-width: 480px;
+      line-height: 1.48;
+    }
+
+    .legend-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      max-width: 520px;
+      font-size: 0.72rem;
+    }
+    .l-pill {
+      background: #11182e;
+      border: 1px solid #2e3e6e;
+      border-radius: 6px;
+      padding: 4px 8px;
+      color: #e2e8f0;
+    }
+
+    .play-btn {
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      color: #ffffff;
+      border: 2px solid #bae6fd;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-family: inherit;
+      font-size: 0.96rem;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.35);
+    }
+    .play-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    /* Mobile & Desktop Touch Controls Bar */
+    .controls-bar {
+      width: min(760px, 96vw);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      flex-wrap: wrap;
     }
 
-    .kbd-guide {
-      font-size: 0.72rem;
-      color: #94a3b8;
-    }
-    .kbd-guide b { color: var(--dos-cyan); }
-
-    .touch-pad {
+    .move-pad, .act-pad {
       display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
+      gap: 8px;
     }
-    .t-btn {
-      background: #11182c;
-      border: 1.5px solid var(--dos-cyan);
-      color: var(--dos-cyan);
-      padding: 9px 12px;
+
+    .c-btn {
+      background: #131b31;
+      border: 2px solid #334678;
+      color: #f8fafc;
+      border-radius: 10px;
+      min-width: 62px;
+      height: 50px;
+      padding: 0 14px;
       font-family: inherit;
+      font-size: 0.9rem;
       font-weight: 900;
-      font-size: 0.78rem;
-      border-radius: 6px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
     }
-    .t-btn.jump-pad {
-      background: #1a1042;
-      border-color: var(--dos-yellow);
-      color: var(--dos-yellow);
+    .c-btn.pressed, .c-btn:active {
+      background: #2563eb;
+      border-color: var(--cyan);
+      transform: scale(0.96);
     }
-    .t-btn.act {
-      background: #003366;
-      border-color: #55ff55;
-      color: #55ff55;
+    .c-btn.jump {
+      background: #1b2847;
+      border-color: var(--yellow);
+      color: var(--yellow);
+      min-width: 82px;
     }
-    .t-btn:active {
-      background: var(--dos-cyan);
-      color: #000022;
+    .c-btn.trap {
+      background: #2a1438;
+      border-color: var(--pink);
+      color: #fbcfe8;
+      min-width: 86px;
+    }
+
+    .kbd-tip {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    @media (max-width: 640px) {
+      .kbd-tip { display: none; }
+      .c-btn { min-width: 56px; height: 48px; font-size: 0.82rem; padding: 0 10px; }
     }
   </style>
 </head>
 <body>
-  <header class="dos-header">
-    <div class="dos-brand">
-      <h1>BLOCKGUY 2048</h1>
-      <span>1993 MS-DOS BLOCK-MAN EDITION</span>
+  <header class="hud">
+    <div class="hud-group">
+      <span>SCORE: <b class="score" id="scoreVal">0</b></span>
+      <span>STAGE: <b class="stage" id="stageVal">1</b></span>
+      <span>LIVES: <b class="lives" id="livesVal">3</b></span>
+      <span>BEST: <b class="best" id="bestVal">0</b></span>
     </div>
-
-    <div class="hud-stats">
-      <span>STAGE: <b id="stageNumVal">1/12</b></span>
-      <span>SCORE: <b class="green" id="scoreVal">2048</b></span>
-      <span>MOVES: <b id="movesVal">0</b></span>
-      <span>GEMS: <b class="cyan" id="gemsVal">0/0</b></span>
-      <span>CARRY: <b class="cyan" id="carryVal">NONE</b></span>
-    </div>
-
-    <div class="top-actions">
-      <button type="button" class="dos-mini-btn" id="undoBtn" title="Undo Move [Z]">UNDO [Z]</button>
-      <button type="button" class="dos-mini-btn" id="stagesBtn">STAGES</button>
-      <button type="button" class="dos-mini-btn" id="helpBtn">? HELP</button>
-      <button type="button" class="dos-mini-btn" id="crtBtn">CRT: ON</button>
+    <div class="audio-btns">
+      <button type="button" class="mini-btn active" id="bgmBtn">MUSIC: ON</button>
+      <button type="button" class="mini-btn active" id="sfxBtn">SFX: ON</button>
     </div>
   </header>
 
-  <main class="crt-wrap">
-    <canvas id="dosCanvas" width="384" height="224"></canvas>
-    <div class="crt-scanlines" id="scanlines"></div>
+  <main class="stage-box">
+    <canvas id="gameCanvas" width="640" height="440"></canvas>
 
-    <div class="overlay" id="winOverlay">
-      <div class="dos-dialog">
-        <h2 id="winTitle">STAGE 1 CLEAR!</h2>
-        <p id="winSummary">Completed in 0 moves · Stage Score: 2048</p>
-        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-          <button type="button" class="dos-cta" id="nextStageBtn">NEXT STAGE [ENTER]</button>
-          <button type="button" class="dos-mini-btn" id="replayStageBtn" style="padding:9px 14px;">REPLAY</button>
-        </div>
+    <div class="overlay active" id="startOverlay">
+      <div class="title-logo">BLOCKGUY: CUBE TRAPPER</div>
+      <p class="sub-text">
+        Fire energy cubes to encase blocky monsters inside floating prisms, then touch or jump on the trapped cubes to shatter them! Clear all enemies to warp to the next procedural stage.
+      </p>
+      <div class="legend-pills">
+        <span class="l-pill"><b style="color:#facc15;">[★]</b> Gold Gem (+250)</span>
+        <span class="l-pill"><b style="color:#38bdf8;">[»]</b> Turbo Boots</span>
+        <span class="l-pill"><b style="color:#f472b6;">[⚡]</b> Rapid Cube Blaster</span>
+        <span class="l-pill"><b style="color:#4ade80;">[♥]</b> Extra Life</span>
       </div>
+      <button type="button" class="play-btn" id="startBtn">START ARCADE RUN</button>
     </div>
 
-    <div class="overlay" id="stageSelectOverlay">
-      <div class="dos-dialog">
-        <h2>SELECT DOS STAGE (1 - 12)</h2>
-        <p>Use JUMP &amp; LIFT/DROP blocks to climb higher ledges, collect Gems, and reach the Green Exit Door!</p>
-        <div class="stage-grid" id="stageGrid"></div>
-        <button type="button" class="dos-cta" id="closeStagesBtn">RESUME CURRENT STAGE</button>
-      </div>
-    </div>
-
-    <div class="overlay" id="helpOverlay">
-      <div class="dos-dialog">
-        <h2>BLOCKGUY 2048 · FIELD MANUAL</h2>
-        <div class="legend-box">
-          <b>[W / ▲ / JUMP] Jump:</b> Jump up 1 block (or onto a block in front of you) to reach higher ledges.<br>
-          <b>[◄ / ► / A / D] Walk &amp; Step-Climb:</b> Move left/right and automatically step up 1-block ledges.<br>
-          <b>[SPACE / S / ▼ / LIFT-DROP] Carry Blocks:</b> Pick up cyan <b>Standard Blocks</b> or heavy <b>Steel Blocks</b> in front of you and set them down to build stairs and bridges.<br>
-          <b>[S] Pressure Switch &amp; [T] Teleporter:</b> Open laser gates or warp between pads.<br>
-          <b>[Z] Undo · [R] Restart Stage · [G] Generate Random Bonus Stage</b>
-        </div>
-        <button type="button" class="dos-cta" id="closeHelpBtn">BACK TO GAME</button>
-      </div>
+    <div class="overlay" id="overOverlay">
+      <div class="title-logo" style="color:#fb7185;">GAME OVER</div>
+      <p class="sub-text" id="overSummary">Final Score: 0 · Reached Stage 1</p>
+      <button type="button" class="play-btn" id="retryBtn">PLAY AGAIN</button>
     </div>
   </main>
 
-  <footer class="controls-dock">
-    <div class="kbd-guide">
-      <b>A/D or ◄/►</b> Move · <b>W/▲</b> Jump · <b>Space/S/▼</b> Lift/Drop · <b>Z</b> Undo · <b>R</b> Retry · <b>G</b> Random
+  <footer class="controls-bar">
+    <div class="move-pad">
+      <button type="button" class="c-btn" id="btnLeft">◄ LEFT</button>
+      <button type="button" class="c-btn" id="btnRight">RIGHT ►</button>
     </div>
-    <div class="touch-pad">
-      <button type="button" class="t-btn" id="btnLeft">◄ LEFT</button>
-      <button type="button" class="t-btn" id="btnRight">RIGHT ►</button>
-      <button type="button" class="t-btn jump-pad" id="btnJump">▲ JUMP</button>
-      <button type="button" class="t-btn act" id="btnLift">LIFT / DROP</button>
-      <button type="button" class="t-btn" id="btnUndo">UNDO</button>
-      <button type="button" class="t-btn" id="btnRetry">RETRY</button>
+    <div class="kbd-tip">
+      <b>A / D / ◄ / ►</b> Run · <b>W / ▲</b> Jump (One-Way Platforms) · <b>Space / Z / J</b> Shoot Cube
+    </div>
+    <div class="act-pad">
+      <button type="button" class="c-btn jump" id="btnJump">▲ JUMP</button>
+      <button type="button" class="c-btn trap" id="btnShoot">■ CUBE</button>
     </div>
   </footer>
 
   <script>
     (() => {
-      const STAGES = [
-        {
-          name: 'BOOT SECTOR',
-          par: 18,
-          map: [
-            "########################",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#..................E...#",
-            "#.................###..#",
-            "#........G.............#",
-            "#.......###............#",
-            "#.....B................#",
-            "#..P..###..............#",
-            "########################"
-          ]
-        },
-        {
-          name: 'STAIRWAY.EXE',
-          par: 28,
-          map: [
-            "########################",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#.....................E#",
-            "#....................###",
-            "#...................####",
-            "#..................#####",
-            "#......B...B...G..######",
-            "#.....###########.######",
-            "#..P..##################",
-            "#.....##################",
-            "########################"
-          ]
-        },
-        {
-          name: 'CHASM BRIDGE',
-          par: 34,
-          map: [
-            "########################",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#...................E..#",
-            "#..................###.#",
-            "#....B..B......G.......#",
-            "#.########....#####....#",
-            "#..P..####....#####....#",
-            "#.....####....#####....#",
-            "#.....####....#####....#",
-            "########################"
-          ]
-        },
-        {
-          name: 'LASER GATEWAY',
-          par: 32,
-          map: [
-            "########################",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#...............L......#",
-            "#...............L...E..#",
-            "#....B..........L..###.#",
-            "#.######....S...L......#",
-            "#..P.###...###..L..G...#",
-            "#....###...###..########",
-            "#....###...###..########",
-            "########################"
-          ]
-        },
-        {
-          name: 'DOUBLE LIFT',
-          par: 44,
-          map: [
-            "########################",
-            "#......................#",
-            "#......................#",
-            "#.....................E#",
-            "#....................###",
-            "#.......B...........####",
-            "#......###.........#####",
-            "#.................######",
-            "#.......B...G....#######",
-            "#......###.###..########",
-            "#..P...###.###.#########",
-            "#......###.###.#########",
-            "########################"
-          ]
-        },
-        {
-          name: 'WARP PIPELINE',
-          par: 30,
-          map: [
-            "########################",
-            "#......................#",
-            "#..T...............E...#",
-            "#.###.............###..#",
-            "#......................#",
-            "#.........G............#",
-            "#........###...........#",
-            "#......................#",
-            "#.....B..........T.....#",
-            "#....###........###....#",
-            "#..P.###........###....#",
-            "#....###........###....#",
-            "########################"
-          ]
-        },
-        {
-          name: 'SWITCH RELAY',
-          par: 48,
-          map: [
-            "########################",
-            "#......................#",
-            "#......................#",
-            "#..E...................#",
-            "#.###..L...............#",
-            "#......L...............#",
-            "#......L.....B.........#",
-            "#......L....###...G....#",
-            "#......L.........###...#",
-            "#..S...L...B...........#",
-            "#.###..L..###.......P..#",
-            "########################",
-            "########################"
-          ]
-        },
-        {
-          name: 'PYRAMID CORE',
-          par: 56,
-          map: [
-            "########################",
-            "#......................#",
-            "#......................#",
-            "#.....................E#",
-            "#....................###",
-            "#...................####",
-            "#...B..............#####",
-            "#.###.............######",
-            "#......B.....G...#######",
-            "#.....###...###.########",
-            "#..P..###...############",
-            "#.....###...############",
-            "########################"
-          ]
-        },
-        {
-          name: 'FRAGILE CARGO',
-          par: 42,
-          map: [
-            "########################",
-            "#......................#",
-            "#......................#",
-            "#......................#",
-            "#..................E...#",
-            "#.................###..#",
-            "#..........G...........#",
-            "#.........###..........#",
-            "#....H...........B.....#",
-            "#.######........###....#",
-            "#..P.###........###....#",
-            "#....###........###....#",
-            "########################"
-          ]
-        },
-        {
-          name: 'TWIN LOCK VAULT',
-          par: 58,
-          map: [
-            "########################",
-            "#......................#",
-            "#..T................L.E#",
-            "#.###...............L###",
-            "#...................L..#",
-            "#.......B.....G.....L..#",
-            "#......###...###....L..#",
-            "#...................L..#",
-            "#......B.........S..L..#",
-            "#..P..###...T...###.L..#",
-            "########################",
-            "########################",
-            "########################"
-          ]
-        },
-        {
-          name: 'SKY CITADEL',
-          par: 64,
-          map: [
-            "########################",
-            "#......................#",
-            "#.....................E#",
-            "#....................###",
-            "#.........B.........####",
-            "#........###.......#####",
-            "#.................######",
-            "#...B.......G....#######",
-            "#.###......###..########",
-            "#..............#########",
-            "#..P..B.......##########",
-            "########################",
-            "########################"
-          ]
-        },
-        {
-          name: 'MAINFRAME 2048',
-          par: 72,
-          map: [
-            "########################",
-            "#......................#",
-            "#..T................L.E#",
-            "#.###..............###.#",
-            "#..................#...#",
-            "#......B.....G.....#...#",
-            "#.....###...###....#...#",
-            "#..................#...#",
-            "#...B.........S....#...#",
-            "#.###...T....###...#..P#",
-            "########################",
-            "########################",
-            "########################"
-          ]
-        }
-      ];
-
-      const SFX = {
+      // =========================================================================
+      // 1. 8-BIT CHIPTUNE SYNTHESIZER & LOOPING ARCADE MELODY
+      // =========================================================================
+      const Audio8Bit = {
         ctx: null,
-        tone(freq, dur = 0.06, type = 'square', vol = 0.045) {
-          try {
-            if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            if (this.ctx.state === 'suspended') this.ctx.resume();
-            const osc = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-            g.gain.setValueAtTime(vol, this.ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
-            osc.connect(g);
-            g.connect(this.ctx.destination);
-            osc.start();
-            osc.stop(this.ctx.currentTime + dur);
-          } catch {}
+        sfxEnabled: true,
+        bgmEnabled: true,
+        bgmTimer: null,
+        step: 0,
+
+        ensure() {
+          if (!this.ctx) {
+            const C = window.AudioContext || window.webkitAudioContext;
+            if (C) this.ctx = new C();
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+          return this.ctx;
         },
-        step()   { this.tone(290, 0.035); },
-        climb()  { this.tone(420, 0.05); },
-        jump()   { this.tone(560, 0.06); },
-        lift()   { this.tone(520, 0.07); },
-        drop()   { this.tone(240, 0.07); },
-        gem()    { this.tone(660, 0.06); setTimeout(() => this.tone(880, 0.09), 55); },
-        warp()   { this.tone(320, 0.08, 'triangle'); setTimeout(() => this.tone(640, 0.12, 'triangle'), 65); },
-        door()   { this.tone(480, 0.08); setTimeout(() => this.tone(720, 0.12), 70); },
-        bump()   { this.tone(130, 0.05); },
-        win()    {
-          this.tone(523, 0.08);
-          setTimeout(() => this.tone(659, 0.08), 85);
-          setTimeout(() => this.tone(784, 0.12), 170);
-          setTimeout(() => this.tone(1046, 0.2), 260);
+
+        playTone(freq, dur, type = 'square', vol = 0.05, endFreq = null) {
+          if (!this.sfxEnabled) return;
+          const c = this.ensure();
+          if (!c) return;
+          const now = c.currentTime;
+          const osc = c.createOscillator();
+          const gain = c.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, now);
+          if (endFreq) {
+            osc.frequency.exponentialRampToValueAtTime(Math.max(40, endFreq), now + dur);
+          }
+          gain.gain.setValueAtTime(vol, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+          osc.connect(gain);
+          gain.connect(c.destination);
+          osc.start(now);
+          osc.stop(now + dur);
+        },
+
+        jump()    { this.playTone(220, 0.13, 'square', 0.055, 580); },
+        shoot()   { this.playTone(640, 0.08, 'square', 0.05, 210); },
+        trap()    { this.playTone(330, 0.09, 'triangle', 0.06, 660); },
+        pop()     { this.playTone(520, 0.07, 'square', 0.07); setTimeout(() => this.playTone(880, 0.11, 'square', 0.07), 55); },
+        pickup()  { this.playTone(587, 0.06, 'triangle', 0.06); setTimeout(() => this.playTone(784, 0.06, 'triangle', 0.06), 60); setTimeout(() => this.playTone(1046, 0.11, 'triangle', 0.06), 120); },
+        hurt()    { this.playTone(210, 0.24, 'sawtooth', 0.08, 65); },
+        clear()   {
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((f, idx) => setTimeout(() => this.playTone(f, 0.11, 'square', 0.06), idx * 90));
+        },
+
+        startLoop() {
+          if (this.bgmTimer) return;
+          // Upbeat 8-bit chiptune loop (lead + bass)
+          const lead = [
+            523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.00, 698.46,
+            659.25, 783.99, 987.77, 783.99, 523.25, 0,      659.25, 523.25
+          ];
+          const bass = [
+            130.81, 130.81, 196.00, 196.00, 146.83, 146.83, 220.00, 220.00,
+            164.81, 164.81, 246.94, 246.94, 130.81, 196.00, 130.81, 130.81
+          ];
+
+          this.bgmTimer = setInterval(() => {
+            if (!this.bgmEnabled || !running) return;
+            const c = this.ensure();
+            if (!c) return;
+            const idx = this.step % lead.length;
+            this.step++;
+            const now = c.currentTime;
+
+            const fLead = lead[idx];
+            if (fLead > 0) {
+              const o1 = c.createOscillator();
+              const g1 = c.createGain();
+              o1.type = 'square';
+              o1.frequency.setValueAtTime(fLead, now);
+              g1.gain.setValueAtTime(0.022, now);
+              g1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+              o1.connect(g1);
+              g1.connect(c.destination);
+              o1.start(now);
+              o1.stop(now + 0.15);
+            }
+
+            const fBass = bass[idx];
+            if (fBass > 0) {
+              const o2 = c.createOscillator();
+              const g2 = c.createGain();
+              o2.type = 'triangle';
+              o2.frequency.setValueAtTime(fBass, now);
+              g2.gain.setValueAtTime(0.032, now);
+              g2.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+              o2.connect(g2);
+              g2.connect(c.destination);
+              o2.start(now);
+              o2.stop(now + 0.16);
+            }
+          }, 175);
         }
       };
 
-      const COLS = 24;
-      const ROWS = 13;
-      const TILE = 16;
+      // =========================================================================
+      // 2. GAME CONSTANTS & STATE
+      // =========================================================================
+      const W = 640;
+      const H = 440;
+      const WALL = 20;
+      const FLOOR_Y = H - WALL;
+      const GRAVITY = 1320;
+      const JUMP_VEL = -545;
 
-      const canvas = document.getElementById('dosCanvas');
+      const canvas = document.getElementById('gameCanvas');
       const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('scoreVal');
+      const stageEl = document.getElementById('stageVal');
+      const livesEl = document.getElementById('livesVal');
+      const bestEl = document.getElementById('bestVal');
+      const startOverlay = document.getElementById('startOverlay');
+      const overOverlay = document.getElementById('overOverlay');
+      const overSummary = document.getElementById('overSummary');
 
-      let currentStageIdx = 0;
-      let isRandomStage = false;
-      let randomStageCounter = 0;
-      let currentStageMeta = STAGES[0];
+      let bestScore = Number(localStorage.getItem('cv_blockguy_trap_best') || 0);
+      bestEl.textContent = bestScore;
 
-      let grid = [];
-      let blocks = [];
-      let gems = [];
-      let switches = [];
-      let teleporters = [];
-      let exitPos = { x: 20, y: 6 };
-      let exitUnlocked = false;
-      let laserOpen = false;
+      let running = false;
+      let score = 0;
+      let stage = 1;
+      let lives = 3;
+      let stageClearDelay = 0;
+      let stageBannerTimer = 0;
 
-      let player = { x: 3, y: 10, dir: 1, carrying: null, tpCooldown: false };
-      let moves = 0;
-      let totalScore = Number(localStorage.getItem('cv_bg2048_score') || 2048);
-      let clearedStages = new Set(JSON.parse(localStorage.getItem('cv_bg2048_cleared') || '[]'));
-      let stageWon = false;
-      let undoStack = [];
+      // Player state
+      const player = {
+        x: W / 2 - 13,
+        y: FLOOR_Y - 28,
+        w: 26,
+        h: 28,
+        vx: 0,
+        vy: 0,
+        dir: 1,
+        onGround: false,
+        shootCd: 0,
+        invuln: 0,
+        speedTimer: 0,
+        rapidTimer: 0
+      };
+
+      let platforms = [];   // One-way jump-through block platforms: { x, y, w, h, color }
+      let enemies = [];     // { x, y, w, h, vx, vy, onGround, kind, color, jumpCd, aiDir }
+      let shots = [];       // Fired energy cubes: { x, y, w, h, vx, ttl }
+      let trappedCubes = [];// Floating cubes holding an enemy: { x, y, w, h, vy, enemy, timer, maxTimer }
+      let pickups = [];     // Fruits/Gems & Powerups: { x, y, w, h, vy, kind, label, color, ttl }
       let particles = [];
+      let floatTexts = [];
 
-      function saveProgress() {
-        localStorage.setItem('cv_bg2048_score', totalScore);
-        localStorage.setItem('cv_bg2048_cleared', JSON.stringify([...clearedStages]));
-      }
+      // Input state
+      const keys = {};
+      let holdLeft = false;
+      let holdRight = false;
 
-      function cloneSnapshot() {
-        return {
-          player: { ...player, carrying: player.carrying ? { ...player.carrying } : null },
-          blocks: blocks.map(b => ({ ...b })),
-          gems: gems.map(g => ({ ...g })),
-          moves,
-          exitUnlocked,
-          laserOpen
-        };
-      }
-
-      function restoreUndo() {
-        if (undoStack.length === 0 || stageWon) return;
-        const snap = undoStack.pop();
-        player = snap.player;
-        blocks = snap.blocks;
-        gems = snap.gems;
-        moves = snap.moves;
-        exitUnlocked = snap.exitUnlocked;
-        laserOpen = snap.laserOpen;
-        SFX.bump();
+      function addScore(pts) {
+        score += pts;
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('cv_blockguy_trap_best', bestScore);
+        }
         syncHud();
-        draw();
-      }
-
-      function addSparks(gx, gy, color, count = 8) {
-        const cx = gx * TILE + 8;
-        const cy = gy * TILE + 8;
-        for (let i = 0; i < count; i++) {
-          const a = Math.random() * Math.PI * 2;
-          const s = 12 + Math.random() * 28;
-          particles.push({ x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 15, color, ttl: 0.35 });
-        }
-      }
-
-      function hasSolidWall(x, y) {
-        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return true;
-        if (grid[y][x] === '#') return true;
-        if (grid[y][x] === 'L' && !laserOpen) return true;
-        return false;
-      }
-
-      function getBlockAt(x, y) {
-        return blocks.find(b => b.x === x && b.y === y) || null;
-      }
-
-      function isBlocked(x, y) {
-        return hasSolidWall(x, y) || getBlockAt(x, y) !== null;
-      }
-
-      function settlePhysics() {
-        let moved = true;
-        while (moved) {
-          moved = false;
-          blocks.sort((a, b) => b.y - a.y);
-          for (const b of blocks) {
-            const belowY = b.y + 1;
-            const occupiedByPlayer = player.x === b.x && player.y === belowY;
-            if (!isBlocked(b.x, belowY) && !occupiedByPlayer) {
-              b.y = belowY;
-              moved = true;
-            }
-          }
-        }
-
-        while (!isBlocked(player.x, player.y + 1)) {
-          player.y++;
-          player.tpCooldown = false;
-        }
-
-        const wasOpen = laserOpen;
-        laserOpen = switches.some(sw =>
-          (player.x === sw.x && player.y === sw.y) ||
-          blocks.some(b => b.x === sw.x && b.y === sw.y)
-        );
-        if (laserOpen && !wasOpen) SFX.door();
-
-        for (const g of gems) {
-          if (!g.taken && g.x === player.x && g.y === player.y) {
-            g.taken = true;
-            totalScore += 256;
-            saveProgress();
-            addSparks(g.x, g.y, '#ffff55', 10);
-            SFX.gem();
-          }
-        }
-
-        const allGemsCollected = gems.every(g => g.taken);
-        if (allGemsCollected && !exitUnlocked) {
-          exitUnlocked = true;
-          SFX.door();
-          addSparks(exitPos.x, exitPos.y, '#55ff55', 14);
-        }
-
-        if (!player.tpCooldown && teleporters.length >= 2) {
-          const onTpIdx = teleporters.findIndex(t => t.x === player.x && t.y === player.y);
-          if (onTpIdx !== -1) {
-            const dest = teleporters[(onTpIdx + 1) % teleporters.length];
-            const headClear = !player.carrying || !isBlocked(dest.x, dest.y - 1);
-            if (!isBlocked(dest.x, dest.y) && headClear) {
-              addSparks(player.x, player.y, '#ff55ff', 10);
-              player.x = dest.x;
-              player.y = dest.y;
-              player.tpCooldown = true;
-              addSparks(dest.x, dest.y, '#55ffff', 10);
-              SFX.warp();
-              while (!isBlocked(player.x, player.y + 1)) {
-                player.y++;
-              }
-            }
-          }
-        }
-      }
-
-      function generateRandomStageData() {
-        randomStageCounter++;
-        const g = Array.from({ length: ROWS }, () => Array(COLS).fill('.'));
-        for (let x = 0; x < COLS; x++) { g[0][x] = '#'; g[ROWS - 1][x] = '#'; }
-        for (let y = 0; y < ROWS; y++) { g[y][0] = '#'; g[y][COLS - 1] = '#'; }
-
-        const h1 = 2, h2 = 4, h3 = 6;
-        for (let x = 7; x < COLS - 1; x++) {
-          for (let dy = 0; dy < h1; dy++) g[ROWS - 2 - dy][x] = '#';
-        }
-        for (let x = 13; x < COLS - 1; x++) {
-          for (let dy = 0; dy < h2; dy++) g[ROWS - 2 - dy][x] = '#';
-        }
-        for (let x = 18; x < COLS - 1; x++) {
-          for (let dy = 0; dy < h3; dy++) g[ROWS - 2 - dy][x] = '#';
-        }
-
-        g[ROWS - 2][2] = 'P';
-        g[ROWS - 2][5] = 'B';
-        g[ROWS - 2 - h1][9] = 'B';
-        g[ROWS - 2 - h1][11] = 'G';
-        g[ROWS - 2 - h2][15] = 'B';
-        g[ROWS - 2 - h2][16] = 'G';
-        g[ROWS - 2 - h3][21] = 'E';
-
-        return {
-          name: `PROC-GEN #${randomStageCounter}`,
-          par: 45,
-          map: g.map(row => row.join(''))
-        };
-      }
-
-      function loadStage(idx, customStage = null) {
-        isRandomStage = !!customStage;
-        if (!isRandomStage) {
-          currentStageIdx = ((idx % STAGES.length) + STAGES.length) % STAGES.length;
-          currentStageMeta = STAGES[currentStageIdx];
-        } else {
-          currentStageMeta = customStage;
-        }
-
-        grid = Array.from({ length: ROWS }, () => Array(COLS).fill('.'));
-        blocks = [];
-        gems = [];
-        switches = [];
-        teleporters = [];
-        exitPos = { x: 20, y: 6 };
-        exitUnlocked = false;
-        laserOpen = false;
-        player = { x: 2, y: 10, dir: 1, carrying: null, tpCooldown: false };
-        moves = 0;
-        stageWon = false;
-        undoStack = [];
-        particles = [];
-        document.getElementById('winOverlay').classList.remove('active');
-
-        const raw = currentStageMeta.map;
-        for (let y = 0; y < ROWS; y++) {
-          for (let x = 0; x < COLS; x++) {
-            const ch = raw[y]?.[x] || '.';
-            if (ch === '#') grid[y][x] = '#';
-            else if (ch === 'L') grid[y][x] = 'L';
-            else if (ch === 'B') blocks.push({ x, y, fragile: false, durability: 99 });
-            else if (ch === 'H') blocks.push({ x, y, fragile: true, durability: 2 });
-            else if (ch === 'G') gems.push({ x, y, taken: false });
-            else if (ch === 'S') switches.push({ x, y });
-            else if (ch === 'T') teleporters.push({ x, y });
-            else if (ch === 'P') { player.x = x; player.y = y; }
-            else if (ch === 'E') { exitPos = { x, y }; }
-          }
-        }
-
-        settlePhysics();
-        syncHud();
-        draw();
       }
 
       function syncHud() {
-        document.getElementById('stageNumVal').textContent = isRandomStage
-          ? `RND-${randomStageCounter}`
-          : `${currentStageIdx + 1}/${STAGES.length}`;
-        document.getElementById('scoreVal').textContent = totalScore;
-        document.getElementById('movesVal').textContent = moves;
-        const collected = gems.filter(g => g.taken).length;
-        document.getElementById('gemsVal').textContent = `${collected}/${gems.length}`;
-        document.getElementById('carryVal').textContent = player.carrying
-          ? (player.carrying.fragile ? `CRACKED [${player.carrying.durability}]` : 'BLOCK [1]')
-          : 'NONE';
-        document.getElementById('undoBtn').disabled = undoStack.length === 0 || stageWon;
+        scoreEl.textContent = score;
+        stageEl.textContent = stage;
+        livesEl.textContent = lives;
+        bestEl.textContent = bestScore;
       }
 
-      function movePlayer(dx) {
-        if (stageWon) return;
-        const snap = cloneSnapshot();
-        player.dir = dx;
-        const nx = player.x + dx;
-        if (nx < 0 || nx >= COLS) return;
-
-        if (!isBlocked(nx, player.y)) {
-          if (player.carrying && isBlocked(nx, player.y - 1)) {
-            SFX.bump();
-            return;
-          }
-          undoStack.push(snap);
-          player.x = nx;
-          player.tpCooldown = false;
-          moves++;
-          SFX.step();
-          settlePhysics();
-        } else if (!isBlocked(nx, player.y - 1) && !isBlocked(player.x, player.y - 1)) {
-          if (player.carrying && (isBlocked(player.x, player.y - 2) || isBlocked(nx, player.y - 2))) {
-            SFX.bump();
-            return;
-          }
-          undoStack.push(snap);
-          player.x = nx;
-          player.y -= 1;
-          player.tpCooldown = false;
-          moves++;
-          SFX.climb();
-          settlePhysics();
-        } else {
-          SFX.bump();
-          draw();
-          return;
-        }
-
-        syncHud();
-        checkVictory();
-        draw();
-      }
-
-      // Dedicated Jump move: jumps 1 tile up and/or onto the tile in front if clear
-      function jumpPlayer() {
-        if (stageWon) return;
-        const fx = player.x + player.dir;
-        const snap = cloneSnapshot();
-
-        // Check headroom above player (and carried block if any)
-        const headClear = !isBlocked(player.x, player.y - 1) && (!player.carrying || !isBlocked(player.x, player.y - 2));
-        if (!headClear) {
-          SFX.bump();
-          return;
-        }
-
-        // Try jumping diagonally onto a 1-block higher ledge in front
-        if (fx >= 0 && fx < COLS && !isBlocked(fx, player.y - 1) && (!player.carrying || !isBlocked(fx, player.y - 2))) {
-          undoStack.push(snap);
-          player.x = fx;
-          player.y -= 1;
-          player.tpCooldown = false;
-          moves++;
-          SFX.jump();
-          addSparks(player.x, player.y + 1, '#55ffff', 5);
-          settlePhysics();
-          syncHud();
-          checkVictory();
-          draw();
-          return;
-        }
-
-        // Otherwise hop straight up 1 tile (settlePhysics will pull down unless supported)
-        undoStack.push(snap);
-        player.y -= 1;
-        player.tpCooldown = false;
-        moves++;
-        SFX.jump();
-        addSparks(player.x, player.y + 1, '#ffff55', 5);
-        settlePhysics();
-        syncHud();
-        checkVictory();
-        draw();
-      }
-
-      function liftOrDropBlock() {
-        if (stageWon) return;
-        const fx = player.x + player.dir;
-        if (fx < 0 || fx >= COLS) return;
-        const snap = cloneSnapshot();
-
-        if (!player.carrying) {
-          const targetBlock = getBlockAt(fx, player.y);
-          if (targetBlock && !isBlocked(fx, player.y - 1) && !isBlocked(player.x, player.y - 1)) {
-            undoStack.push(snap);
-            blocks = blocks.filter(b => b !== targetBlock);
-            player.carrying = targetBlock;
-            moves++;
-            SFX.lift();
-            settlePhysics();
-          } else {
-            SFX.bump();
-            return;
-          }
-        } else {
-          let dropPos = null;
-          if (!isBlocked(fx, player.y)) {
-            dropPos = { x: fx, y: player.y };
-          } else if (!isBlocked(fx, player.y - 1) && !isBlocked(player.x, player.y - 1)) {
-            dropPos = { x: fx, y: player.y - 1 };
-          }
-
-          if (!dropPos) {
-            SFX.bump();
-            return;
-          }
-
-          undoStack.push(snap);
-          const placed = { ...player.carrying, x: dropPos.x, y: dropPos.y };
-          player.carrying = null;
-          moves++;
-
-          if (placed.fragile) {
-            placed.durability--;
-            if (placed.durability <= 0) {
-              addSparks(placed.x, placed.y, '#ff5555', 14);
-              SFX.bump();
-            } else {
-              blocks.push(placed);
-              SFX.drop();
-            }
-          } else {
-            blocks.push(placed);
-            SFX.drop();
-          }
-
-          settlePhysics();
-        }
-
-        syncHud();
-        checkVictory();
-        draw();
-      }
-
-      function checkVictory() {
-        if (exitUnlocked && player.x === exitPos.x && player.y === exitPos.y) {
-          stageWon = true;
-          const parBonus = Math.max(128, (currentStageMeta.par - moves) * 32 + 512);
-          totalScore += parBonus;
-          if (!isRandomStage) clearedStages.add(currentStageIdx);
-          saveProgress();
-          syncHud();
-          SFX.win();
-
-          document.getElementById('winTitle').textContent = isRandomStage
-            ? `${currentStageMeta.name} CLEARED!`
-            : `STAGE ${currentStageIdx + 1}: ${currentStageMeta.name} CLEAR!`;
-          document.getElementById('winSummary').innerHTML = `
-            Completed in <b>${moves} moves</b> (Par: ${currentStageMeta.par})<br>
-            Stage Bonus: <b style="color:#55ff55;">+${parBonus} PTS</b> · Total Score: <b style="color:#ffff55;">${totalScore}</b>
-          `;
-          document.getElementById('winOverlay').classList.add('active');
-        }
-      }
-
-      function drawBrick(gx, gy) {
-        const px = gx * TILE, py = gy * TILE;
-        ctx.fillStyle = '#993300';
-        ctx.fillRect(px, py, TILE, TILE);
-        ctx.fillStyle = '#dd5522';
-        ctx.fillRect(px + 1, py + 1, 6, 6);
-        ctx.fillRect(px + 9, py + 1, 6, 6);
-        ctx.fillRect(px + 5, py + 9, 6, 6);
-        ctx.fillStyle = '#551100';
-        ctx.fillRect(px, py + 7, TILE, 1);
-        ctx.fillRect(px, py + 15, TILE, 1);
-      }
-
-      function drawMovableBlock(px, py, blockObj) {
-        const isFragile = blockObj?.fragile;
-        ctx.fillStyle = isFragile ? '#aa5500' : '#00aaaa';
-        ctx.fillRect(px + 1, py + 1, TILE - 2, TILE - 2);
-        ctx.strokeStyle = isFragile ? '#ffff55' : '#55ffff';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(px + 1.5, py + 1.5, TILE - 3, TILE - 3);
-        ctx.fillStyle = isFragile ? '#ff5555' : '#ffff55';
-        ctx.fillRect(px + 6, py + 6, 4, 4);
-      }
-
-      function draw(ts = 0) {
-        ctx.fillStyle = '#000018';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.strokeStyle = '#0a102e';
-        ctx.lineWidth = 1;
-        for (let x = 0; x <= COLS * TILE; x += TILE) {
-          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ROWS * TILE); ctx.stroke();
-        }
-        for (let y = 0; y <= ROWS * TILE; y += TILE) {
-          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(COLS * TILE, y); ctx.stroke();
-        }
-
-        switches.forEach(sw => {
-          const px = sw.x * TILE, py = sw.y * TILE;
-          ctx.fillStyle = laserOpen ? '#55ff55' : '#ff5555';
-          ctx.fillRect(px + 3, py + 12, 10, 4);
-        });
-
-        teleporters.forEach((tp, idx) => {
-          const px = tp.x * TILE, py = tp.y * TILE;
-          const pulse = Math.sin(ts * 0.008 + idx) > 0;
-          ctx.fillStyle = pulse ? '#ff55ff' : '#aa00aa';
-          ctx.fillRect(px + 2, py + 11, 12, 5);
-          ctx.fillStyle = '#55ffff';
-          ctx.fillRect(px + 5, py + 4, 6, 5);
-        });
-
-        {
-          const px = exitPos.x * TILE, py = exitPos.y * TILE;
-          ctx.fillStyle = exitUnlocked ? '#00aa00' : '#770000';
-          ctx.fillRect(px + 2, py + 1, TILE - 4, TILE - 1);
-          ctx.strokeStyle = exitUnlocked ? '#55ff55' : '#ff5555';
-          ctx.strokeRect(px + 2.5, py + 1.5, TILE - 5, TILE - 2);
-          ctx.fillStyle = exitUnlocked ? '#ffff55' : '#ff5555';
-          ctx.fillRect(px + 10, py + 8, 2, 2);
-        }
-
-        for (let y = 0; y < ROWS; y++) {
-          for (let x = 0; x < COLS; x++) {
-            const cell = grid[y][x];
-            if (cell === '#') {
-              drawBrick(x, y);
-            } else if (cell === 'L' && !laserOpen) {
-              const px = x * TILE, py = y * TILE;
-              ctx.fillStyle = 'rgba(255, 85, 85, 0.35)';
-              ctx.fillRect(px + 4, py, 8, TILE);
-              ctx.fillStyle = '#ff5555';
-              ctx.fillRect(px + 7, py, 2, TILE);
-            }
-          }
-        }
-
-        gems.forEach((g, idx) => {
-          if (g.taken) return;
-          const cx = g.x * TILE + 8;
-          const cy = g.y * TILE + 8 + Math.sin(ts * 0.006 + idx) * 1.5;
-          ctx.fillStyle = '#ffff55';
-          ctx.beginPath();
-          ctx.moveTo(cx, cy - 5);
-          ctx.lineTo(cx + 5, cy);
-          ctx.lineTo(cx, cy + 5);
-          ctx.lineTo(cx - 5, cy);
-          ctx.closePath();
-          ctx.fill();
-        });
-
-        blocks.forEach(b => drawMovableBlock(b.x * TILE, b.y * TILE, b));
-
-        {
-          const px = player.x * TILE;
-          const py = player.y * TILE;
-
-          ctx.fillStyle = '#ffff55';
-          ctx.fillRect(px + 4, py + 1, 8, 6);
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(player.dir === 1 ? px + 9 : px + 5, py + 3, 2, 2);
-          ctx.fillStyle = '#55ffff';
-          ctx.fillRect(px + 4, py + 7, 8, 5);
-          ctx.fillStyle = '#ff55ff';
-          ctx.fillRect(px + 3, py + 12, 4, 4);
-          ctx.fillRect(px + 9, py + 12, 4, 4);
-
-          if (player.carrying) {
-            drawMovableBlock(px, py - TILE, player.carrying);
-          }
-        }
-
-        particles.forEach(pt => {
-          ctx.fillStyle = pt.color;
-          ctx.fillRect(pt.x, pt.y, 2, 2);
-        });
-
-        const barY = ROWS * TILE;
-        ctx.fillStyle = '#0000aa';
-        ctx.fillRect(0, barY, canvas.width, 16);
-        ctx.fillStyle = '#55ffff';
-        ctx.font = 'bold 8px monospace';
-        const statusStr = exitUnlocked
-          ? 'EXIT UNLOCKED! REACH THE GREEN DOOR!'
-          : `COLLECT ALL GEMS (${gems.filter(g => g.taken).length}/${gems.length}) TO UNLOCK EXIT`;
-        ctx.fillText(`BLOCKGUY 2048 · ${currentStageMeta.name} · ${statusStr}`, 8, barY + 11);
-      }
-
-      let lastTs = performance.now();
-      function frame(ts) {
-        const dt = Math.min(0.05, (ts - lastTs) / 1000);
-        lastTs = ts;
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
-          p.vy += 60 * dt;
-          p.ttl -= dt;
-          if (p.ttl <= 0) particles.splice(i, 1);
-        }
-        draw(ts);
-        requestAnimationFrame(frame);
-      }
-
-      function renderStageSelect() {
-        const gridEl = document.getElementById('stageGrid');
-        gridEl.innerHTML = [
-          ...STAGES.map((st, idx) => `
-            <button type="button" class="stage-card ${clearedStages.has(idx) ? 'cleared' : ''}" data-st="${idx}">
-              <b>STAGE ${idx + 1} ${clearedStages.has(idx) ? '✓' : ''}</b>
-              <span>${st.name}</span>
-            </button>
-          `),
-          `<button type="button" class="stage-card" data-st="random" style="border-color:#ffff55;">
-             <b>RANDOM GEN</b>
-             <span>Procedural</span>
-           </button>`
-        ].join('');
-
-        gridEl.querySelectorAll('.stage-card').forEach(btn => {
-          btn.addEventListener('click', () => {
-            document.getElementById('stageSelectOverlay').classList.remove('active');
-            if (btn.dataset.st === 'random') {
-              loadStage(0, generateRandomStageData());
-            } else {
-              loadStage(Number(btn.dataset.st), null);
-            }
+      function addBurst(x, y, color, count = 10) {
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const s = 60 + Math.random() * 160;
+          particles.push({
+            x, y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s - 40,
+            size: 3 + Math.random() * 3,
+            color,
+            ttl: 0.35 + Math.random() * 0.25
           });
+        }
+      }
+
+      function addFloatText(x, y, text, color = '#facc15') {
+        floatTexts.push({ x, y, text, color, vy: -45, ttl: 0.75 });
+      }
+
+      // =========================================================================
+      // 3. PROCEDURAL BLOCK PLATFORM GENERATOR (GUARANTEED JUMPABLE HEIGHTS)
+      // =========================================================================
+      // Max jump height with JUMP_VEL=-545 and GRAVITY=1320 is ~112px.
+      // Placing 3 tiers spaced by 88px vertically (y = 332, 244, 156) ensures every tier is comfortably reachable!
+      function generateStagePlatforms(stageNum) {
+        const list = [];
+        const tierYs = [332, 244, 156];
+        const tierColors = ['#2563eb', '#0284c7', '#7c3aed'];
+        const layoutStyle = (stageNum + Math.floor(Math.random() * 3)) % 4;
+
+        tierYs.forEach((py, idx) => {
+          const col = tierColors[idx % tierColors.length];
+          if (layoutStyle === 0) {
+            // Side ledges + alternating center bridge
+            if (idx % 2 === 0) {
+              list.push({ x: WALL + 24, y: py, w: 176, h: 16, color: col });
+              list.push({ x: W - WALL - 200, y: py, w: 176, h: 16, color: col });
+            } else {
+              list.push({ x: W / 2 - 140, y: py, w: 280, h: 16, color: col });
+            }
+          } else if (layoutStyle === 1) {
+            // Triple islands
+            list.push({ x: WALL + 18, y: py, w: 136, h: 16, color: col });
+            list.push({ x: W / 2 - 76, y: py, w: 152, h: 16, color: col });
+            list.push({ x: W - WALL - 154, y: py, w: 136, h: 16, color: col });
+          } else if (layoutStyle === 2) {
+            // Staggered staircase platforms
+            const shift = (idx % 2 === 0) ? 30 : 120;
+            list.push({ x: WALL + shift, y: py, w: 190, h: 16, color: col });
+            list.push({ x: WALL + shift + 240, y: py, w: 190, h: 16, color: col });
+          } else {
+            // Wide split arena
+            const gap = 76 + (idx % 2) * 24;
+            const segW = (W - WALL * 2 - gap - 32) / 2;
+            list.push({ x: WALL + 16, y: py, w: segW, h: 16, color: col });
+            list.push({ x: W - WALL - 16 - segW, y: py, w: segW, h: 16, color: col });
+          }
+        });
+
+        return list;
+      }
+
+      function spawnStageEnemies(stageNum) {
+        const count = Math.min(9, 3 + stageNum);
+        const kinds = [
+          { kind: 'crawler', color: '#f43f5e', spd: 95,  jumper: false },
+          { kind: 'hopper',  color: '#fb923c', spd: 115, jumper: true },
+          { kind: 'dasher',  color: '#a855f7', spd: 155, jumper: true }
+        ];
+
+        enemies = [];
+        for (let i = 0; i < count; i++) {
+          const spec = kinds[(i + stageNum) % kinds.length];
+          const plat = platforms[i % platforms.length];
+          const ex = plat ? (plat.x + plat.w / 2 - 13) : (120 + i * 70);
+          const ey = plat ? (plat.y - 26) : 110;
+          enemies.push({
+            x: Math.max(WALL + 10, Math.min(W - WALL - 36, ex)),
+            y: ey,
+            w: 26,
+            h: 26,
+            vx: (i % 2 === 0 ? 1 : -1) * spec.spd,
+            vy: 0,
+            onGround: false,
+            kind: spec.kind,
+            color: spec.color,
+            baseSpd: spec.spd + Math.min(45, stageNum * 4),
+            jumper: spec.jumper,
+            jumpCd: 1.2 + Math.random() * 1.8
+          });
+        }
+      }
+
+      function initStage(stageNum) {
+        stage = stageNum;
+        stageClearDelay = 0;
+        stageBannerTimer = 1.8;
+        shots = [];
+        trappedCubes = [];
+        pickups = [];
+
+        player.x = W / 2 - player.w / 2;
+        player.y = FLOOR_Y - player.h;
+        player.vx = 0;
+        player.vy = 0;
+        player.onGround = true;
+        player.invuln = 1.4;
+
+        platforms = generateStagePlatforms(stage);
+        spawnStageEnemies(stage);
+        syncHud();
+      }
+
+      function startNewGame() {
+        score = 0;
+        lives = 3;
+        player.speedTimer = 0;
+        player.rapidTimer = 0;
+        initStage(1);
+        running = true;
+        startOverlay.classList.remove('active');
+        overOverlay.classList.remove('active');
+        Audio8Bit.startLoop();
+      }
+
+      // =========================================================================
+      // 4. PLAYER ACTIONS (RELIABLE JUMP + CUBE BLASTER)
+      // =========================================================================
+      function triggerJump() {
+        if (!running) return;
+        if (player.onGround) {
+          player.vy = JUMP_VEL;
+          player.onGround = false;
+          Audio8Bit.jump();
+          addBurst(player.x + player.w / 2, player.y + player.h, '#38bdf8', 5);
+        }
+      }
+
+      function triggerShoot() {
+        if (!running || player.shootCd > 0) return;
+        player.shootCd = player.rapidTimer > 0 ? 0.16 : 0.32;
+        const speed = 430;
+        shots.push({
+          x: player.dir === 1 ? player.x + player.w : player.x - 18,
+          y: player.y + 5,
+          w: 18,
+          h: 18,
+          vx: player.dir * speed,
+          ttl: 0.42
+        });
+        Audio8Bit.shoot();
+      }
+
+      function spawnLoot(x, y) {
+        const roll = Math.random();
+        let item;
+        if (roll < 0.14) {
+          item = { kind: 'speed', label: '»', color: '#38bdf8', pts: 150 };
+        } else if (roll < 0.28) {
+          item = { kind: 'rapid', label: '⚡', color: '#f472b6', pts: 150 };
+        } else if (roll < 0.35 && lives < 5) {
+          item = { kind: 'life',  label: '♥', color: '#4ade80', pts: 200 };
+        } else {
+          item = { kind: 'gem',   label: '★', color: '#facc15', pts: 250 };
+        }
+        pickups.push({
+          x: Math.max(WALL + 8, Math.min(W - WALL - 28, x)),
+          y,
+          w: 20,
+          h: 20,
+          vy: -180,
+          ttl: 9.0,
+          ...item
         });
       }
 
-      window.addEventListener('keydown', (e) => {
-        if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space'].includes(e.code)) e.preventDefault();
+      function popTrappedCube(idx, comboCount = 1) {
+        const tc = trappedCubes[idx];
+        if (!tc) return;
+        trappedCubes.splice(idx, 1);
 
-        if (document.getElementById('stageSelectOverlay').classList.contains('active') ||
-            document.getElementById('helpOverlay').classList.contains('active')) {
-          if (e.code === 'Escape' || e.code === 'Enter') {
-            document.getElementById('stageSelectOverlay').classList.remove('active');
-            document.getElementById('helpOverlay').classList.remove('active');
+        const pts = 200 * comboCount;
+        addScore(pts);
+        Audio8Bit.pop();
+        addBurst(tc.x + tc.w / 2, tc.y + tc.h / 2, tc.enemy.color, 16);
+        addFloatText(tc.x + tc.w / 2, tc.y, `+${pts}`, '#4ade80');
+        spawnLoot(tc.x + 4, tc.y);
+
+        // Chain-pop adjacent trapped cubes within 52px!
+        for (let j = trappedCubes.length - 1; j >= 0; j--) {
+          const other = trappedCubes[j];
+          if (Math.hypot(other.x - tc.x, other.y - tc.y) < 54) {
+            popTrappedCube(j, comboCount + 1);
           }
+        }
+      }
+
+      function hurtPlayer() {
+        if (player.invuln > 0 || !running) return;
+        lives--;
+        Audio8Bit.hurt();
+        addBurst(player.x + player.w / 2, player.y + player.h / 2, '#fb7185', 18);
+        syncHud();
+
+        if (lives <= 0) {
+          running = false;
+          overSummary.textContent = `Final Score: ${score} · Reached Stage ${stage} · Best: ${bestScore}`;
+          overOverlay.classList.add('active');
           return;
         }
 
-        if (stageWon && (e.code === 'Enter' || e.code === 'Space')) {
-          if (isRandomStage) loadStage(0, generateRandomStageData());
-          else loadStage(currentStageIdx + 1, null);
+        player.x = W / 2 - player.w / 2;
+        player.y = FLOOR_Y - player.h;
+        player.vx = 0;
+        player.vy = 0;
+        player.invuln = 2.2;
+      }
+
+      // =========================================================================
+      // 5. PHYSICS & COLLISION HELPERS
+      // =========================================================================
+      function rectsOverlap(a, b) {
+        return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+      }
+
+      function resolveEntityVertical(ent, prevY, dt) {
+        ent.onGround = false;
+
+        // Solid Floor
+        if (ent.y + ent.h >= FLOOR_Y) {
+          ent.y = FLOOR_Y - ent.h;
+          ent.vy = 0;
+          ent.onGround = true;
           return;
         }
 
-        if (e.code === 'ArrowLeft' || e.code === 'KeyA') movePlayer(-1);
-        else if (e.code === 'ArrowRight' || e.code === 'KeyD') movePlayer(1);
-        else if (e.code === 'ArrowUp' || e.code === 'KeyW') jumpPlayer();
-        else if (e.code === 'Space' || e.code === 'ArrowDown' || e.code === 'KeyS') liftOrDropBlock();
-        else if (e.code === 'KeyZ') restoreUndo();
-        else if (e.code === 'KeyR') loadStage(currentStageIdx, isRandomStage ? currentStageMeta : null);
-        else if (e.code === 'KeyG') loadStage(0, generateRandomStageData());
+        // One-way jump-through platforms (land only when falling downward from above)
+        if (ent.vy >= 0) {
+          const prevBottom = prevY + ent.h;
+          const currBottom = ent.y + ent.h;
+          for (const p of platforms) {
+            const horizOverlap = ent.x + ent.w > p.x + 3 && ent.x < p.x + p.w - 3;
+            if (horizOverlap && prevBottom <= p.y + 6 && currBottom >= p.y) {
+              ent.y = p.y - ent.h;
+              ent.vy = 0;
+              ent.onGround = true;
+              return;
+            }
+          }
+        }
+      }
+
+      // =========================================================================
+      // 6. MAIN SIMULATION UPDATE
+      // =========================================================================
+      function update(dt) {
+        // Particles & float texts
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const pt = particles[i];
+          pt.x += pt.vx * dt;
+          pt.y += pt.vy * dt;
+          pt.vy += 320 * dt;
+          pt.ttl -= dt;
+          if (pt.ttl <= 0) particles.splice(i, 1);
+        }
+        for (let i = floatTexts.length - 1; i >= 0; i--) {
+          const ft = floatTexts[i];
+          ft.y += ft.vy * dt;
+          ft.ttl -= dt;
+          if (ft.ttl <= 0) floatTexts.splice(i, 1);
+        }
+
+        if (!running) return;
+        if (stageBannerTimer > 0) stageBannerTimer -= dt;
+
+        if (player.shootCd > 0) player.shootCd = Math.max(0, player.shootCd - dt);
+        if (player.invuln > 0) player.invuln = Math.max(0, player.invuln - dt);
+        if (player.speedTimer > 0) player.speedTimer = Math.max(0, player.speedTimer - dt);
+        if (player.rapidTimer > 0) player.rapidTimer = Math.max(0, player.rapidTimer - dt);
+
+        // Player horizontal movement
+        const leftActive = keys['ArrowLeft'] || keys['KeyA'] || holdLeft;
+        const rightActive = keys['ArrowRight'] || keys['KeyD'] || holdRight;
+        const moveSpd = player.speedTimer > 0 ? 310 : 225;
+
+        if (leftActive && !rightActive) {
+          player.vx = -moveSpd;
+          player.dir = -1;
+        } else if (rightActive && !leftActive) {
+          player.vx = moveSpd;
+          player.dir = 1;
+        } else {
+          player.vx = 0;
+        }
+
+        if (keys['KeyW'] || keys['ArrowUp']) triggerJump();
+        if (keys['Space'] || keys['KeyZ'] || keys['KeyJ']) triggerShoot();
+
+        const prevPlayerY = player.y;
+        player.x += player.vx * dt;
+        player.x = Math.max(WALL, Math.min(W - WALL - player.w, player.x));
+
+        player.vy += GRAVITY * dt;
+        player.y += player.vy * dt;
+        if (player.y < WALL) {
+          player.y = WALL;
+          if (player.vy < 0) player.vy = 0;
+        }
+        resolveEntityVertical(player, prevPlayerY, dt);
+
+        // Update Fired Energy Cubes
+        for (let i = shots.length - 1; i >= 0; i--) {
+          const s = shots[i];
+          s.x += s.vx * dt;
+          s.ttl -= dt;
+
+          if (s.x < WALL || s.x + s.w > W - WALL || s.ttl <= 0) {
+            addBurst(s.x + s.w / 2, s.y + s.h / 2, '#38bdf8', 5);
+            shots.splice(i, 1);
+            continue;
+          }
+
+          // Check hit on active enemy -> encase in floating Trapped Cube!
+          let hitEnemyIdx = -1;
+          for (let ei = 0; ei < enemies.length; ei++) {
+            if (rectsOverlap(s, enemies[ei])) {
+              hitEnemyIdx = ei;
+              break;
+            }
+          }
+
+          if (hitEnemyIdx !== -1) {
+            const caught = enemies.splice(hitEnemyIdx, 1)[0];
+            trappedCubes.push({
+              x: caught.x - 3,
+              y: caught.y - 3,
+              w: 32,
+              h: 32,
+              vy: -58,
+              enemy: caught,
+              timer: 7.5,
+              maxTimer: 7.5
+            });
+            Audio8Bit.trap();
+            addBurst(caught.x + 13, caught.y + 13, '#38bdf8', 8);
+            shots.splice(i, 1);
+          }
+        }
+
+        // Update Trapped Cubes (float upward gently, break open if timer expires, or shatter when player touches them!)
+        for (let i = trappedCubes.length - 1; i >= 0; i--) {
+          const tc = trappedCubes[i];
+          tc.y += tc.vy * dt;
+          if (tc.y <= WALL + 14) {
+            tc.y = WALL + 14;
+            tc.vy = 0;
+          }
+          tc.timer -= dt;
+
+          // Player pops trapped cube on contact!
+          if (rectsOverlap(player, tc)) {
+            if (player.vy > 0 && player.y + player.h - 10 <= tc.y + 10) {
+              // Bounce high if stomped from above!
+              player.vy = JUMP_VEL * 0.92;
+            }
+            popTrappedCube(i, 1);
+            continue;
+          }
+
+          // Escape if not popped in time
+          if (tc.timer <= 0) {
+            trappedCubes.splice(i, 1);
+            const freed = tc.enemy;
+            freed.x = tc.x + 3;
+            freed.y = tc.y + 3;
+            freed.vx = (Math.random() < 0.5 ? 1 : -1) * (freed.baseSpd * 1.25);
+            freed.color = '#fb7185';
+            enemies.push(freed);
+            Audio8Bit.hurt();
+            addBurst(freed.x + 13, freed.y + 13, '#fb7185', 8);
+          }
+        }
+
+        // Update Active Enemies
+        for (const en of enemies) {
+          const prevEy = en.y;
+          en.x += en.vx * dt;
+
+          if (en.x <= WALL) {
+            en.x = WALL;
+            en.vx = Math.abs(en.vx);
+          } else if (en.x + en.w >= W - WALL) {
+            en.x = W - WALL - en.w;
+            en.vx = -Math.abs(en.vx);
+          }
+
+          if (en.jumper && en.onGround) {
+            en.jumpCd -= dt;
+            if (en.jumpCd <= 0) {
+              en.jumpCd = 1.6 + Math.random() * 1.8;
+              if (player.y < en.y - 20 || Math.random() < 0.45) {
+                en.vy = JUMP_VEL * 0.92;
+                en.onGround = false;
+                en.vx = (player.x > en.x ? 1 : -1) * en.baseSpd;
+              }
+            }
+          }
+
+          en.vy += GRAVITY * dt;
+          en.y += en.vy * dt;
+          resolveEntityVertical(en, prevEy, dt);
+
+          if (rectsOverlap(player, en)) {
+            hurtPlayer();
+          }
+        }
+
+        // Update Pickups (Gems & Powerups)
+        for (let i = pickups.length - 1; i >= 0; i--) {
+          const pk = pickups[i];
+          const prevPy = pk.y;
+          pk.vy += GRAVITY * 0.75 * dt;
+          pk.y += pk.vy * dt;
+          resolveEntityVertical(pk, prevPy, dt);
+          pk.ttl -= dt;
+
+          if (rectsOverlap(player, pk)) {
+            pickups.splice(i, 1);
+            addScore(pk.pts);
+            Audio8Bit.pickup();
+            addBurst(pk.x + 10, pk.y + 10, pk.color, 10);
+
+            if (pk.kind === 'speed') {
+              player.speedTimer = 10;
+              addFloatText(player.x, player.y - 10, 'TURBO BOOTS!', '#38bdf8');
+            } else if (pk.kind === 'rapid') {
+              player.rapidTimer = 10;
+              addFloatText(player.x, player.y - 10, 'RAPID CUBES!', '#f472b6');
+            } else if (pk.kind === 'life') {
+              lives = Math.min(5, lives + 1);
+              syncHud();
+              addFloatText(player.x, player.y - 10, '+1 LIFE!', '#4ade80');
+            } else {
+              addFloatText(pk.x, pk.y - 8, `+${pk.pts}`, '#facc15');
+            }
+            continue;
+          }
+
+          if (pk.ttl <= 0) pickups.splice(i, 1);
+        }
+
+        // Check Stage Clear (all enemies defeated & no trapped cubes remaining)
+        if (enemies.length === 0 && trappedCubes.length === 0) {
+          if (stageClearDelay === 0) {
+            stageClearDelay = 1.6;
+            addScore(500);
+            Audio8Bit.clear();
+            addFloatText(W / 2, H / 2 - 20, `STAGE ${stage} CLEAR! +500`, '#4ade80');
+          } else {
+            stageClearDelay -= dt;
+            if (stageClearDelay <= 0) {
+              initStage(stage + 1);
+            }
+          }
+        }
+      }
+
+      // =========================================================================
+      // 7. BLOCKY PIXEL-ART RENDERER
+      // =========================================================================
+      function drawBlockTile(x, y, w, h, mainCol, hiCol, borderCol) {
+        ctx.fillStyle = mainCol;
+        ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = hiCol;
+        ctx.fillRect(x + 2, y + 2, w - 4, 3);
+        ctx.strokeStyle = borderCol;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+      }
+
+      function render(ts) {
+        ctx.fillStyle = '#060913';
+        ctx.fillRect(0, 0, W, H);
+
+        // Subtle retro background grid
+        ctx.strokeStyle = 'rgba(30, 41, 59, 0.35)';
+        ctx.lineWidth = 1;
+        for (let gx = WALL; gx < W - WALL; gx += 32) {
+          ctx.beginPath(); ctx.moveTo(gx, WALL); ctx.lineTo(gx, FLOOR_Y); ctx.stroke();
+        }
+        for (let gy = WALL; gy < FLOOR_Y; gy += 32) {
+          ctx.beginPath(); ctx.moveTo(WALL, gy); ctx.lineTo(W - WALL, gy); ctx.stroke();
+        }
+
+        // Outer Arena Frame Blocks
+        for (let x = 0; x < W; x += 20) {
+          drawBlockTile(x, 0, 20, WALL, '#1e293b', '#38bdf8', '#0f172a');
+          drawBlockTile(x, FLOOR_Y, 20, WALL, '#1e293b', '#38bdf8', '#0f172a');
+        }
+        for (let y = WALL; y < FLOOR_Y; y += 20) {
+          drawBlockTile(0, y, WALL, 20, '#1e293b', '#38bdf8', '#0f172a');
+          drawBlockTile(W - WALL, y, WALL, 20, '#1e293b', '#38bdf8', '#0f172a');
+        }
+
+        // One-way Jump-Through Block Platforms
+        platforms.forEach(p => {
+          for (let bx = p.x; bx < p.x + p.w; bx += 16) {
+            const bw = Math.min(16, p.x + p.w - bx);
+            drawBlockTile(bx, p.y, bw, p.h, p.color, '#7dd3fc', '#090d16');
+          }
+        });
+
+        // Pickups (Gems & Powerups)
+        pickups.forEach((pk, idx) => {
+          const bob = Math.sin(ts * 0.008 + idx) * 2;
+          drawBlockTile(pk.x, pk.y + bob, pk.w, pk.h, pk.color, '#ffffff', '#090d16');
+          ctx.fillStyle = '#060913';
+          ctx.font = '900 11px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pk.label, pk.x + pk.w / 2, pk.y + pk.h / 2 + bob + 0.5);
+        });
+
+        // Active Enemies (Blocky Monsters)
+        enemies.forEach((en, idx) => {
+          const step = Math.sin(ts * 0.014 + idx) * 2;
+          drawBlockTile(en.x, en.y, en.w, en.h, en.color, '#fecdd3', '#090d16');
+          // Horns / Antennae
+          ctx.fillStyle = '#facc15';
+          ctx.fillRect(en.x + 3, en.y - 4, 4, 4);
+          ctx.fillRect(en.x + en.w - 7, en.y - 4, 4, 4);
+          // Angry Eyes
+          ctx.fillStyle = '#090d16';
+          const eyeOff = en.vx >= 0 ? 4 : -2;
+          ctx.fillRect(en.x + 6 + eyeOff, en.y + 7, 4, 4);
+          ctx.fillRect(en.x + 15 + eyeOff, en.y + 7, 4, 4);
+          // Block Feet
+          ctx.fillStyle = '#e2e8f0';
+          ctx.fillRect(en.x + 3, en.y + en.h - 3 + step * 0.4, 7, 3);
+          ctx.fillRect(en.x + en.w - 10, en.y + en.h - 3 - step * 0.4, 7, 3);
+        });
+
+        // Fired Energy Cubes
+        shots.forEach(s => {
+          ctx.save();
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+          ctx.fillRect(s.x, s.y, s.w, s.h);
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(s.x + 1, s.y + 1, s.w - 2, s.h - 2);
+          ctx.restore();
+        });
+
+        // Trapped Cubes (Floating Translucent Prisms with Enemy Inside)
+        trappedCubes.forEach(tc => {
+          const urgent = tc.timer < 2.2 && Math.floor(ts / 90) % 2 === 0;
+          const borderCol = urgent ? '#fb7185' : '#38bdf8';
+          const fillCol = urgent ? 'rgba(251, 113, 133, 0.35)' : 'rgba(56, 189, 248, 0.32)';
+
+          // Trapped monster shrunk inside cube
+          ctx.fillStyle = tc.enemy.color;
+          ctx.fillRect(tc.x + 7, tc.y + 7, tc.w - 14, tc.h - 14);
+
+          // Glowing outer prism cube
+          ctx.fillStyle = fillCol;
+          ctx.fillRect(tc.x, tc.y, tc.w, tc.h);
+          ctx.strokeStyle = borderCol;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(tc.x + 1, tc.y + 1, tc.w - 2, tc.h - 2);
+        });
+
+        // Player (BlockGuy)
+        if (player.invuln <= 0 || Math.floor(ts / 65) % 2 === 0) {
+          const px = player.x;
+          const py = player.y;
+
+          // Body Cube
+          drawBlockTile(px, py, player.w, player.h, '#38bdf8', '#bae6fd', '#090d16');
+          // Visor
+          ctx.fillStyle = '#facc15';
+          ctx.fillRect(player.dir === 1 ? px + 11 : px + 3, py + 5, 12, 6);
+          ctx.fillStyle = '#090d16';
+          ctx.fillRect(player.dir === 1 ? px + 17 : px + 5, py + 6, 3, 4);
+          // Blaster Arm
+          ctx.fillStyle = player.rapidTimer > 0 ? '#f472b6' : '#e2e8f0';
+          ctx.fillRect(player.dir === 1 ? px + player.w - 2 : px - 5, py + 14, 7, 5);
+        }
+
+        // Particles
+        particles.forEach(pt => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, pt.ttl * 2);
+          ctx.fillStyle = pt.color;
+          ctx.fillRect(pt.x, pt.y, pt.size, pt.size);
+          ctx.restore();
+        });
+
+        // Floating Score Popups
+        ctx.textAlign = 'center';
+        floatTexts.forEach(ft => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, ft.ttl * 1.4);
+          ctx.font = '900 13px monospace';
+          ctx.fillStyle = ft.color;
+          ctx.fillText(ft.text, ft.x, ft.y);
+          ctx.restore();
+        });
+
+        // Stage Intro Banner
+        if (stageBannerTimer > 0 && running) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(6, 9, 19, 0.78)';
+          ctx.fillRect(W / 2 - 120, H / 2 - 24, 240, 48);
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(W / 2 - 120, H / 2 - 24, 240, 48);
+          ctx.fillStyle = '#facc15';
+          ctx.font = '900 18px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`STAGE ${stage}`, W / 2, H / 2);
+          ctx.restore();
+        }
+      }
+
+      // =========================================================================
+      // 8. INPUT & LOOP BINDINGS
+      // =========================================================================
+      window.addEventListener('keydown', e => {
+        if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space'].includes(e.code)) e.preventDefault();
+        keys[e.code] = true;
+        if (e.code === 'ArrowUp' || e.code === 'KeyW') triggerJump();
+        if (e.code === 'Space' || e.code === 'KeyZ' || e.code === 'KeyJ') triggerShoot();
       });
+      window.addEventListener('keyup', e => { keys[e.code] = false; });
 
-      function bindTap(id, fn) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        let last = 0;
-        const trigger = (e) => {
-          if (e && e.cancelable) e.preventDefault();
-          const now = performance.now();
-          if (now - last < 80) return;
-          last = now;
+      function bindHold(btn, setFlag) {
+        const on = e => {
+          if (e.cancelable) e.preventDefault();
+          setFlag(true);
+          btn.classList.add('pressed');
+        };
+        const off = e => {
+          if (e.cancelable) e.preventDefault();
+          setFlag(false);
+          btn.classList.remove('pressed');
+        };
+        btn.addEventListener('pointerdown', on, { passive: false });
+        btn.addEventListener('pointerup', off, { passive: false });
+        btn.addEventListener('pointerleave', off, { passive: false });
+        btn.addEventListener('pointercancel', off, { passive: false });
+        btn.addEventListener('touchstart', on, { passive: false });
+        btn.addEventListener('touchend', off, { passive: false });
+        btn.addEventListener('touchcancel', off, { passive: false });
+      }
+
+      bindHold(document.getElementById('btnLeft'), v => { holdLeft = v; });
+      bindHold(document.getElementById('btnRight'), v => { holdRight = v; });
+
+      function bindActionTap(btn, fn) {
+        const act = e => {
+          if (e.cancelable) e.preventDefault();
+          btn.classList.add('pressed');
           fn();
         };
-        el.addEventListener('pointerdown', trigger, { passive: false });
-        el.addEventListener('touchstart', trigger, { passive: false });
+        const rel = e => {
+          if (e.cancelable) e.preventDefault();
+          btn.classList.remove('pressed');
+        };
+        btn.addEventListener('pointerdown', act, { passive: false });
+        btn.addEventListener('pointerup', rel, { passive: false });
+        btn.addEventListener('pointercancel', rel, { passive: false });
+        btn.addEventListener('touchstart', act, { passive: false });
+        btn.addEventListener('touchend', rel, { passive: false });
       }
 
-      bindTap('btnLeft', () => movePlayer(-1));
-      bindTap('btnRight', () => movePlayer(1));
-      bindTap('btnJump', () => jumpPlayer());
-      bindTap('btnLift', () => liftOrDropBlock());
-      bindTap('btnUndo', () => restoreUndo());
-      bindTap('btnRetry', () => loadStage(currentStageIdx, isRandomStage ? currentStageMeta : null));
+      bindActionTap(document.getElementById('btnJump'), triggerJump);
+      bindActionTap(document.getElementById('btnShoot'), triggerShoot);
 
-      document.getElementById('undoBtn').addEventListener('click', restoreUndo);
-      document.getElementById('stagesBtn').addEventListener('click', () => {
-        renderStageSelect();
-        document.getElementById('stageSelectOverlay').classList.add('active');
-      });
-      document.getElementById('closeStagesBtn').addEventListener('click', () => {
-        document.getElementById('stageSelectOverlay').classList.remove('active');
+      document.getElementById('bgmBtn').addEventListener('click', e => {
+        Audio8Bit.bgmEnabled = !Audio8Bit.bgmEnabled;
+        e.target.textContent = Audio8Bit.bgmEnabled ? 'MUSIC: ON' : 'MUSIC: OFF';
+        e.target.classList.toggle('active', Audio8Bit.bgmEnabled);
       });
 
-      document.getElementById('helpBtn').addEventListener('click', () => {
-        document.getElementById('helpOverlay').classList.add('active');
-      });
-      document.getElementById('closeHelpBtn').addEventListener('click', () => {
-        document.getElementById('helpOverlay').classList.remove('active');
-      });
-
-      document.getElementById('crtBtn').addEventListener('click', (e) => {
-        const sc = document.getElementById('scanlines');
-        sc.classList.toggle('off');
-        e.target.textContent = sc.classList.contains('off') ? 'CRT: OFF' : 'CRT: ON';
+      document.getElementById('sfxBtn').addEventListener('click', e => {
+        Audio8Bit.sfxEnabled = !Audio8Bit.sfxEnabled;
+        e.target.textContent = Audio8Bit.sfxEnabled ? 'SFX: ON' : 'SFX: OFF';
+        e.target.classList.toggle('active', Audio8Bit.sfxEnabled);
       });
 
-      document.getElementById('nextStageBtn').addEventListener('click', () => {
-        if (isRandomStage) loadStage(0, generateRandomStageData());
-        else loadStage(currentStageIdx + 1, null);
-      });
-      document.getElementById('replayStageBtn').addEventListener('click', () => {
-        loadStage(currentStageIdx, isRandomStage ? currentStageMeta : null);
-      });
+      document.getElementById('startBtn').addEventListener('click', startNewGame);
+      document.getElementById('retryBtn').addEventListener('click', startNewGame);
 
-      loadStage(0, null);
-      requestAnimationFrame(frame);
+      let lastTs = performance.now();
+      function loop(ts) {
+        const dt = Math.min(0.05, (ts - lastTs) / 1000);
+        lastTs = ts;
+        update(dt);
+        render(ts);
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
     })();
   </script>
 </body>

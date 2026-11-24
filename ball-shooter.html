@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Orbital Ball Shooter</title>
+  <style>
+    :root {
+      --bg-dark: #1f1406;
+      --panel: rgba(24, 15, 5, 0.9);
+      --border: rgba(251, 191, 36, 0.35);
+      --gold: #facc15;
+      --cyan: #38bdf8;
+      --rose: #fb7185;
+      --emerald: #4ade80;
+      --text: #fffbeb;
+      --muted: #fde68a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(180deg, #5c3a09 0%, #c97a16 48%, #f3b237 100%);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      touch-action: none;
+    }
+
+    .hud {
+      width: min(460px, 95vw);
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 7px 14px;
+      padding-right: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.84rem;
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      z-index: 10;
+    }
+
+    .hud b.score { color: var(--gold); }
+    .hud b.stage { color: var(--cyan); }
+    .hud b.best  { color: var(--emerald); }
+
+    .mini-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .mini-btn.active {
+      background: rgba(250, 204, 21, 0.22);
+      color: var(--gold);
+    }
+
+    .board-frame {
+      position: relative;
+      flex: 1;
+      width: min(440px, 94vw);
+      margin: 6px 0;
+      border-radius: 16px;
+      border: 3px solid #22c55e;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.65), 0 0 18px rgba(34, 197, 94, 0.35);
+      overflow: hidden;
+      background: linear-gradient(180deg, #3a2407 0%, #b86c11 45%, #f3b53f 100%);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(20, 12, 4, 0.86);
+      backdrop-filter: blur(4px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      gap: 12px;
+      z-index: 20;
+    }
+    .overlay.active { display: flex; }
+
+    .ov-title {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+    .ov-sub {
+      font-size: 0.86rem;
+      color: #fef3c7;
+      max-width: 320px;
+      line-height: 1.45;
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, #2563eb, #0284c7);
+      color: #ffffff;
+      border: 2px solid #bae6fd;
+      border-radius: 11px;
+      padding: 11px 26px;
+      font-size: 0.94rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4);
+    }
+
+    .bottom-bar {
+      width: min(440px, 94vw);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .next-orb-preview {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #fffbeb;
+    }
+    .orb-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      box-shadow: inset -3px -3px 5px rgba(0,0,0,0.45), inset 2px 2px 4px rgba(255,255,255,0.65);
+    }
+  </style>
+</head>
+<body>
+  <header class="hud">
+    <span>SCORE: <b class="score" id="scoreVal">0</b></span>
+    <span>STAGE: <b class="stage" id="stageVal">1</b></span>
+    <span>BEST: <b class="best" id="bestVal">0</b></span>
+    <button type="button" class="mini-btn active" id="sfxBtn">SFX: ON</button>
+  </header>
+
+  <main class="board-frame" id="boardFrame">
+    <canvas id="shooterCanvas" width="420" height="580"></canvas>
+
+    <div class="overlay active" id="startOverlay">
+      <div class="ov-title">BALL SHOOTER</div>
+      <p class="ov-sub">
+        Aim with mouse or touch drag, release or click to fire! Match 3 or more glossy orbs of the same color to pop clusters and drop hanging orbs.
+      </p>
+      <button type="button" class="start-btn" id="startBtn">PLAY</button>
+    </div>
+
+    <div class="overlay" id="overOverlay">
+      <div class="ov-title" style="color:#fb7185;" id="overTitle">OVERFLOW!</div>
+      <p class="ov-sub" id="overText">Score: 0 · Best: 0</p>
+      <button type="button" class="start-btn" id="retryBtn">PLAY AGAIN</button>
+    </div>
+  </main>
+
+  <footer class="bottom-bar">
+    <span id="shotsHint">SHOTS TO DROP: <b style="color:#facc15;" id="shotsLeftVal">6</b></span>
+    <div class="next-orb-preview">
+      <span>NEXT:</span>
+      <span class="orb-dot" id="nextDot"></span>
+    </div>
+  </footer>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById('shooterCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreEl = document.getElementById('scoreVal');
+      const stageEl = document.getElementById('stageVal');
+      const bestEl = document.getElementById('bestVal');
+      const shotsLeftVal = document.getElementById('shotsLeftVal');
+      const nextDot = document.getElementById('nextDot');
+      const startOverlay = document.getElementById('startOverlay');
+      const overOverlay = document.getElementById('overOverlay');
+      const overText = document.getElementById('overText');
+
+      // Glossy 3D-styled orb palettes inspired by classic arcade orb shooters
+      const PALETTES = {
+        blue:   { base: '#1d4ed8', light: '#60a5fa', dark: '#0f256e', glow: 'rgba(59,130,246,0.45)' },
+        yellow: { base: '#eab308', light: '#fef08a', dark: '#854d0e', glow: 'rgba(250,204,21,0.45)' },
+        red:    { base: '#e11d48', light: '#fda4af', dark: '#700b22', glow: 'rgba(244,63,94,0.45)' },
+        green:  { base: '#16a34a', light: '#86efac', dark: '#094a21', glow: 'rgba(34,197,94,0.45)' },
+        pink:   { base: '#d946ef', light: '#f5d0fe', dark: '#6b1478', glow: 'rgba(217,70,239,0.45)' }
+      };
+      const COLOR_KEYS = Object.keys(PALETTES);
+
+      // Synth Audio
+      let audioCtx = null;
+      let sfxOn = true;
+      function playSound(freq, dur = 0.07, type = 'triangle', vol = 0.05, endFreq = null) {
+        if (!sfxOn) return;
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, now);
+          if (endFreq) osc.frequency.exponentialRampToValueAtTime(Math.max(40, endFreq), now + dur);
+          g.gain.setValueAtTime(vol, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + dur);
+        } catch {}
+      }
+
+      const W = 420;
+      const H = 580;
+      const COLS = 11;
+      const R = 17.5;
+      const DIAM = R * 2;
+      const ROW_H = R * Math.sqrt(3);
+      const LAUNCH_X = W / 2;
+      const LAUNCH_Y = H - 46;
+      const DANGER_Y = H - 102;
+
+      let best = Number(localStorage.getItem('cv_ball_shooter_best') || 0);
+      bestEl.textContent = best;
+
+      let score = 0;
+      let stage = 1;
+      let shotsBeforeDrop = 6;
+      let running = false;
+
+      // Hex-grid storage: rows of arrays (even rows have COLS items, odd rows have COLS-1 items)
+      let grid = [];
+      let activeBall = null;
+      let currentColor = 'blue';
+      let nextColor = 'yellow';
+      let aimAngle = -Math.PI / 2;
+      let isAiming = false;
+
+      let fallingOrbs = []; // Detached floating clusters falling with gravity
+      let particles = [];
+      let floatTexts = [];
+
+      function getCellCenter(row, col) {
+        const isOdd = row % 2 === 1;
+        const rowCols = isOdd ? COLS - 1 : COLS;
+        const totalWidth = rowCols * DIAM;
+        const startX = (W - totalWidth) / 2 + R;
+        return {
+          x: startX + col * DIAM,
+          y: R + 8 + row * ROW_H
+        };
+      }
+
+      function getRowCols(row) {
+        return row % 2 === 1 ? COLS - 1 : COLS;
+      }
+
+      function pickActiveColor() {
+        const present = new Set();
+        for (let r = 0; r < grid.length; r++) {
+          for (let c = 0; c < grid[r].length; c++) {
+            if (grid[r][c]) present.add(grid[r][c]);
+          }
+        }
+        const pool = present.size > 0 ? [...present] : COLOR_KEYS;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      function refreshNextPreview() {
+        const pal = PALETTES[nextColor] || PALETTES.blue;
+        nextDot.style.background = `radial-gradient(circle at 32% 30%, ${pal.light}, ${pal.base} 65%, ${pal.dark})`;
+      }
+
+      function buildStageFormation(stageNum) {
+        grid = [];
+        const initialRows = Math.min(8, 6 + Math.floor((stageNum - 1) / 2));
+        const pattern = stageNum % 3;
+
+        for (let r = 0; r < initialRows; r++) {
+          const colsCount = getRowCols(r);
+          const rowArr = [];
+          for (let c = 0; c < colsCount; c++) {
+            const centerDist = Math.abs(c - (colsCount - 1) / 2);
+            let colKey;
+            if (pattern === 0) {
+              // V-funnel blue center flanked by yellow, red, and green (classic arcade look)
+              if (centerDist < 2.4 && r < initialRows - 1) colKey = 'blue';
+              else if (centerDist < 3.6) colKey = 'yellow';
+              else if (c === 0 || c === colsCount - 1) colKey = 'green';
+              else colKey = 'red';
+            } else if (pattern === 1) {
+              colKey = COLOR_KEYS[(r + c + stageNum) % COLOR_KEYS.length];
+            } else {
+              colKey = Math.random() < 0.35 ? 'blue' : COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
+            }
+            rowArr.push(colKey);
+          }
+          grid.push(rowArr);
+        }
+      }
+
+      function dropNewTopRow() {
+        const newRow = [];
+        const colsCount = getRowCols(0);
+        for (let c = 0; c < colsCount; c++) {
+          newRow.push(COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)]);
+        }
+        // Shift existing rows down by re-mapping row indices
+        const shifted = [];
+        const totalOld = grid.length;
+        // Rebuild grid with new row 0
+        shifted.push(newRow);
+        for (let r = 0; r < totalOld; r++) {
+          const targetRowIdx = r + 1;
+          const targetCols = getRowCols(targetRowIdx);
+          const oldRow = grid[r];
+          const mapped = [];
+          for (let c = 0; c < targetCols; c++) {
+            mapped.push(oldRow[Math.min(oldRow.length - 1, c)] || COLOR_KEYS[c % COLOR_KEYS.length]);
+          }
+          shifted.push(mapped);
+        }
+        grid = shifted;
+        playSound(190, 0.12, 'sawtooth', 0.04, 130);
+        checkOverflow();
+      }
+
+      function checkOverflow() {
+        for (let r = 0; r < grid.length; r++) {
+          for (let c = 0; c < grid[r].length; c++) {
+            if (grid[r][c]) {
+              const { y } = getCellCenter(r, c);
+              if (y + R >= DANGER_Y) {
+                running = false;
+                overText.textContent = `Final Score: ${score} · Reached Stage ${stage} · Best: ${best}`;
+                overOverlay.classList.add('active');
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      }
+
+      function startGame() {
+        score = 0;
+        stage = 1;
+        shotsBeforeDrop = Math.max(4, 7 - Math.floor(stage / 3));
+        fallingOrbs = [];
+        particles = [];
+        floatTexts = [];
+        activeBall = null;
+        aimAngle = -Math.PI / 2;
+
+        buildStageFormation(stage);
+        currentColor = pickActiveColor();
+        nextColor = pickActiveColor();
+        refreshNextPreview();
+
+        scoreEl.textContent = score;
+        stageEl.textContent = stage;
+        shotsLeftVal.textContent = shotsBeforeDrop;
+
+        startOverlay.classList.remove('active');
+        overOverlay.classList.remove('active');
+        running = true;
+      }
+
+      // =========================================================================
+      // 2. HEX NEIGHBOR FLOOD-FILL & FLOATING CLUSTER DETECTION
+      // =========================================================================
+      function getNeighbors(r, c) {
+        const out = [];
+        const isOdd = r % 2 === 1;
+        // Same row left/right
+        if (c > 0) out.push([r, c - 1]);
+        if (c < getRowCols(r) - 1) out.push([r, c + 1]);
+
+        // Upper row
+        if (r > 0) {
+          const upCols = getRowCols(r - 1);
+          if (isOdd) {
+            if (c < upCols) out.push([r - 1, c]);
+            if (c + 1 < upCols) out.push([r - 1, c + 1]);
+          } else {
+            if (c - 1 >= 0) out.push([r - 1, c - 1]);
+            if (c < upCols) out.push([r - 1, c]);
+          }
+        }
+
+        // Lower row
+        const downCols = getRowCols(r + 1);
+        if (r + 1 < grid.length) {
+          if (isOdd) {
+            if (c < downCols) out.push([r + 1, c]);
+            if (c + 1 < downCols) out.push([r + 1, c + 1]);
+          } else {
+            if (c - 1 >= 0) out.push([r + 1, c - 1]);
+            if (c < downCols) out.push([r + 1, c]);
+          }
+        }
+        return out;
+      }
+
+      function findNearestSlot(x, y) {
+        let bestSlot = null;
+        let bestDist = Infinity;
+        const maxRow = grid.length + 2;
+
+        for (let r = 0; r < maxRow; r++) {
+          const colsCount = getRowCols(r);
+          for (let c = 0; c < colsCount; c++) {
+            if (grid[r] && grid[r][c]) continue;
+            const center = getCellCenter(r, c);
+            const d = Math.hypot(x - center.x, y - center.y);
+            if (d < bestDist) {
+              bestDist = d;
+              bestSlot = { r, c, x: center.x, y: center.y };
+            }
+          }
+        }
+        return bestSlot;
+      }
+
+      function snapBallToGrid(ball) {
+        const slot = findNearestSlot(ball.x, ball.y);
+        if (!slot) {
+          activeBall = null;
+          return;
+        }
+
+        while (grid.length <= slot.r) {
+          grid.push(Array(getRowCols(grid.length)).fill(null));
+        }
+        grid[slot.r][slot.c] = ball.color;
+        activeBall = null;
+
+        // Find connected matching color cluster
+        const visited = new Set([`${slot.r},${slot.c}`]);
+        const cluster = [[slot.r, slot.c]];
+        const queue = [[slot.r, slot.c]];
+
+        while (queue.length > 0) {
+          const [cr, cc] = queue.shift();
+          for (const [nr, nc] of getNeighbors(cr, cc)) {
+            const key = `${nr},${nc}`;
+            if (!visited.has(key) && grid[nr]?.[nc] === ball.color) {
+              visited.add(key);
+              cluster.push([nr, nc]);
+              queue.push([nr, nc]);
+            }
+          }
+        }
+
+        let poppedAny = false;
+        if (cluster.length >= 3) {
+          poppedAny = true;
+          let pts = cluster.length * 30;
+          cluster.forEach(([pr, pc]) => {
+            const pos = getCellCenter(pr, pc);
+            const pal = PALETTES[grid[pr][pc]] || PALETTES.blue;
+            addBurst(pos.x, pos.y, pal.light, 8);
+            grid[pr][pc] = null;
+          });
+          playSound(640, 0.11, 'square', 0.05, 920);
+
+          // Find all orbs anchored to row 0 so unanchored floating orbs drop down!
+          const anchored = new Set();
+          const aQueue = [];
+          for (let c = 0; c < getRowCols(0); c++) {
+            if (grid[0]?.[c]) {
+              anchored.add(`0,${c}`);
+              aQueue.push([0, c]);
+            }
+          }
+          while (aQueue.length > 0) {
+            const [ar, ac] = aQueue.shift();
+            for (const [nr, nc] of getNeighbors(ar, ac)) {
+              const key = `${nr},${nc}`;
+              if (!anchored.has(key) && grid[nr]?.[nc]) {
+                anchored.add(key);
+                aQueue.push([nr, nc]);
+              }
+            }
+          }
+
+          let droppedCount = 0;
+          for (let r = 0; r < grid.length; r++) {
+            for (let c = 0; c < grid[r].length; c++) {
+              const colorKey = grid[r][c];
+              if (colorKey && !anchored.has(`${r},${c}`)) {
+                const pos = getCellCenter(r, c);
+                fallingOrbs.push({
+                  x: pos.x,
+                  y: pos.y,
+                  vx: (Math.random() - 0.5) * 70,
+                  vy: -60 - Math.random() * 50,
+                  color: colorKey
+                });
+                grid[r][c] = null;
+                droppedCount++;
+              }
+            }
+          }
+
+          if (droppedCount > 0) {
+            pts += droppedCount * 50;
+            playSound(420, 0.14, 'triangle', 0.055, 180);
+          }
+
+          score += pts;
+          if (score > best) {
+            best = score;
+            localStorage.setItem('cv_ball_shooter_best', best);
+          }
+          scoreEl.textContent = score;
+          bestEl.textContent = best;
+          addFloatText(slot.x, slot.y - 8, `+${pts}`, '#fef08a');
+        }
+
+        // Trim empty trailing rows
+        while (grid.length > 0 && grid[grid.length - 1].every(v => !v)) {
+          grid.pop();
+        }
+
+        // Check stage clear
+        const remaining = grid.reduce((sum, row) => sum + row.filter(Boolean).length, 0);
+        if (remaining === 0 && fallingOrbs.length === 0) {
+          stage++;
+          score += 500;
+          if (score > best) {
+            best = score;
+            localStorage.setItem('cv_ball_shooter_best', best);
+          }
+          stageEl.textContent = stage;
+          scoreEl.textContent = score;
+          bestEl.textContent = best;
+          shotsBeforeDrop = Math.max(4, 7 - Math.floor(stage / 3));
+          shotsLeftVal.textContent = shotsBeforeDrop;
+          playSound(523, 0.08);
+          setTimeout(() => playSound(659, 0.08), 80);
+          setTimeout(() => playSound(784, 0.14), 160);
+          buildStageFormation(stage);
+          currentColor = pickActiveColor();
+          nextColor = pickActiveColor();
+          refreshNextPreview();
+          return;
+        }
+
+        if (!poppedAny) {
+          shotsBeforeDrop--;
+          if (shotsBeforeDrop <= 0) {
+            shotsBeforeDrop = Math.max(4, 7 - Math.floor(stage / 3));
+            dropNewTopRow();
+            if (!running) return;
+          }
+        }
+        shotsLeftVal.textContent = shotsBeforeDrop;
+
+        if (checkOverflow()) return;
+
+        currentColor = nextColor;
+        nextColor = pickActiveColor();
+        refreshNextPreview();
+      }
+
+      function fireActiveOrb() {
+        if (!running || activeBall) return;
+        const speed = 760;
+        activeBall = {
+          x: LAUNCH_X,
+          y: LAUNCH_Y,
+          vx: Math.cos(aimAngle) * speed,
+          vy: Math.sin(aimAngle) * speed,
+          color: currentColor
+        };
+        playSound(520, 0.06, 'square', 0.04, 760);
+      }
+
+      // =========================================================================
+      // 3. AIMING LINE & UPDATE / RENDER LOOP
+      // =========================================================================
+      function computeAimPreview() {
+        const dots = [];
+        let px = LAUNCH_X;
+        let py = LAUNCH_Y;
+        let vx = Math.cos(aimAngle);
+        let vy = Math.sin(aimAngle);
+        const step = 12;
+        let stepsCount = 0;
+
+        while (stepsCount < 65) {
+          px += vx * step;
+          py += vy * step;
+          stepsCount++;
+
+          if (px - R < 0) {
+            px = R + (R - px);
+            vx = Math.abs(vx);
+          } else if (px + R > W) {
+            px = W - R - (px - (W - R));
+            vx = -Math.abs(vx);
+          }
+
+          if (py - R < 8) break;
+
+          // Stop ray when touching any placed orb
+          let hit = false;
+          for (let r = 0; r < grid.length && !hit; r++) {
+            for (let c = 0; c < grid[r].length; c++) {
+              if (!grid[r][c]) continue;
+              const center = getCellCenter(r, c);
+              if (Math.hypot(px - center.x, py - center.y) < DIAM - 2) {
+                hit = true;
+                break;
+              }
+            }
+          }
+
+          if (stepsCount % 2 === 0) {
+            dots.push({ x: px, y: py });
+          }
+          if (hit) break;
+        }
+        return dots;
+      }
+
+      function addBurst(x, y, color, count = 8) {
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const spd = 45 + Math.random() * 140;
+          particles.push({
+            x, y,
+            vx: Math.cos(a) * spd,
+            vy: Math.sin(a) * spd,
+            r: 2.5 + Math.random() * 2.5,
+            color,
+            ttl: 0.35 + Math.random() * 0.2
+          });
+        }
+      }
+
+      function addFloatText(x, y, text, color = '#fef08a') {
+        floatTexts.push({ x, y, text, color, vy: -38, ttl: 0.75 });
+      }
+
+      function update(dt) {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const pt = particles[i];
+          pt.x += pt.vx * dt;
+          pt.y += pt.vy * dt;
+          pt.ttl -= dt;
+          if (pt.ttl <= 0) particles.splice(i, 1);
+        }
+
+        for (let i = floatTexts.length - 1; i >= 0; i--) {
+          const ft = floatTexts[i];
+          ft.y += ft.vy * dt;
+          ft.ttl -= dt;
+          if (ft.ttl <= 0) floatTexts.splice(i, 1);
+        }
+
+        for (let i = fallingOrbs.length - 1; i >= 0; i--) {
+          const fo = fallingOrbs[i];
+          fo.vy += 880 * dt;
+          fo.x += fo.vx * dt;
+          fo.y += fo.vy * dt;
+          if (fo.y > H + 30) fallingOrbs.splice(i, 1);
+        }
+
+        if (!running || !activeBall) return;
+
+        // Sub-step high-speed orb travel to avoid tunneling
+        const subSteps = 3;
+        const subDt = dt / subSteps;
+
+        for (let s = 0; s < subSteps; s++) {
+          activeBall.x += activeBall.vx * subDt;
+          activeBall.y += activeBall.vy * subDt;
+
+          if (activeBall.x - R < 0) {
+            activeBall.x = R;
+            activeBall.vx = Math.abs(activeBall.vx);
+          } else if (activeBall.x + R > W) {
+            activeBall.x = W - R;
+            activeBall.vx = -Math.abs(activeBall.vx);
+          }
+
+          if (activeBall.y - R <= 8) {
+            activeBall.y = R + 8;
+            snapBallToGrid(activeBall);
+            return;
+          }
+
+          // Check collision with existing grid orbs
+          for (let r = 0; r < grid.length; r++) {
+            for (let c = 0; c < grid[r].length; c++) {
+              if (!grid[r][c]) continue;
+              const center = getCellCenter(r, c);
+              if (Math.hypot(activeBall.x - center.x, activeBall.y - center.y) <= DIAM - 1.5) {
+                snapBallToGrid(activeBall);
+                return;
+              }
+            }
+          }
+        }
+      }
+
+      function drawGlossyOrb(x, y, radius, colorKey) {
+        const pal = PALETTES[colorKey] || PALETTES.blue;
+        ctx.save();
+        const grad = ctx.createRadialGradient(
+          x - radius * 0.35,
+          y - radius * 0.35,
+          radius * 0.12,
+          x,
+          y,
+          radius
+        );
+        grad.addColorStop(0, pal.light);
+        grad.addColorStop(0.55, pal.base);
+        grad.addColorStop(1, pal.dark);
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, radius - 0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Crisp specular highlight dot
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+        ctx.beginPath();
+        ctx.ellipse(x - radius * 0.32, y - radius * 0.34, radius * 0.24, radius * 0.14, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function render() {
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+        bgGrad.addColorStop(0, '#3a2407');
+        bgGrad.addColorStop(0.45, '#b86c11');
+        bgGrad.addColorStop(1, '#f3b53f');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Subtle danger line
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+        ctx.setLineDash([6, 6]);
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(14, DANGER_Y);
+        ctx.lineTo(W - 14, DANGER_Y);
+        ctx.stroke();
+        ctx.restore();
+
+        // Grid orbs
+        for (let r = 0; r < grid.length; r++) {
+          for (let c = 0; c < grid[r].length; c++) {
+            const colorKey = grid[r][c];
+            if (!colorKey) continue;
+            const center = getCellCenter(r, c);
+            drawGlossyOrb(center.x, center.y, R, colorKey);
+          }
+        }
+
+        // Falling detached orbs
+        fallingOrbs.forEach(fo => drawGlossyOrb(fo.x, fo.y, R, fo.color));
+
+        // Dotted Trajectory Line (matching reference aesthetic)
+        if (running && !activeBall) {
+          const dots = computeAimPreview();
+          dots.forEach((pt, idx) => {
+            const alpha = Math.max(0.25, 1 - idx * 0.022);
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            drawGlossyOrb(pt.x, pt.y, 5.2, currentColor);
+            ctx.restore();
+          });
+        }
+
+        // Active flying orb
+        if (activeBall) {
+          drawGlossyOrb(activeBall.x, activeBall.y, R, activeBall.color);
+        }
+
+        // Shooter Pedestal & Loaded Orb
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 250, 235, 0.45)';
+        ctx.beginPath();
+        ctx.arc(LAUNCH_X, LAUNCH_Y, R + 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        if (!activeBall && running) {
+          drawGlossyOrb(LAUNCH_X, LAUNCH_Y, R + 1, currentColor);
+        }
+
+        // Particles
+        particles.forEach(pt => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, pt.ttl * 2.5);
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Floating Score Popups
+        ctx.textAlign = 'center';
+        floatTexts.forEach(ft => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, ft.ttl * 1.4);
+          ctx.font = '900 14px Inter, sans-serif';
+          ctx.fillStyle = ft.color;
+          ctx.fillText(ft.text, ft.x, ft.y);
+          ctx.restore();
+        });
+      }
+
+      // Pointer & Keyboard Aiming
+      function updateAimFromEvent(e) {
+        const rect = canvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const mx = ((e.clientX - rect.left) / rect.width) * W;
+        const my = ((e.clientY - rect.top) / rect.height) * H;
+        let ang = Math.atan2(my - LAUNCH_Y, mx - LAUNCH_X);
+        // Clamp between -162 deg and -18 deg so shots always go upward
+        const minAng = -Math.PI + 0.28;
+        const maxAng = -0.28;
+        if (ang > 0) ang = mx < LAUNCH_X ? minAng : maxAng;
+        aimAngle = Math.max(minAng, Math.min(maxAng, ang));
+      }
+
+      canvas.addEventListener('pointermove', e => {
+        if (!running) return;
+        updateAimFromEvent(e);
+      }, { passive: false });
+
+      canvas.addEventListener('pointerdown', e => {
+        if (!running) return;
+        if (e.cancelable) e.preventDefault();
+        isAiming = true;
+        updateAimFromEvent(e);
+      }, { passive: false });
+
+      canvas.addEventListener('pointerup', e => {
+        if (!running) return;
+        if (e.cancelable) e.preventDefault();
+        updateAimFromEvent(e);
+        if (isAiming) {
+          isAiming = false;
+          fireActiveOrb();
+        }
+      }, { passive: false });
+
+      window.addEventListener('keydown', e => {
+        if (!running) return;
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+          e.preventDefault();
+          aimAngle = Math.max(-Math.PI + 0.28, aimAngle - 0.07);
+        } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+          e.preventDefault();
+          aimAngle = Math.min(-0.28, aimAngle + 0.07);
+        } else if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+          e.preventDefault();
+          fireActiveOrb();
+        }
+      });
+
+      document.getElementById('sfxBtn').addEventListener('click', e => {
+        sfxOn = !sfxOn;
+        e.target.textContent = sfxOn ? 'SFX: ON' : 'SFX: OFF';
+        e.target.classList.toggle('active', sfxOn);
+      });
+
+      document.getElementById('startBtn').addEventListener('click', startGame);
+      document.getElementById('retryBtn').addEventListener('click', startGame);
+
+      let lastTs = performance.now();
+      function loop(ts) {
+        const dt = Math.min(0.05, (ts - lastTs) / 1000);
+        lastTs = ts;
+        update(dt);
+        render();
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

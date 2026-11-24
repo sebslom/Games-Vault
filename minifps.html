@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DOOM II: BRUTAL HELLGATE · Multi-Floor &amp; Anti-Trap Edition</title>
+  <title>BRUTAL HELLGATE 3D · Endless Procedural FPS</title>
   <style>
     :root {
       --bg: #070507;
@@ -117,13 +117,13 @@
     .mini-btn:hover { border-color: #f43f5e; color: #fda4af; }
     .mini-btn.active { background: #991b1b; border-color: #f87171; }
 
-    /* Classic Doom Bottom Status Bar */
-    .doom-hud {
-      height: 78px;
+    /* Retro Tactical Status Bar */
+    .status-hud {
+      height: 76px;
       background: linear-gradient(180deg, #27272a 0%, #18181b 100%);
       border-top: 3px solid #52525b;
       display: grid;
-      grid-template-columns: 1.1fr 1fr 0.75fr 1.1fr 1.3fr;
+      grid-template-columns: 1.1fr 1fr 0.75fr 1.15fr 1.3fr;
       align-items: center;
       padding: 4px 10px;
       gap: 8px;
@@ -289,26 +289,26 @@
     }
     .modal-bg.active { display: flex; }
 
-    .doom-box {
-      width: min(650px, 95vw);
+    .modal-box {
+      width: min(660px, 95vw);
       max-height: 92dvh;
       overflow-y: auto;
       background: #140b0d;
       border: 2px solid #991b1b;
       border-radius: 10px;
-      padding: 22px;
+      padding: 20px;
       text-align: center;
       box-shadow: 0 0 50px rgba(225, 29, 72, 0.35);
     }
-    .doom-title {
-      font-size: clamp(1.5rem, 4vw, 2.35rem);
+    .game-title {
+      font-size: clamp(1.5rem, 4vw, 2.3rem);
       font-weight: 900;
       letter-spacing: 2px;
       color: #ef4444;
       text-shadow: 0 3px 0 #450a0a, 0 0 20px rgba(239, 68, 68, 0.6);
       margin-bottom: 6px;
     }
-    .doom-sub {
+    .game-sub {
       font-size: 0.82rem;
       color: #fca5a5;
       margin-bottom: 14px;
@@ -325,7 +325,7 @@
       background: #1f1013;
       border: 2px solid #4a151b;
       border-radius: 8px;
-      padding: 10px 8px;
+      padding: 9px 8px;
       color: #e4e4e7;
       cursor: pointer;
       font-family: inherit;
@@ -337,6 +337,29 @@
     }
     .diff-card b { display: block; font-size: 0.82rem; margin-bottom: 3px; }
     .diff-card span { font-size: 0.68rem; color: #a1a1aa; }
+
+    .dlc-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .dlc-card {
+      background: #180d11;
+      border: 1.5px solid #521922;
+      color: #e4e4e7;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .dlc-card.active {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.14);
+    }
+    .dlc-card b { display: block; font-size: 0.8rem; color: #38bdf8; margin-bottom: 2px; }
+    .dlc-card span { font-size: 0.68rem; color: #a1a1aa; line-height: 1.3; display: block; }
 
     .controls-panel {
       background: #0d0708;
@@ -359,38 +382,15 @@
       font-size: 0.96rem;
       font-weight: 900;
       letter-spacing: 1px;
-      padding: 11px 24px;
+      padding: 11px 26px;
       border-radius: 8px;
       cursor: pointer;
       box-shadow: 0 8px 24px rgba(220, 38, 38, 0.45);
     }
     .rip-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
 
-    .dlc-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 14px;
-    }
-    .dlc-pill {
-      background: #1a0e11;
-      border: 1.5px solid #521922;
-      color: #e4e4e7;
-      padding: 6px 11px;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 0.74rem;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .dlc-pill.active {
-      border-color: #38bdf8;
-      background: rgba(56, 189, 248, 0.16);
-      color: #38bdf8;
-    }
     @media (max-width: 620px) {
-      .doom-hud {
+      .status-hud {
         height: 62px;
         grid-template-columns: 0.95fr 0.9fr 0.65fr 1fr 1.35fr;
         gap: 3px;
@@ -400,7 +400,7 @@
       .hud-lbl { font-size: 0.54rem; }
       canvas#mugCanvas { width: 44px; height: 48px; }
       .arm-slot { font-size: 0.58rem; padding: 1px 0; }
-      .diff-grid { grid-template-columns: 1fr; }
+      .diff-grid, .dlc-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -414,7 +414,7 @@
         <div class="msg-feed" id="msgFeed"></div>
         <div class="top-btns">
           <button class="mini-btn" id="mapToggleBtn" title="Automap [TAB]">MAP</button>
-          <button class="mini-btn active" id="musicBtn" title="Synth Metal Riff [M]">RIFF: ON</button>
+          <button class="mini-btn active" id="musicBtn" title="Synth Riff [M]">RIFF: ON</button>
           <button class="mini-btn" id="sfxBtn" title="Sound Effects">SFX: ON</button>
         </div>
       </div>
@@ -433,10 +433,10 @@
       </div>
     </div>
 
-    <!-- Classic Doom Status Bar -->
-    <footer class="doom-hud">
+    <!-- Bottom Status Bar -->
+    <footer class="status-hud">
       <div class="hud-cell">
-        <div class="hud-num ammo" id="hudAmmo">50</div>
+        <div class="hud-num ammo" id="hudAmmo">60</div>
         <div class="hud-lbl" id="hudClip">MAG 30/30</div>
       </div>
       <div class="hud-cell">
@@ -447,7 +447,7 @@
         <canvas id="mugCanvas" width="32" height="34"></canvas>
       </div>
       <div class="hud-cell">
-        <div class="hud-num armor" id="hudArmor">25%</div>
+        <div class="hud-num armor" id="hudArmor">35%</div>
         <div class="hud-lbl" id="hudSector">SEC-1 · FL 1/3</div>
       </div>
       <div class="hud-cell">
@@ -466,43 +466,41 @@
 
   <!-- Title Modal -->
   <div class="modal-bg active" id="titleModal">
-    <div class="doom-box">
-      <div class="doom-title">DOOM II: BRUTAL HELLGATE</div>
-      <div class="doom-sub">RANDOM MULTI-FLOOR SECTORS · NO FALL PITS · ANTI-DOOR-TRAP ENGINE</div>
+    <div class="modal-box">
+      <div class="game-title">BRUTAL HELLGATE 3D</div>
+      <div class="game-sub">ENDLESS PROCEDURAL ARENAS · ANIMATED TORCHES &amp; PROPS · MODULAR DLC</div>
 
       <div class="diff-grid" id="diffGrid">
-        <button type="button" class="diff-card" data-diff="hurt">
-          <b>HURT ME PLENTY</b>
-          <span>Balanced ammo &amp; demon aggression</span>
+        <button type="button" class="diff-card selected" data-diff="casual">
+          <b>RECRUIT (EASY)</b>
+          <span>Forgiving damage &amp; generous supplies</span>
         </button>
-        <button type="button" class="diff-card selected" data-diff="uv">
-          <b>ULTRA-VIOLENCE</b>
-          <span>Classic Brutal Doom intensity</span>
+        <button type="button" class="diff-card" data-diff="standard">
+          <b>VETERAN (NORMAL)</b>
+          <span>Balanced arcade action</span>
         </button>
         <button type="button" class="diff-card" data-diff="nightmare">
           <b>NIGHTMARE!</b>
-          <span>Fast projectiles &amp; lethal hordes</span>
+          <span>Aggressive hordes &amp; fast shots</span>
         </button>
       </div>
+
+      <div class="dlc-grid" id="dlcSelectorRow"></div>
 
       <div class="controls-panel">
         <b>WASD</b> Move / Strafe · <b>Mouse (Click Screen)</b> or <b>◀/▶</b> Aim · <b>Left-Click / Space</b> Fire<br>
         <b>F / Right-Click</b> Mighty Boot Kick / Open Door / Use Lift · <b>1–6</b> Weapons · <b>R</b> Reload · <b>G</b> Taunt · <b>TAB</b> Automap<br>
-        <b>Multi-Floor Lifts (Doom Style):</b> Each generated sector has connected floors (1 → 2 → 3) linked by glowing Elevator Pads — walk on or press <b>F</b> to ascend/descend floors, and reach the <b>Exit Elevator</b> to advance to a fresh random sector!
+        <b>Endless Multi-Floor Sectors:</b> Wide halls &amp; open arenas filled with animated torches, plasma coils, skulls, wall decals, and 3 connected floors per sector!
       </div>
 
-      <div class="dlc-row" id="dlcSelectorRow"></div>
-
-      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-        <button type="button" class="rip-btn" id="startGameBtn">RIP &amp; TEAR</button>
-      </div>
+      <button type="button" class="rip-btn" id="startGameBtn">ENTER THE ARENA</button>
     </div>
   </div>
 
   <!-- Intermission / Death Modal -->
   <div class="modal-bg" id="interModal">
-    <div class="doom-box" style="max-width:480px;">
-      <div class="doom-title" id="interTitle" style="font-size:1.8rem;">SECTOR CLEARED</div>
+    <div class="modal-box" style="max-width:480px;">
+      <div class="game-title" id="interTitle" style="font-size:1.8rem;">SECTOR CLEARED</div>
       <p id="interStats" style="color:#e4e4e7; font-size:0.88rem; line-height:1.65; margin:14px 0 18px;"></p>
       <button type="button" class="rip-btn" id="interActionBtn">GENERATE NEXT SECTOR</button>
     </div>
@@ -511,7 +509,7 @@
   <script>
     (() => {
       // =========================================================================
-      // 1. RETRO PIXEL BUFFER & PROCEDURAL 64x64 TEXTURES
+      // 1. RETRO PIXEL BUFFER, PROCEDURAL TEXTURES & WALL DECALS
       // =========================================================================
       const RW = 360;
       const RH = 225;
@@ -529,25 +527,25 @@
 
       const TEXTURES = {};
       function buildTextures() {
-        // 1: UAC Techbase Wall
+        // 1: UAC Techbase Wall with hazard stripe
         const t1 = new Uint32Array(TEX_SIZE * TEX_SIZE);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
             const noise = ((x * 37 + y * 17) ^ (x * 13)) & 15;
-            let r = 68 + noise, g = 74 + noise, b = 86 + noise;
-            if (x % 32 === 0 || y % 32 === 0) { r -= 28; g -= 28; b -= 28; }
+            let r = 74 + noise, g = 80 + noise, b = 94 + noise;
+            if (x % 32 === 0 || y % 32 === 0) { r -= 26; g -= 26; b -= 26; }
             if (y >= 54 && y <= 60) {
               const stripe = ((x + y) >> 2) & 1;
-              r = stripe ? 210 : 24;
-              g = stripe ? 160 : 24;
-              b = stripe ? 20 : 28;
+              r = stripe ? 215 : 24;
+              g = stripe ? 165 : 24;
+              b = stripe ? 22 : 28;
             }
             t1[y * 64 + x] = packRGBA(Math.max(0, Math.min(255, r)), Math.max(0, Math.min(255, g)), Math.max(0, Math.min(255, b)));
           }
         }
         TEXTURES[1] = t1;
 
-        // 2: Hellish Crimson Brick Wall
+        // 2: Crimson Citadel Brick Wall
         const t2 = new Uint32Array(TEX_SIZE * TEX_SIZE);
         for (let y = 0; y < 64; y++) {
           const row = Math.floor(y / 8);
@@ -557,36 +555,36 @@
             const by = y % 8;
             const grain = ((x * 19 + y * 43) % 22) - 11;
             if (bx === 0 || by === 0) {
-              t2[y * 64 + x] = packRGBA(36, 14, 16);
+              t2[y * 64 + x] = packRGBA(38, 15, 18);
             } else {
-              t2[y * 64 + x] = packRGBA(128 + grain, 26 + Math.max(0, grain >> 1), 30 + Math.max(0, grain >> 1));
+              t2[y * 64 + x] = packRGBA(134 + grain, 28 + Math.max(0, grain >> 1), 34 + Math.max(0, grain >> 1));
             }
           }
         }
         TEXTURES[2] = t2;
 
-        // 3: Rusty Industrial Iron + Green Slime Pipe
+        // 3: Industrial Bio-Slime Pipe Wall
         const t3 = new Uint32Array(TEX_SIZE * TEX_SIZE);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
             const rust = ((x * 29 ^ y * 53) & 31);
-            let r = 82 + rust, g = 54 + (rust >> 1), b = 42;
+            let r = 84 + rust, g = 58 + (rust >> 1), b = 46;
             if (x >= 26 && x <= 37) {
               const pipeShade = 1 - Math.abs(x - 31.5) / 6.5;
               r = Math.round(35 * pipeShade);
-              g = Math.round(145 * pipeShade);
-              b = Math.round(55 * pipeShade);
+              g = Math.round(155 * pipeShade);
+              b = Math.round(60 * pipeShade);
             }
             t3[y * 64 + x] = packRGBA(r, g, b);
           }
         }
         TEXTURES[3] = t3;
 
-        // 4: Security Sliding Door (only placed in open corridors between rooms!)
+        // 4: Security Sliding Door
         const t4 = new Uint32Array(TEX_SIZE * TEX_SIZE);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
-            let r = 104, g = 112, b = 126;
+            let r = 108, g = 116, b = 132;
             if (x < 4 || x > 59 || y < 4 || y > 59) { r = 45; g = 48; b = 54; }
             else if (Math.abs(x - 31.5) < 1.5) { r = 16; g = 16; b = 20; }
             else if (y > 26 && y < 38) {
@@ -600,7 +598,7 @@
         }
         TEXTURES[4] = t4;
 
-        // 5: Exit Elevator Switch Wall (Green illuminated exit)
+        // 5: Exit Portal Switch Wall
         const t5 = new Uint32Array(TEX_SIZE * TEX_SIZE);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
@@ -608,7 +606,7 @@
             if (x >= 16 && x <= 47 && y >= 14 && y <= 50) {
               r = 18; g = 24; b = 28;
               if (x >= 22 && x <= 41 && y >= 22 && y <= 40) {
-                r = 34; g = 215; b = 110;
+                r = 34; g = 225; b = 115;
               }
             }
             t5[y * 64 + x] = packRGBA(r, g, b);
@@ -616,25 +614,37 @@
         }
         TEXTURES[5] = t5;
 
-        // 6: Secret Push-Wall
+        // 6: Secret Cracked Wall
         const t6 = new Uint32Array(t2);
         for (let i = 8; i < 56; i++) {
           t6[i * 64 + ((i * 3) % 12 + 26)] = packRGBA(22, 8, 10);
         }
         TEXTURES[6] = t6;
 
-        // Floor & Ceiling textures (no bottomless pits — solid Doom floors everywhere)
+        // 7: Frozen Cryo Vault Wall (for Frost DLC)
+        const t7 = new Uint32Array(TEX_SIZE * TEX_SIZE);
+        for (let y = 0; y < 64; y++) {
+          for (let x = 0; x < 64; x++) {
+            const frost = ((x * 23 + y * 41) & 15);
+            let r = 38 + frost, g = 88 + frost, b = 132 + frost;
+            if (x % 32 === 0 || y % 32 === 0) { r -= 18; g -= 24; b -= 28; }
+            t7[y * 64 + x] = packRGBA(r, g, b);
+          }
+        }
+        TEXTURES[7] = t7;
+
+        // Floor & Ceiling textures
         const floorTex = new Uint32Array(64 * 64);
         const ceilTex = new Uint32Array(64 * 64);
         for (let y = 0; y < 64; y++) {
           for (let x = 0; x < 64; x++) {
             const g = ((x * 17 ^ y * 31) & 15);
-            const border = (x % 32 === 0 || y % 32 === 0) ? -14 : 0;
-            floorTex[y * 64 + x] = packRGBA(40 + g + border, 38 + g + border, 44 + g + border);
+            const border = (x % 32 === 0 || y % 32 === 0) ? -12 : 0;
+            floorTex[y * 64 + x] = packRGBA(44 + g + border, 42 + g + border, 48 + g + border);
 
             const rib = (x % 16 < 3) ? -10 : 0;
-            const light = (x >= 28 && x <= 35 && y >= 28 && y <= 35) ? 60 : 0;
-            ceilTex[y * 64 + x] = packRGBA(28 + rib + light, 25 + rib + light, 32 + rib + light);
+            const light = (x >= 28 && x <= 35 && y >= 28 && y <= 35) ? 62 : 0;
+            ceilTex[y * 64 + x] = packRGBA(30 + rib + light, 28 + rib + light, 36 + rib + light);
           }
         }
         TEXTURES.floor = floorTex;
@@ -643,7 +653,7 @@
       buildTextures();
 
       // =========================================================================
-      // 2. SOUND & INDUSTRIAL METAL RIFF
+      // 2. SOUND & SYNTH RIFF ENGINE
       // =========================================================================
       const SFX = {
         ctx: null,
@@ -743,42 +753,38 @@
       };
 
       // =========================================================================
-      // 3. WEAPONS & BESTIARY
+      // 3. WEAPONS & COMPACT ENEMY ROSTER (Smaller sprites & fairer stats)
       // =========================================================================
       const WEAPONS = {
-        1: { id: 1, name: 'Chainsaw',       ammoType: null,     ammoUse: 0, rate: 0.08, pellets: 1,  spread: 0.12, dmg: 16, range: 1.75, auto: true,  kickback: 0.4 },
-        2: { id: 2, name: 'UAC Rifle',      ammoType: 'clip',   ammoUse: 1, rate: 0.13, pellets: 1,  spread: 0.025,dmg: 22, range: 18,   auto: true,  kickback: 0.6 },
-        3: { id: 3, name: 'Pump Shotgun',   ammoType: 'shells', ammoUse: 1, rate: 0.72, pellets: 7,  spread: 0.13, dmg: 14, range: 14,   auto: false, kickback: 1.8 },
-        4: { id: 4, name: 'Super Shotgun',  ammoType: 'shells', ammoUse: 2, rate: 1.15, pellets: 18, spread: 0.24, dmg: 15, range: 11,   auto: false, kickback: 3.4 },
-        5: { id: 5, name: 'Vulcan Chaingun',ammoType: 'clip',   ammoUse: 1, rate: 0.075,pellets: 1,  spread: 0.06, dmg: 18, range: 17,   auto: true,  kickback: 0.5 },
-        6: { id: 6, name: 'Rocket Launcher',ammoType: 'rockets',ammoUse: 1, rate: 0.85, pellets: 1,  spread: 0,    dmg: 145,range: 22,   auto: false, kickback: 4.0, isRocket: true }
+        1: { id: 1, name: 'Chainsaw',       ammoType: null,     ammoUse: 0, rate: 0.08, pellets: 1,  spread: 0.12, dmg: 20, range: 1.85, auto: true,  kickback: 0.4 },
+        2: { id: 2, name: 'Pulse Rifle',    ammoType: 'clip',   ammoUse: 1, rate: 0.12, pellets: 1,  spread: 0.02, dmg: 26, range: 18,   auto: true,  kickback: 0.6 },
+        3: { id: 3, name: 'Pump Shotgun',   ammoType: 'shells', ammoUse: 1, rate: 0.68, pellets: 7,  spread: 0.12, dmg: 16, range: 14,   auto: false, kickback: 1.8 },
+        4: { id: 4, name: 'Super Shotgun',  ammoType: 'shells', ammoUse: 2, rate: 1.05, pellets: 18, spread: 0.22, dmg: 17, range: 12,   auto: false, kickback: 3.4 },
+        5: { id: 5, name: 'Vulcan Chaingun',ammoType: 'clip',   ammoUse: 1, rate: 0.07, pellets: 1,  spread: 0.05, dmg: 21, range: 17,   auto: true,  kickback: 0.5 },
+        6: { id: 6, name: 'Rocket Launcher',ammoType: 'rockets',ammoUse: 1, rate: 0.80, pellets: 1,  spread: 0,    dmg: 165,range: 22,   auto: false, kickback: 4.0, isRocket: true }
       };
 
+      // Smaller scale (0.68 - 1.08) and lighter HP/damage so combat feels fast and accessible
       const ENEMY_TYPES = {
-        trooper:  { name: 'Zombieman',     hp: 42,  spd: 1.85, dmg: 9,  r: 0.30, scale: 0.95, color: '#84cc16', eye: '#ef4444', ranged: 'bullet',   drop: 'clip' },
-        sergeant: { name: 'Shotgun Guy',   hp: 65,  spd: 2.0,  dmg: 18, r: 0.32, scale: 1.0,  color: '#475569', eye: '#f43f5e', ranged: 'buckshot', drop: 'shells' },
-        imp:      { name: 'Hell Imp',      hp: 78,  spd: 2.55, dmg: 15, r: 0.32, scale: 1.02, color: '#9a3412', eye: '#facc15', ranged: 'fireball', drop: null },
-        pinky:    { name: 'Pinky Demon',   hp: 145, spd: 3.65, dmg: 24, r: 0.36, scale: 1.12, color: '#db2777', eye: '#fef08a', ranged: null,       drop: null },
-        caco:     { name: 'Cacodemon',     hp: 240, spd: 2.15, dmg: 26, r: 0.38, scale: 1.25, color: '#dc2626', eye: '#22c55e', ranged: 'plasma',   flying: true, drop: null },
-        baron:    { name: 'Baron of Hell', hp: 560, spd: 2.35, dmg: 36, r: 0.42, scale: 1.38, color: '#be123c', eye: '#4ade80', ranged: 'hellfire', isBoss: true, drop: 'rockets' }
+        trooper:  { name: 'Undead Trooper', hp: 30,  spd: 1.65, dmg: 6,  r: 0.24, scale: 0.70, color: '#84cc16', eye: '#ef4444', ranged: 'bullet',   drop: 'clip' },
+        sergeant: { name: 'Breacher Guard', hp: 46,  spd: 1.80, dmg: 11, r: 0.25, scale: 0.74, color: '#64748b', eye: '#f43f5e', ranged: 'buckshot', drop: 'shells' },
+        imp:      { name: 'Ash Stalker',    hp: 54,  spd: 2.25, dmg: 10, r: 0.25, scale: 0.76, color: '#ea580c', eye: '#facc15', ranged: 'fireball', drop: null },
+        pinky:    { name: 'Razor Hound',    hp: 92,  spd: 3.15, dmg: 15, r: 0.28, scale: 0.80, color: '#db2777', eye: '#fef08a', ranged: null,       drop: null },
+        caco:     { name: 'Void Watcher',   hp: 155, spd: 1.90, dmg: 16, r: 0.30, scale: 0.88, color: '#dc2626', eye: '#22c55e', ranged: 'plasma',   flying: true, drop: null },
+        baron:    { name: 'Hell Overlord',  hp: 360, spd: 2.05, dmg: 22, r: 0.34, scale: 1.06, color: '#be123c', eye: '#4ade80', ranged: 'hellfire', isBoss: true, drop: 'rockets' }
       };
 
       // =========================================================================
-      // 4. RANDOM MULTI-FLOOR GENERATOR (NO WALL DOORS, NO TRAPPING, NO FALL PITS)
+      // 4. ENDLESS PROCEDURAL MULTI-FLOOR GENERATOR (WIDE OPEN ROOMS, TORCHES, PROPS, DECALS)
       // =========================================================================
-      // A sector consists of 3 connected floors (floor 0, 1, 2).
-      // Lifts are floor pads (not walls) that move the player up/down between floors.
-      // Doors are strictly placed ONLY in 1-tile-wide corridor passages connecting two open rooms,
-      // and NEVER close while any actor (player, enemy, or barrel) overlaps the tile!
-
-      const MAP_W = 24;
-      const MAP_H = 18;
+      const MAP_W = 28;
+      const MAP_H = 22;
       const NUM_FLOORS = 3;
 
       let sectorNumber = 1;
       let currentFloor = 0;
-      let floorsData = []; // Array of floor states
-      let diff = 'uv';
+      let floorsData = [];
+      let diff = 'casual'; // casual | standard | nightmare
       let running = false;
       let paused = false;
       let showAutomap = false;
@@ -787,10 +793,10 @@
         x: 2.5, y: 2.5,
         angle: 0,
         hp: 100, maxHp: 100,
-        armor: 25, maxArmor: 200,
+        armor: 35, maxArmor: 200,
         weapon: 2,
         owned: { 1: true, 2: true, 3: false, 4: false, 5: false, 6: false },
-        ammo: { clip: 50, shells: 10, rockets: 2 },
+        ammo: { clip: 60, shells: 14, rockets: 3 },
         mag: 30, maxMag: 30,
         reloadTimer: 0,
         fireCd: 0,
@@ -823,16 +829,16 @@
 
       function addVisorBlood() {
         const vb = document.getElementById('visorBlood');
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 3; i++) {
           const drop = document.createElement('div');
-          const size = 18 + Math.random() * 44;
+          const size = 16 + Math.random() * 38;
           drop.style.position = 'absolute';
           drop.style.left = `${Math.random() * 92}%`;
           drop.style.top = `${Math.random() * 75}%`;
           drop.style.width = `${size}px`;
           drop.style.height = `${size * (1.1 + Math.random() * 0.8)}px`;
           drop.style.borderRadius = '50% 50% 45% 45%';
-          drop.style.background = 'radial-gradient(circle, rgba(185, 28, 28, 0.72) 0%, rgba(127, 29, 29, 0) 75%)';
+          drop.style.background = 'radial-gradient(circle, rgba(185, 28, 28, 0.65) 0%, rgba(127, 29, 29, 0) 75%)';
           drop.style.transition = 'transform 2.4s ease-in, opacity 2.4s ease-out';
           vb.appendChild(drop);
           requestAnimationFrame(() => {
@@ -851,11 +857,15 @@
         const dlcCfg = DLC_REGISTRY[activeDlcId] || DLC_REGISTRY.base;
         const defaultWall = dlcCfg.wallTheme || (floorIdx === 0 ? 1 : floorIdx === 1 ? 3 : 2);
         const grid = Array.from({ length: MAP_H }, () => Array(MAP_W).fill(defaultWall));
-        const rooms = [];
+        const wallDecals = {}; // "x,y" -> 'rune' | 'vent' | 'skull_sign' | 'slime' | 'blood'
+        const floorDecals = {}; // "x,y" -> 'grate' | 'rune' | 'scorch' | 'blood'
+        const props = []; // Animated & static 3D decorations: { kind, x, y, solid }
 
-        for (let attempt = 0; attempt < 90 && rooms.length < 7; attempt++) {
-          const rw = 4 + Math.floor(Math.random() * 4);
-          const rh = 3 + Math.floor(Math.random() * 3);
+        // Carve 5-6 spacious, wide open arenas (6x5 to 8x7 tiles)
+        const rooms = [];
+        for (let attempt = 0; attempt < 110 && rooms.length < 6; attempt++) {
+          const rw = 6 + Math.floor(Math.random() * 4);
+          const rh = 5 + Math.floor(Math.random() * 3);
           const rx = 1 + Math.floor(Math.random() * (MAP_W - rw - 2));
           const ry = 1 + Math.floor(Math.random() * (MAP_H - rh - 2));
 
@@ -873,20 +883,19 @@
           }
         }
 
-        // Ensure at least 3 rooms
         while (rooms.length < 3) {
           const idx = rooms.length;
-          const rx = 2 + idx * 6;
-          const ry = 3 + idx * 3;
-          const rw = 5, rh = 4;
-          rooms.push({ x: rx, y: ry, w: rw, h: rh, cx: rx + 2, cy: ry + 2 });
+          const rx = 2 + idx * 8;
+          const ry = 3 + idx * 4;
+          const rw = 6, rh = 5;
+          rooms.push({ x: rx, y: ry, w: rw, h: rh, cx: rx + 3, cy: ry + 2 });
           for (let y = ry; y < ry + rh; y++) {
             for (let x = rx; x < rx + rw; x++) grid[y][x] = 0;
           }
         }
 
-        const corridorTiles = [];
-        // Connect rooms with clean corridors and place doors ONLY on narrow corridor choke points
+        // Connect rooms with wide 2-tile corridors so movement is open and airy
+        const narrowChokes = [];
         for (let i = 1; i < rooms.length; i++) {
           let x = rooms[i - 1].cx;
           let y = rooms[i - 1].cy;
@@ -894,27 +903,24 @@
           const ty = rooms[i].cy;
 
           while (x !== tx) {
-            if (grid[y][x] !== 0) {
-              grid[y][x] = 0;
-              corridorTiles.push({ x, y, horiz: true });
-            }
+            grid[y][x] = 0;
+            if (y + 1 < MAP_H - 1) grid[y + 1][x] = 0;
+            narrowChokes.push({ x, y });
             x += x < tx ? 1 : -1;
           }
           while (y !== ty) {
-            if (grid[y][x] !== 0) {
-              grid[y][x] = 0;
-              corridorTiles.push({ x, y, horiz: false });
-            }
+            grid[y][x] = 0;
+            if (x + 1 < MAP_W - 1) grid[y][x + 1] = 0;
             y += y < ty ? 1 : -1;
           }
         }
 
+        // Place sliding doors ONLY on genuine 1-tile corridor chokes
         const doors = {};
         let doorsPlaced = 0;
-        for (const ct of corridorTiles) {
-          if (doorsPlaced >= 3) break;
-          if (ct.x <= 1 || ct.y <= 1 || ct.x >= MAP_W - 2 || ct.y >= MAP_H - 2) continue;
-          // Ensure it's a genuine corridor tile (has walls on opposite sides, open along travel axis)
+        for (const ct of narrowChokes) {
+          if (doorsPlaced >= 2) break;
+          if (ct.x <= 2 || ct.y <= 2 || ct.x >= MAP_W - 3 || ct.y >= MAP_H - 3) continue;
           const wallsHoriz = grid[ct.y][ct.x - 1] > 0 && grid[ct.y][ct.x + 1] > 0 && grid[ct.y - 1][ct.x] === 0 && grid[ct.y + 1][ct.x] === 0;
           const wallsVert  = grid[ct.y - 1][ct.x] > 0 && grid[ct.y + 1][ct.x] > 0 && grid[ct.y][ct.x - 1] === 0 && grid[ct.y][ct.x + 1] === 0;
           if (wallsHoriz || wallsVert) {
@@ -924,15 +930,56 @@
           }
         }
 
-        // Lift pads connecting floors (never placed inside walls)
+        // Scatter Wall & Floor Decals (runes, vents, grates, scorch marks, blood)
+        const wallDecalTypes = ['rune', 'vent', 'skull_sign', 'slime'];
+        const floorDecalTypes = ['grate', 'rune', 'scorch'];
+        for (let y = 1; y < MAP_H - 1; y++) {
+          for (let x = 1; x < MAP_W - 1; x++) {
+            if (grid[y][x] > 0 && grid[y][x] <= 3 && Math.random() < 0.22) {
+              wallDecals[`${x},${y}`] = wallDecalTypes[Math.floor(Math.random() * wallDecalTypes.length)];
+            } else if (grid[y][x] === 0 && Math.random() < 0.14) {
+              floorDecals[`${x},${y}`] = floorDecalTypes[Math.floor(Math.random() * floorDecalTypes.length)];
+            }
+          }
+        }
+
+        // Place Animated Torches, Plasma Coils & Gothic Props in room corners / centers
+        const torchKind = dlcCfg.torchKind || 'torch'; // 'torch' | 'soul_brazier' | 'cryo_lamp'
+        rooms.forEach((rm, rIdx) => {
+          // Corner torches (non-blocking walkable decorations)
+          const corners = [
+            { x: rm.x + 0.55, y: rm.y + 0.55 },
+            { x: rm.x + rm.w - 0.55, y: rm.y + 0.55 },
+            { x: rm.x + 0.55, y: rm.y + rm.h - 0.55 },
+            { x: rm.x + rm.w - 0.55, y: rm.y + rm.h - 0.55 }
+          ];
+          corners.forEach((pt, cIdx) => {
+            if ((rIdx + cIdx) % 2 === 0) {
+              props.push({ kind: torchKind, x: pt.x, y: pt.y, solid: false, phase: Math.random() * 6.28 });
+            }
+          });
+
+          // Central animated energy coil or skull totem in larger rooms
+          if (rIdx > 0 && rm.w >= 7 && rm.h >= 6) {
+            props.push({
+              kind: rIdx % 2 === 0 ? 'plasma_coil' : 'skull_totem',
+              x: rm.cx + 0.5,
+              y: rm.cy + 0.5,
+              solid: false,
+              phase: Math.random() * 6.28
+            });
+          }
+        });
+
+        // Lift pads connecting floors
         const lifts = [];
         const spawnRoom = rooms[0];
         const spawnPos = { x: spawnRoom.cx + 0.5, y: spawnRoom.cy + 0.5 };
 
-        function findOpenFloorSpot(room, preferOffset = 0) {
-          for (let dy = 0; dy < room.h; dy++) {
-            for (let dx = 0; dx < room.w; dx++) {
-              const tx = room.x + ((dx + preferOffset) % room.w);
+        function findOpenSpot(room, offset = 0) {
+          for (let dy = 1; dy < room.h - 1; dy++) {
+            for (let dx = 1; dx < room.w - 1; dx++) {
+              const tx = room.x + ((dx + offset) % Math.max(1, room.w - 2));
               const ty = room.y + dy;
               if (grid[ty]?.[tx] === 0 && !(tx === spawnRoom.cx && ty === spawnRoom.cy)) {
                 return { x: tx + 0.5, y: ty + 0.5 };
@@ -944,32 +991,19 @@
 
         if (floorIdx < NUM_FLOORS - 1) {
           const rUp = rooms[rooms.length - 1];
-          const spotUp = findOpenFloorSpot(rUp, 0);
+          const spotUp = findOpenSpot(rUp, 0);
           grid[Math.floor(spotUp.y)][Math.floor(spotUp.x)] = 0;
-          lifts.push({
-            x: spotUp.x,
-            y: spotUp.y,
-            dir: 'up',
-            targetFloor: floorIdx + 1,
-            label: `LIFT UP → FL ${floorIdx + 2}`
-          });
+          lifts.push({ x: spotUp.x, y: spotUp.y, dir: 'up', targetFloor: floorIdx + 1 });
         }
 
         if (floorIdx > 0) {
           const rDown = rooms[rooms.length > 2 ? 1 : 0];
-          const spotDown = findOpenFloorSpot(rDown, 1);
+          const spotDown = findOpenSpot(rDown, 1);
           grid[Math.floor(spotDown.y)][Math.floor(spotDown.x)] = 0;
-          lifts.push({
-            x: spotDown.x,
-            y: spotDown.y,
-            dir: 'down',
-            targetFloor: floorIdx - 1,
-            label: `LIFT DOWN → FL ${floorIdx}`
-          });
+          lifts.push({ x: spotDown.x, y: spotDown.y, dir: 'down', targetFloor: floorIdx - 1 });
         }
 
-        // Place Exit Elevator switch on a wall of the top floor's final room and guarantee clear access
-        let exitWall = null;
+        // Exit Elevator Switch on top floor with guaranteed open access tile
         if (floorIdx === NUM_FLOORS - 1) {
           const topRoom = rooms[rooms.length - 1];
           const candidates = [
@@ -982,13 +1016,12 @@
             if (cand.wx > 0 && cand.wy > 0 && cand.wx < MAP_W - 1 && cand.wy < MAP_H - 1 && grid[cand.wy][cand.wx] > 0) {
               grid[cand.wy][cand.wx] = 5;
               grid[cand.ay][cand.ax] = 0;
-              exitWall = cand;
               break;
             }
           }
         }
 
-        // Populate pickups, barrels, and demons safely on walkable floor tiles
+        // Pickups, Explosive Barrels, and Smaller Compact Enemies
         const pickups = [];
         const barrels = [];
         const enemies = [];
@@ -996,41 +1029,41 @@
         const weaponPool = ['S', 'D', 'C', 'R'];
         for (let i = 1; i < rooms.length; i++) {
           const rm = rooms[i];
-          const px = rm.x + 1 + 0.5;
-          const py = rm.y + 1 + 0.5;
+          const px = rm.x + 1.5;
+          const py = rm.y + 1.5;
           if (grid[Math.floor(py)][Math.floor(px)] === 0) {
-            const kind = i === 1 ? weaponPool[floorIdx % weaponPool.length] : (Math.random() < 0.5 ? 'H' : 'M');
+            const kind = i === 1 ? weaponPool[floorIdx % weaponPool.length] : (Math.random() < 0.55 ? 'H' : 'M');
             pickups.push({ x: px, y: py, kind, taken: false });
           }
 
-          if (rm.w >= 5 && rm.h >= 4) {
+          if (rm.w >= 6 && rm.h >= 5) {
             const bx = rm.x + rm.w - 1.5;
             const by = rm.y + rm.h - 1.5;
             if (grid[Math.floor(by)][Math.floor(bx)] === 0) {
-              barrels.push({ x: bx, y: by, vx: 0, vy: 0, hp: 22, alive: true });
+              barrels.push({ x: bx, y: by, vx: 0, vy: 0, hp: 20, alive: true });
             }
           }
 
-          const demonPool = (DLC_REGISTRY[activeDlcId]?.enemyPool) || ['trooper', 'sergeant', 'imp', 'pinky', 'caco'];
+          const demonPool = dlcCfg.enemyPool || ['trooper', 'sergeant', 'imp', 'pinky', 'caco'];
           const demonCount = 2 + Math.min(3, Math.floor((secNum + floorIdx) / 2));
           for (let k = 0; k < demonCount; k++) {
-            const ex = rm.x + 0.5 + ((k + 1) % Math.max(1, rm.w - 1));
-            const ey = rm.y + 0.5 + (k % Math.max(1, rm.h - 1));
+            const ex = rm.x + 1.5 + ((k * 2) % Math.max(1, rm.w - 2));
+            const ey = rm.y + 1.5 + (k % Math.max(1, rm.h - 2));
             const gx = Math.floor(ex), gy = Math.floor(ey);
-            if (grid[gy]?.[gx] === 0 && Math.hypot(ex - spawnPos.x, ey - spawnPos.y) > 2.2) {
+            if (grid[gy]?.[gx] === 0 && Math.hypot(ex - spawnPos.x, ey - spawnPos.y) > 2.8) {
               const tKey = demonPool[(i + k + floorIdx) % demonPool.length];
-              enemies.push(makeEnemyObj(tKey, ex, ey, hpMult * (1 + floorIdx * 0.15)));
+              enemies.push(makeEnemyObj(tKey, ex, ey, hpMult * (1 + floorIdx * 0.12)));
             }
           }
         }
 
-        // Boss on top floor
+        // Floor 3 Boss
         if (floorIdx === NUM_FLOORS - 1) {
           const bossRm = rooms[rooms.length - 1];
-          const bx = bossRm.x + 1.5;
-          const by = bossRm.y + 1.5;
+          const bx = bossRm.x + 2.5;
+          const by = bossRm.y + 2.5;
           if (grid[Math.floor(by)]?.[Math.floor(bx)] === 0) {
-            enemies.push(makeEnemyObj((DLC_REGISTRY[activeDlcId]?.bossType) || 'baron', bx, by, hpMult * 1.25));
+            enemies.push(makeEnemyObj(dlcCfg.bossType || 'baron', bx, by, hpMult * 1.15));
           }
         }
 
@@ -1039,20 +1072,20 @@
           grid,
           doors,
           lifts,
-          exitWall,
           spawnPos,
           pickups,
           barrels,
           enemies,
-          bloodWalls: new Set(),
-          bloodFloors: new Set(),
+          props,
+          wallDecals,
+          floorDecals,
           bloodPools: []
         };
       }
 
       function makeEnemyObj(typeKey, x, y, hpMult) {
         const spec = ENEMY_TYPES[typeKey];
-        const maxHp = Math.round(spec.hp * hpMult);
+        const maxHp = Math.max(15, Math.round(spec.hp * hpMult));
         return {
           type: typeKey,
           name: spec.name,
@@ -1060,8 +1093,8 @@
           vx: 0, vy: 0,
           hp: maxHp,
           maxHp,
-          spd: spec.spd * (diff === 'nightmare' ? 1.25 : 1.0),
-          dmg: spec.dmg,
+          spd: spec.spd * (diff === 'nightmare' ? 1.25 : diff === 'casual' ? 0.88 : 1.0),
+          dmg: Math.max(3, Math.round(spec.dmg * (diff === 'casual' ? 0.72 : diff === 'nightmare' ? 1.3 : 1.0))),
           r: spec.r,
           scale: spec.scale,
           color: spec.color,
@@ -1072,7 +1105,7 @@
           drop: spec.drop,
           state: 'idle',
           stateTimer: 0,
-          attackCd: 0.7 + Math.random() * 0.9,
+          attackCd: 0.9 + Math.random() * 0.9,
           hitFlash: 0,
           headless: false,
           headlessTimer: 0
@@ -1086,22 +1119,22 @@
         gibs = [];
         explosions = [];
 
-        const hpMult = diff === 'hurt' ? 0.8 : diff === 'nightmare' ? 1.35 : 1.0;
+        const hpMult = diff === 'casual' ? 0.75 : diff === 'nightmare' ? 1.3 : 1.0;
         floorsData = [];
         for (let f = 0; f < NUM_FLOORS; f++) {
           floorsData.push(generateSingleFloorState(f, secNum, hpMult));
         }
 
+        const dlcCfg = DLC_REGISTRY[activeDlcId] || DLC_REGISTRY.base;
         if (!keepPlayerStats) {
-          const dlcCfg = DLC_REGISTRY[activeDlcId] || DLC_REGISTRY.base;
           player.hp = 100;
-          player.armor = dlcCfg.startArmor ?? 25;
+          player.armor = dlcCfg.startArmor ?? 35;
           player.weapon = dlcCfg.startWeapon ?? 2;
           player.owned = dlcCfg.startOwned ? { ...dlcCfg.startOwned } : { 1: true, 2: true, 3: false, 4: false, 5: false, 6: false };
-          player.ammo = dlcCfg.startAmmo ? { ...dlcCfg.startAmmo } : { clip: 50, shells: 10, rockets: 2 };
+          player.ammo = dlcCfg.startAmmo ? { ...dlcCfg.startAmmo } : { clip: 60, shells: 14, rockets: 3 };
           player.mag = 30;
         } else {
-          player.hp = Math.min(100, Math.max(player.hp, 65));
+          player.hp = Math.min(100, Math.max(player.hp, 75));
         }
 
         player.x = floorsData[0].spawnPos.x;
@@ -1114,7 +1147,7 @@
         player.tauntTimer = 0;
         player.liftCooldown = 0.6;
 
-        pushMsg(`SECTOR ${secNum} GENERATED · 3 FLOORS CONNECTED BY LIFTS`);
+        pushMsg(`${dlcCfg.shortName || 'SECTOR'} ${secNum} · OPEN ARENAS & 3 FLOORS READY`);
         updateHud();
       }
 
@@ -1124,7 +1157,6 @@
         currentFloor = targetFloorIdx;
         const destFloor = getCurrentFloorData();
 
-        // Find matching lift pad or safe spawn on destination floor
         const matchingLift = destFloor.lifts.find(l => l.targetFloor === prevFloor) || destFloor.lifts[0];
         if (matchingLift) {
           player.x = matchingLift.x;
@@ -1134,7 +1166,6 @@
           player.y = destFloor.spawnPos.y;
         }
 
-        // Guarantee player lands on a non-blocked floor tile & push away close enemies
         if (!canMoveTo(player.x, player.y, 0.22)) {
           for (const [ox, oy] of [[0.6,0],[-0.6,0],[0,0.6],[0,-0.6]]) {
             if (canMoveTo(player.x + ox, player.y + oy, 0.22)) {
@@ -1145,10 +1176,10 @@
           }
         }
         for (const en of destFloor.enemies) {
-          if (en.state !== 'dead' && Math.hypot(en.x - player.x, en.y - player.y) < 0.85) {
+          if (en.state !== 'dead' && Math.hypot(en.x - player.x, en.y - player.y) < 1.1) {
             const ang = Math.atan2(en.y - player.y, en.x - player.x) || 0;
-            const nxEn = en.x + Math.cos(ang) * 1.1;
-            const nyEn = en.y + Math.sin(ang) * 1.1;
+            const nxEn = en.x + Math.cos(ang) * 1.4;
+            const nyEn = en.y + Math.sin(ang) * 1.4;
             if (canMoveTo(nxEn, nyEn, en.r)) {
               en.x = nxEn;
               en.y = nyEn;
@@ -1160,12 +1191,12 @@
         projectiles = [];
         gibs = [];
         SFX.lift();
-        pushMsg(`ELEVATOR ARRIVED AT FLOOR ${currentFloor + 1} / ${NUM_FLOORS}`);
+        pushMsg(`LIFT ARRIVED AT FLOOR ${currentFloor + 1} / ${NUM_FLOORS}`);
         updateHud();
       }
 
       // =========================================================================
-      // 5. ANTI-TRAP COLLISION & DOOR SAFETY
+      // 5. COLLISION & ANTI-TRAP SAFETY
       // =========================================================================
       function isTileBlocked(gx, gy) {
         if (gx < 0 || gy < 0 || gx >= MAP_W || gy >= MAP_H) return true;
@@ -1212,19 +1243,19 @@
       }
 
       // =========================================================================
-      // 6. BRUTAL COMBAT & INTERACTION
+      // 6. BRUTAL COMBAT, DECALS & INTERACTION
       // =========================================================================
       function spawnGibs(x, y, count = 12, force = 4.2) {
         const fd = getCurrentFloorData();
         const gx = Math.floor(x), gy = Math.floor(y);
-        fd.bloodFloors.add(`${gx},${gy}`);
+        fd.floorDecals[`${gx},${gy}`] = 'blood';
         for (let dy = -1; dy <= 1; dy++) {
           for (let dx = -1; dx <= 1; dx++) {
-            if (Math.random() < 0.65) fd.bloodWalls.add(`${gx + dx},${gy + dy}`);
+            if (Math.random() < 0.65) fd.wallDecals[`${gx + dx},${gy + dy}`] = 'blood';
           }
         }
         fd.bloodPools.push({ x, y, r: 0.25 + Math.random() * 0.25 });
-        if (fd.bloodPools.length > 70) fd.bloodPools.shift();
+        if (fd.bloodPools.length > 75) fd.bloodPools.shift();
 
         const parts = ['skull', 'rib', 'meat', 'meat', 'eye'];
         for (let i = 0; i < count; i++) {
@@ -1232,28 +1263,28 @@
           const spd = (0.4 + Math.random() * 0.8) * force;
           gibs.push({
             x, y,
-            z: 0.45 + Math.random() * 0.35,
+            z: 0.4 + Math.random() * 0.3,
             vx: Math.cos(a) * spd,
             vy: Math.sin(a) * spd,
-            vz: 2.2 + Math.random() * 3.2,
+            vz: 2.0 + Math.random() * 3.0,
             kind: parts[i % parts.length],
             ttl: 8.0
           });
         }
       }
 
-      function triggerExplosion(x, y, radius = 2.6, maxDmg = 150) {
+      function triggerExplosion(x, y, radius = 2.7, maxDmg = 155) {
         const fd = getCurrentFloorData();
         SFX.boom();
-        shake = Math.max(shake, 14);
+        shake = Math.max(shake, 13);
         explosions.push({ x, y, r: 0.2, maxR: radius, ttl: 0.32, maxTtl: 0.32 });
-        fd.bloodFloors.add(`${Math.floor(x)},${Math.floor(y)}`);
+        fd.floorDecals[`${Math.floor(x)},${Math.floor(y)}`] = 'scorch';
 
         for (const en of fd.enemies) {
           if (en.state === 'dead') continue;
           const d = Math.hypot(en.x - x, en.y - y);
           if (d <= radius) {
-            const falloff = 1 - (d / radius) * 0.55;
+            const falloff = 1 - (d / radius) * 0.5;
             const dmg = Math.round(maxDmg * falloff);
             const ang = Math.atan2(en.y - y, en.x - x);
             damageDemon(en, dmg, Math.cos(ang) * 5.5, Math.sin(ang) * 5.5, false, true);
@@ -1263,13 +1294,13 @@
         for (const b of fd.barrels) {
           if (b.alive && Math.hypot(b.x - x, b.y - y) <= radius * 0.9) {
             b.alive = false;
-            setTimeout(() => triggerExplosion(b.x, b.y, 2.7, 140), 70);
+            setTimeout(() => triggerExplosion(b.x, b.y, 2.7, 145), 70);
           }
         }
 
         const pd = Math.hypot(player.x - x, player.y - y);
-        if (pd <= radius * 0.85) {
-          hurtPlayer(Math.round(35 * (1 - pd / radius)));
+        if (pd <= radius * 0.8) {
+          hurtPlayer(Math.round(25 * (1 - pd / radius)));
         }
       }
 
@@ -1277,35 +1308,35 @@
         if (en.state === 'dead') return;
         en.hp -= dmg;
         en.hitFlash = 0.1;
-        en.vx += kbX * (en.isBoss ? 0.2 : 1.0);
-        en.vy += kbY * (en.isBoss ? 0.2 : 1.0);
+        en.vx += kbX * (en.isBoss ? 0.25 : 1.0);
+        en.vy += kbY * (en.isBoss ? 0.25 : 1.0);
         if (en.state === 'idle') en.state = 'chase';
 
-        if (isHeadshot && !en.headless && !en.isBoss && en.hp > 0 && en.hp < en.maxHp * 0.45) {
+        if (isHeadshot && !en.headless && !en.isBoss && en.hp > 0 && en.hp < en.maxHp * 0.5) {
           en.headless = true;
-          en.headlessTimer = 1.3;
+          en.headlessTimer = 1.2;
           spawnGibs(en.x, en.y, 5, 2.5);
           pushMsg(`HEADSHOT! ${en.name.toUpperCase()} DECAPITATED!`);
         }
 
-        if (en.hp > 0 && en.hp <= Math.max(18, en.maxHp * 0.24) && !en.isBoss) {
+        if (en.hp > 0 && en.hp <= Math.max(16, en.maxHp * 0.28) && !en.isBoss) {
           en.state = 'staggered';
-          en.stateTimer = 3.2;
+          en.stateTimer = 3.5;
         }
 
         if (en.hp <= 0) {
           en.hp = 0;
           en.state = 'dead';
           player.kills++;
-          const overkill = en.hp <= -22 || isExplosive || isHeadshot;
+          const overkill = en.hp <= -18 || isExplosive || isHeadshot;
           if (overkill) {
             SFX.gib();
-            spawnGibs(en.x, en.y, en.isBoss ? 26 : 14, 4.8);
-            if (Math.hypot(en.x - player.x, en.y - player.y) < 3.0) addVisorBlood();
+            spawnGibs(en.x, en.y, en.isBoss ? 24 : 12, 4.5);
+            if (Math.hypot(en.x - player.x, en.y - player.y) < 2.8) addVisorBlood();
           } else {
             const fd = getCurrentFloorData();
-            fd.bloodFloors.add(`${Math.floor(en.x)},${Math.floor(en.y)}`);
-            fd.bloodPools.push({ x: en.x, y: en.y, r: 0.32 });
+            fd.floorDecals[`${Math.floor(en.x)},${Math.floor(en.y)}`] = 'blood';
+            fd.bloodPools.push({ x: en.x, y: en.y, r: 0.28 });
           }
 
           if (en.drop) {
@@ -1327,7 +1358,6 @@
         const dirX = Math.cos(player.angle);
         const dirY = Math.sin(player.angle);
 
-        // 0. Check if standing on or right next to a Floor Lift
         if (player.liftCooldown <= 0) {
           for (const lf of fd.lifts) {
             if (Math.hypot(player.x - lf.x, player.y - lf.y) < 1.25) {
@@ -1337,7 +1367,6 @@
           }
         }
 
-        // 1. Check Doors, Secret Walls, and Exit Elevator Switch
         for (const dist of [0.85, 1.45]) {
           const tx = Math.floor(player.x + dirX * dist);
           const ty = Math.floor(player.y + dirY * dist);
@@ -1364,7 +1393,6 @@
           }
         }
 
-        // 2. Kick Explosive Barrels
         for (const b of fd.barrels) {
           if (!b.alive) continue;
           const dx = b.x - player.x, dy = b.y - player.y;
@@ -1378,7 +1406,6 @@
           }
         }
 
-        // 3. Kick or Glory-Execute Enemies
         let bestEn = null, bestD = 2.05;
         for (const en of fd.enemies) {
           if (en.state === 'dead') continue;
@@ -1395,14 +1422,14 @@
           shake = Math.max(shake, 8);
           if (bestEn.state === 'staggered') {
             damageDemon(bestEn, 999, dirX * 6, dirY * 6, true, true);
-            player.hp = Math.min(player.maxHp, player.hp + 15);
-            player.armor = Math.min(player.maxArmor, player.armor + 5);
+            player.hp = Math.min(player.maxHp, player.hp + 18);
+            player.armor = Math.min(player.maxArmor, player.armor + 6);
             addVisorBlood();
-            pushMsg('BRUTAL GLORY KILL! +15 HP · +5 ARMOR');
+            pushMsg('GLORY EXECUTION! +18 HP · +6 ARMOR');
           } else {
-            damageDemon(bestEn, 28, dirX * 7.5, dirY * 7.5, false, false);
+            damageDemon(bestEn, 32, dirX * 7.5, dirY * 7.5, false, false);
             bestEn.state = 'staggered';
-            bestEn.stateTimer = 1.4;
+            bestEn.stateTimer = 1.6;
           }
           updateHud();
         }
@@ -1430,7 +1457,7 @@
         player.fireCd = w.rate;
         player.weaponRecoil = w.id === 4 ? 1.0 : w.id === 3 ? 0.85 : 0.45;
         player.muzzleFlash = w.id === 1 ? 0.04 : 0.11;
-        shake = Math.max(shake, w.id === 4 ? 11 : w.id === 6 ? 9 : w.id === 3 ? 7 : 2.5);
+        shake = Math.max(shake, w.id === 4 ? 10 : w.id === 6 ? 8 : w.id === 3 ? 6 : 2.2);
 
         if (w.id === 1) SFX.chainsaw();
         else if (w.id === 2) SFX.rifle();
@@ -1493,10 +1520,10 @@
             const proj = ex * rdx + ey * rdy;
             if (proj > 0 && proj < enD) {
               const perp = Math.abs(ex * rdy - ey * rdx);
-              if (perp < en.r) {
+              if (perp < en.r + 0.04) {
                 enD = proj;
                 hitEn = en;
-                isHeadshot = perp < en.r * 0.36 && Math.random() < 0.65;
+                isHeadshot = perp < en.r * 0.38 && Math.random() < 0.65;
               }
             }
           }
@@ -1508,11 +1535,11 @@
             hitBarrel.hp -= w.dmg;
             if (hitBarrel.hp <= 0 && hitBarrel.alive) {
               hitBarrel.alive = false;
-              triggerExplosion(hitBarrel.x, hitBarrel.y, 2.7, 140);
+              triggerExplosion(hitBarrel.x, hitBarrel.y, 2.7, 145);
             }
           } else if (wallDist < w.range && w.id !== 1) {
             if (Math.random() < 0.35) {
-              fd.bloodWalls.add(`${Math.floor(player.x + rdx * wallDist)},${Math.floor(player.y + rdy * wallDist)}`);
+              fd.wallDecals[`${Math.floor(player.x + rdx * wallDist)},${Math.floor(player.y + rdy * wallDist)}`] = 'blood';
             }
           }
         }
@@ -1525,26 +1552,26 @@
         if (player.mag >= player.maxMag || player.ammo.clip <= 0) return;
         player.reloadTimer = 0.85;
         SFX.kick();
-        pushMsg('RELOADING UAC RIFLE...');
+        pushMsg('RELOADING PULSE RIFLE...');
       }
 
       function triggerTaunt() {
         if (player.tauntTimer > 0) return;
         player.tauntTimer = 1.2;
         SFX.tone(140, 0.25, 'sawtooth', 0.12, 90);
-        pushMsg('"COME GET SOME!" · DEMONS ENRAGED!');
+        pushMsg('"COME GET SOME!" · ENEMIES ENRAGED!');
         for (const en of getCurrentFloorData().enemies) {
           if (en.state !== 'dead' && Math.hypot(en.x - player.x, en.y - player.y) < 14) {
             en.state = 'chase';
-            en.spd *= 1.15;
+            en.spd *= 1.12;
           }
         }
       }
 
       function hurtPlayer(dmg) {
         if (dmg <= 0 || !running) return;
-        player.hurtFlash = 0.28;
-        shake = Math.max(shake, 8);
+        player.hurtFlash = 0.25;
+        shake = Math.max(shake, 7);
         SFX.hurt();
 
         if (player.armor > 0) {
@@ -1558,9 +1585,9 @@
         if (player.hp <= 0) {
           running = false;
           exitPointerLock();
-          document.getElementById('interTitle').textContent = 'YOU WERE TORN APART';
+          document.getElementById('interTitle').textContent = 'YOU FELL IN COMBAT';
           document.getElementById('interStats').innerHTML = `
-            Killed <b>${player.kills} / ${player.totalEnemies}</b> Demons on Sector ${sectorNumber}<br>
+            Killed <b>${player.kills} / ${player.totalEnemies}</b> Enemies on Sector ${sectorNumber}<br>
             Difficulty: <b>${diff.toUpperCase()}</b>
           `;
           document.getElementById('interActionBtn').textContent = 'RESTART SECTOR';
@@ -1589,7 +1616,7 @@
       }
 
       // =========================================================================
-      // 7. UPDATE LOOP (WITH ANTI-DOOR-CRUSH PROTECTION)
+      // 7. UPDATE LOOP
       // =========================================================================
       const keys = {};
       const touchState = { moveX: 0, moveY: 0, moveId: null, startX: 0, startY: 0, lookId: null, lastLookX: 0 };
@@ -1606,7 +1633,7 @@
           }
         }
 
-        // Doors with anti-crush safety: never close while anyone is inside the doorway tile
+        // Doors with anti-crush safety
         Object.keys(fd.doors).forEach(k => {
           const d = fd.doors[k];
           const [gx, gy] = k.split(',').map(Number);
@@ -1615,12 +1642,9 @@
           if (d.opening) {
             d.openAmt = Math.min(1, d.openAmt + dt * 2.6);
             d.timer -= dt;
-            if (d.timer <= 0 && !occupied) {
-              d.opening = false;
-            }
+            if (d.timer <= 0 && !occupied) d.opening = false;
           } else {
             if (occupied) {
-              // Re-open automatically instead of crushing/trapping player or demon
               d.opening = true;
               d.timer = 1.2;
             } else {
@@ -1629,7 +1653,6 @@
           }
         });
 
-        // Player timers
         if (player.fireCd > 0) player.fireCd = Math.max(0, player.fireCd - dt);
         if (player.weaponRecoil > 0) player.weaponRecoil = Math.max(0, player.weaponRecoil - dt * 3.5);
         if (player.muzzleFlash > 0) player.muzzleFlash = Math.max(0, player.muzzleFlash - dt);
@@ -1665,7 +1688,7 @@
         const mag = Math.hypot(forward, strafe);
         if (mag > 1) { forward /= mag; strafe /= mag; }
 
-        const moveSpd = 4.5;
+        const moveSpd = 4.6;
         const cosA = Math.cos(player.angle);
         const sinA = Math.sin(player.angle);
         const vx = (cosA * forward - sinA * strafe) * moveSpd;
@@ -1678,7 +1701,6 @@
 
         if (mag > 0.05) player.weaponBob += dt * 10;
 
-        // Automatic Floor Lift step trigger
         if (player.liftCooldown <= 0) {
           for (const lf of fd.lifts) {
             if (Math.hypot(player.x - lf.x, player.y - lf.y) < 0.45) {
@@ -1705,27 +1727,27 @@
               pushMsg('EQUIPPED COMBAT ARMOR (+50)');
             } else if (pk.kind === 'S') {
               player.owned[3] = true;
-              player.ammo.shells += 8;
+              player.ammo.shells += 10;
               player.weapon = 3;
               pushMsg('ACQUIRED PUMP SHOTGUN!');
             } else if (pk.kind === 'D') {
               player.owned[4] = true;
-              player.ammo.shells += 12;
+              player.ammo.shells += 14;
               player.weapon = 4;
               pushMsg('ACQUIRED SUPER SHOTGUN!');
             } else if (pk.kind === 'C') {
               player.owned[5] = true;
-              player.ammo.clip += 50;
+              player.ammo.clip += 60;
               player.weapon = 5;
               pushMsg('ACQUIRED VULCAN CHAINGUN!');
             } else if (pk.kind === 'R') {
               player.owned[6] = true;
-              player.ammo.rockets += 5;
+              player.ammo.rockets += 6;
               player.weapon = 6;
               pushMsg('ACQUIRED ROCKET LAUNCHER!');
             } else if (pk.kind === 'M') {
-              player.ammo.clip += 25;
-              player.ammo.shells += 6;
+              player.ammo.clip += 30;
+              player.ammo.shells += 8;
               pushMsg('COLLECTED AMMO CRATE');
             } else if (pk.kind === 'S_AMMO') {
               player.ammo.shells += 4;
@@ -1749,7 +1771,7 @@
             const by = b.y + b.vy * dt;
             if (!canMoveTo(bx, by, 0.26)) {
               b.alive = false;
-              triggerExplosion(b.x, b.y, 2.7, 140);
+              triggerExplosion(b.x, b.y, 2.7, 145);
               continue;
             }
             b.x = bx;
@@ -1760,7 +1782,7 @@
             for (const en of fd.enemies) {
               if (en.state !== 'dead' && Math.hypot(en.x - b.x, en.y - b.y) < en.r + 0.35) {
                 b.alive = false;
-                triggerExplosion(b.x, b.y, 2.7, 140);
+                triggerExplosion(b.x, b.y, 2.7, 145);
                 break;
               }
             }
@@ -1807,25 +1829,25 @@
 
           if (en.attackCd > 0) en.attackCd -= dt;
 
-          if (dist < en.r + 0.52) {
+          if (dist < en.r + 0.48) {
             if (en.attackCd <= 0) {
               hurtPlayer(en.dmg);
-              en.attackCd = 1.05;
+              en.attackCd = 1.15;
             }
             continue;
           }
 
           if (en.ranged && canSee && dist < 11 && en.attackCd <= 0) {
-            en.attackCd = en.isBoss ? 1.35 : 1.9;
+            en.attackCd = en.isBoss ? 1.5 : 2.1;
             const ang = Math.atan2(dy, dx);
-            const pSpd = (en.ranged === 'bullet' || en.ranged === 'buckshot' ? 8.5 : 5.4) * (diff === 'nightmare' ? 1.28 : 1.0);
-            const spread = en.ranged === 'buckshot' ? [-0.14, 0, 0.14] : en.isBoss ? [-0.2, 0, 0.2] : [0];
+            const pSpd = (en.ranged === 'bullet' || en.ranged === 'buckshot' ? 7.8 : 4.9) * (diff === 'nightmare' ? 1.25 : 1.0);
+            const spread = en.ranged === 'buckshot' ? [-0.14, 0, 0.14] : en.isBoss ? [-0.18, 0, 0.18] : [0];
             for (const off of spread) {
               projectiles.push({
                 fromPlayer: false,
                 kind: en.ranged,
-                x: en.x + Math.cos(ang + off) * 0.4,
-                y: en.y + Math.sin(ang + off) * 0.4,
+                x: en.x + Math.cos(ang + off) * 0.35,
+                y: en.y + Math.sin(ang + off) * 0.35,
                 vx: Math.cos(ang + off) * pSpd,
                 vy: Math.sin(ang + off) * pSpd,
                 dmg: en.dmg,
@@ -1835,7 +1857,7 @@
             }
           }
 
-          const moveAng = Math.atan2(dy, dx) + (en.ranged && dist < 5 ? 0.5 : 0);
+          const moveAng = Math.atan2(dy, dx) + (en.ranged && dist < 5.5 ? 0.5 : 0);
           const mx = en.x + Math.cos(moveAng) * en.spd * dt;
           const my = en.y + Math.sin(moveAng) * en.spd * dt;
           if (canMoveTo(mx, en.y, en.r)) en.x = mx;
@@ -1867,7 +1889,7 @@
             }
             if (hit) projectiles.splice(i, 1);
           } else {
-            if (Math.hypot(player.x - pr.x, player.y - pr.y) < 0.35) {
+            if (Math.hypot(player.x - pr.x, player.y - pr.y) < 0.32) {
               hurtPlayer(pr.dmg);
               projectiles.splice(i, 1);
             }
@@ -1903,9 +1925,9 @@
       }
 
       // =========================================================================
-      // 8. 3D RAYCASTER & SPRITE RENDERER
+      // 8. 3D RAYCASTER + WALL/FLOOR DECALS + ANIMATED PROPS & SPRITES
       // =========================================================================
-      function render3D() {
+      function render3D(ts = 0) {
         const fd = getCurrentFloorData();
         const dirX = Math.cos(player.angle);
         const dirY = Math.sin(player.angle);
@@ -1933,7 +1955,7 @@
           let floorX = player.x + rowDistance * rayDirX0;
           let floorY = player.y + rowDistance * rayDirY0;
 
-          const shade = Math.min(1.2, (1 / (1 + rowDistance * 0.22)) * flashBoost);
+          const shade = Math.min(1.25, (1 / (1 + rowDistance * 0.2)) * flashBoost);
           const tex = isFloor ? TEXTURES.floor : TEXTURES.ceil;
           const rowIdx = y * RW;
 
@@ -1950,10 +1972,20 @@
             let g = ((col >> 8) & 255) * shade;
             let b = ((col >> 16) & 255) * shade;
 
-            if (isFloor && fd.bloodFloors.has(`${cellX},${cellY}`) && ((tx + ty) % 3 === 0)) {
-              r = Math.min(255, r + 85 * shade);
-              g *= 0.4;
-              b *= 0.4;
+            if (isFloor) {
+              const fDecal = fd.floorDecals[`${cellX},${cellY}`];
+              if (fDecal === 'blood' && ((tx + ty) % 3 === 0)) {
+                r = Math.min(255, r + 90 * shade);
+                g *= 0.35;
+                b *= 0.35;
+              } else if (fDecal === 'grate' && (tx % 8 < 2 || ty % 8 < 2)) {
+                r *= 0.45; g *= 0.45; b *= 0.5;
+              } else if (fDecal === 'rune' && Math.abs(tx - 32) < 12 && Math.abs(ty - 32) < 12 && ((tx + ty) % 4 === 0)) {
+                r = Math.min(255, r + 110 * shade);
+                g = Math.min(255, g + 45 * shade);
+              } else if (fDecal === 'scorch' && ((tx - 32) ** 2 + (ty - 32) ** 2 < 260)) {
+                r *= 0.35; g *= 0.35; b *= 0.35;
+              }
             }
             buf32[rowIdx + x] = packRGBA(r, g, b);
           }
@@ -1977,7 +2009,7 @@
           else { stepY = 1; sideDistY = (mapY + 1.0 - player.y) * deltaDistY; }
 
           let side = 0, wallCode = 1;
-          for (let iter = 0; iter < 48; iter++) {
+          for (let iter = 0; iter < 54; iter++) {
             if (sideDistX < sideDistY) {
               sideDistX += deltaDistX;
               mapX += stepX;
@@ -2027,9 +2059,9 @@
           const step = TEX_SIZE / lineHeight;
           let texPos = (drawStart - halfH + lineHeight / 2) * step;
 
-          const sideDim = side === 1 ? 0.74 : 1.0;
-          const distShade = Math.min(1.25, (1 / (1 + perpWallDist * 0.14)) * sideDim * flashBoost);
-          const hasBlood = fd.bloodWalls.has(`${mapX},${mapY}`);
+          const sideDim = side === 1 ? 0.76 : 1.0;
+          const distShade = Math.min(1.25, (1 / (1 + perpWallDist * 0.13)) * sideDim * flashBoost);
+          const wDecal = fd.wallDecals[`${mapX},${mapY}`];
 
           for (let y = drawStart; y <= drawEnd; y++) {
             const texY = Math.floor(texPos) & 63;
@@ -2039,10 +2071,19 @@
             let g = ((col >> 8) & 255) * distShade;
             let b = ((col >> 16) & 255) * distShade;
 
-            if (hasBlood && texY > 22 && ((texX * 7 + texY * 3) % 11 < 4)) {
+            if (wDecal === 'blood' && texY > 20 && ((texX * 7 + texY * 3) % 11 < 4)) {
               r = Math.min(255, r * 0.4 + 145 * distShade);
-              g *= 0.25;
-              b *= 0.25;
+              g *= 0.25; b *= 0.25;
+            } else if (wDecal === 'rune' && texX >= 22 && texX <= 41 && texY >= 18 && texY <= 42 && ((texX + texY) % 3 === 0)) {
+              const pulse = 0.75 + Math.sin(ts * 0.006) * 0.25;
+              r = Math.min(255, 235 * distShade * pulse);
+              g = Math.min(255, 95 * distShade * pulse);
+              b = Math.min(255, 25 * distShade);
+            } else if (wDecal === 'vent' && texX >= 18 && texX <= 45 && texY >= 24 && texY <= 44) {
+              if (texY % 4 === 0) { r = 20 * distShade; g = 24 * distShade; b = 28 * distShade; }
+              else { r = 95 * distShade; g = 105 * distShade; b = 115 * distShade; }
+            } else if (wDecal === 'slime' && texY > 36 && ((texX * 5) % 9 < 3)) {
+              r = 30 * distShade; g = Math.min(255, 195 * distShade); b = 65 * distShade;
             }
             buf32[y * RW + x] = packRGBA(r, g, b);
           }
@@ -2050,7 +2091,11 @@
 
         vctx.putImageData(frameImg, 0, 0);
 
+        // Collect all 3D Billboard Sprites (Animated Props, Lifts, Compact Enemies, Pickups, Barrels, Projectiles, Gibs)
         const sprites = [];
+        for (const prp of fd.props) {
+          sprites.push({ kind: 'prop', obj: prp, x: prp.x, y: prp.y, dist: (prp.x - player.x) ** 2 + (prp.y - player.y) ** 2 });
+        }
         for (const lf of fd.lifts) {
           sprites.push({ kind: 'lift', obj: lf, x: lf.x, y: lf.y, dist: (lf.x - player.x) ** 2 + (lf.y - player.y) ** 2 });
         }
@@ -2087,7 +2132,7 @@
           const centerCol = Math.max(0, Math.min(RW - 1, screenX));
           if (transformY >= zBuffer[centerCol] + 0.35) continue;
 
-          drawBillboard(sp, screenX, spriteH, transformY, halfH);
+          drawBillboard(sp, screenX, spriteH, transformY, halfH, ts);
         }
 
         drawFirstPersonView();
@@ -2110,20 +2155,70 @@
         if (showAutomap) drawAutomap();
       }
 
-      function drawBillboard(sp, sx, h, dist, halfH) {
-        const shade = Math.min(1, 1.35 / (1 + dist * 0.16));
+      function drawBillboard(sp, sx, h, dist, halfH, ts) {
+        const shade = Math.min(1, 1.38 / (1 + dist * 0.15));
         vctx.save();
-        vctx.globalAlpha = Math.max(0.25, shade);
+        vctx.globalAlpha = Math.max(0.28, shade);
 
-        if (sp.kind === 'lift') {
+        if (sp.kind === 'prop') {
+          const prp = sp.obj;
+          const bottomY = halfH + h / 2;
+          const flicker = Math.sin(ts * 0.016 + prp.phase) * 0.22 + Math.cos(ts * 0.029 + prp.phase) * 0.14;
+
+          if (prp.kind === 'torch' || prp.kind === 'soul_brazier' || prp.kind === 'cryo_lamp') {
+            const bh = h * 0.68;
+            const bw = Math.max(2, bh * 0.16);
+            // Iron sconce / pillar stand
+            vctx.fillStyle = '#3f3f46';
+            vctx.fillRect(sx - bw / 2, bottomY - bh * 0.72, bw, bh * 0.72);
+            vctx.fillStyle = '#71717a';
+            vctx.fillRect(sx - bw * 0.9, bottomY - bh * 0.76, bw * 1.8, bh * 0.08);
+
+            // Animated flame / soul fire / cryo crystal
+            const flameH = bh * (0.28 + flicker * 0.12);
+            const flameW = bw * (1.5 + flicker * 0.4);
+            const outerCol = prp.kind === 'soul_brazier' ? '#22c55e' : prp.kind === 'cryo_lamp' ? '#38bdf8' : '#f97316';
+            const innerCol = prp.kind === 'soul_brazier' ? '#bbf7d0' : prp.kind === 'cryo_lamp' ? '#e0f2fe' : '#fef08a';
+
+            vctx.fillStyle = outerCol;
+            vctx.beginPath();
+            vctx.arc(sx, bottomY - bh * 0.84, flameW, 0, Math.PI * 2);
+            vctx.fill();
+
+            vctx.fillStyle = innerCol;
+            vctx.beginPath();
+            vctx.arc(sx, bottomY - bh * 0.84 - flameH * 0.12, flameW * 0.52, 0, Math.PI * 2);
+            vctx.fill();
+          } else if (prp.kind === 'plasma_coil') {
+            const bh = h * 0.82;
+            const bw = Math.max(3, bh * 0.24);
+            vctx.fillStyle = '#1e293b';
+            vctx.fillRect(sx - bw / 2, bottomY - bh, bw, bh);
+            const pulse = 0.5 + Math.sin(ts * 0.01 + prp.phase) * 0.5;
+            vctx.fillStyle = `rgba(56, 189, 248, ${0.45 + pulse * 0.5})`;
+            vctx.fillRect(sx - bw * 0.7, bottomY - bh * 0.78, bw * 1.4, bh * 0.12);
+            vctx.fillRect(sx - bw * 0.7, bottomY - bh * 0.45, bw * 1.4, bh * 0.12);
+          } else if (prp.kind === 'skull_totem') {
+            const bh = h * 0.62;
+            const bw = Math.max(3, bh * 0.28);
+            vctx.fillStyle = '#57534e';
+            vctx.fillRect(sx - bw * 0.3, bottomY - bh * 0.75, bw * 0.6, bh * 0.75);
+            vctx.fillStyle = '#e7e5e4';
+            vctx.beginPath();
+            vctx.arc(sx, bottomY - bh * 0.82, bw * 0.55, 0, Math.PI * 2);
+            vctx.fill();
+            vctx.fillStyle = '#ef4444';
+            vctx.fillRect(sx - bw * 0.25, bottomY - bh * 0.85, bw * 0.16, bw * 0.16);
+            vctx.fillRect(sx + bw * 0.1, bottomY - bh * 0.85, bw * 0.16, bw * 0.16);
+          }
+        } else if (sp.kind === 'lift') {
           const lf = sp.obj;
           const bh = h * 0.32;
           const bw = bh * 1.1;
           const bottomY = halfH + h / 2;
           vctx.fillStyle = lf.dir === 'up' ? '#38bdf8' : '#f59e0b';
           vctx.fillRect(sx - bw / 2, bottomY - bh * 0.25, bw, bh * 0.25);
-          // Floating beacon arrow
-          const bob = Math.sin(performance.now() * 0.006) * 2;
+          const bob = Math.sin(ts * 0.006) * 2;
           vctx.fillStyle = '#ffffff';
           vctx.font = `bold ${Math.max(8, Math.floor(bh * 0.45))}px monospace`;
           vctx.textAlign = 'center';
@@ -2132,48 +2227,48 @@
           const en = sp.obj;
           const sc = en.scale;
           const bh = h * sc;
-          const bw = bh * 0.62;
-          const floatY = en.flying ? Math.sin(performance.now() * 0.006) * (bh * 0.08) : 0;
+          const bw = bh * 0.6;
+          const floatY = en.flying ? Math.sin(ts * 0.006) * (bh * 0.08) : 0;
           const bottomY = halfH + h / 2 - floatY;
 
           if (en.state === 'dead') {
             vctx.fillStyle = '#7f1d1d';
             vctx.beginPath();
-            vctx.ellipse(sx, bottomY - bh * 0.06, bw * 0.55, bh * 0.1, 0, 0, Math.PI * 2);
+            vctx.ellipse(sx, bottomY - bh * 0.06, bw * 0.52, bh * 0.1, 0, 0, Math.PI * 2);
             vctx.fill();
             vctx.restore();
             return;
           }
 
           vctx.fillStyle = en.hitFlash > 0 ? '#ffffff' : en.color;
-          vctx.fillRect(sx - bw * 0.35, bottomY - bh * 0.68, bw * 0.7, bh * 0.48);
+          vctx.fillRect(sx - bw * 0.34, bottomY - bh * 0.66, bw * 0.68, bh * 0.46);
 
           vctx.fillStyle = '#27272a';
-          const stride = Math.sin(performance.now() * 0.01) * (bw * 0.08);
-          vctx.fillRect(sx - bw * 0.3, bottomY - bh * 0.22, bw * 0.22, bh * 0.22 + stride);
-          vctx.fillRect(sx + bw * 0.08, bottomY - bh * 0.22, bw * 0.22, bh * 0.22 - stride);
+          const stride = Math.sin(ts * 0.01) * (bw * 0.08);
+          vctx.fillRect(sx - bw * 0.28, bottomY - bh * 0.22, bw * 0.2, bh * 0.22 + stride);
+          vctx.fillRect(sx + bw * 0.08, bottomY - bh * 0.22, bw * 0.2, bh * 0.22 - stride);
 
           if (!en.headless) {
             vctx.fillStyle = en.hitFlash > 0 ? '#ffffff' : en.color;
             vctx.beginPath();
-            vctx.arc(sx, bottomY - bh * 0.78, bw * 0.22, 0, Math.PI * 2);
+            vctx.arc(sx, bottomY - bh * 0.76, bw * 0.21, 0, Math.PI * 2);
             vctx.fill();
 
             vctx.fillStyle = en.eye;
-            vctx.fillRect(sx - bw * 0.11, bottomY - bh * 0.81, Math.max(1.5, bw * 0.07), Math.max(1.5, bh * 0.04));
-            vctx.fillRect(sx + bw * 0.04, bottomY - bh * 0.81, Math.max(1.5, bw * 0.07), Math.max(1.5, bh * 0.04));
+            vctx.fillRect(sx - bw * 0.1, bottomY - bh * 0.79, Math.max(1.5, bw * 0.07), Math.max(1.5, bh * 0.04));
+            vctx.fillRect(sx + bw * 0.03, bottomY - bh * 0.79, Math.max(1.5, bw * 0.07), Math.max(1.5, bh * 0.04));
           } else {
             vctx.fillStyle = '#ef4444';
-            vctx.fillRect(sx - bw * 0.1, bottomY - bh * 0.76, bw * 0.2, bh * 0.08);
+            vctx.fillRect(sx - bw * 0.1, bottomY - bh * 0.74, bw * 0.2, bh * 0.08);
           }
 
           if (en.state === 'staggered') {
             vctx.strokeStyle = '#facc15';
             vctx.lineWidth = 1.5;
-            vctx.strokeRect(sx - bw * 0.42, bottomY - bh * 0.92, bw * 0.84, bh * 0.92);
+            vctx.strokeRect(sx - bw * 0.4, bottomY - bh * 0.9, bw * 0.8, bh * 0.9);
           }
         } else if (sp.kind === 'barrel') {
-          const bh = h * 0.56;
+          const bh = h * 0.5;
           const bw = bh * 0.72;
           const bottomY = halfH + h / 2;
           vctx.fillStyle = '#15803d';
@@ -2184,7 +2279,7 @@
           vctx.fillRect(sx - bw * 0.2, bottomY - bh * 0.5, bw * 0.4, bh * 0.25);
         } else if (sp.kind === 'pickup') {
           const pk = sp.obj;
-          const bh = h * 0.34;
+          const bh = h * 0.32;
           const bottomY = halfH + h / 2;
           const col = pk.kind === 'H' ? '#f8fafc' : pk.kind === 'A' ? '#22c55e' : '#facc15';
           vctx.fillStyle = col;
@@ -2196,14 +2291,14 @@
           }
         } else if (sp.kind === 'proj') {
           const pr = sp.obj;
-          const r = Math.max(2, h * 0.12);
+          const r = Math.max(2, h * 0.1);
           vctx.fillStyle = pr.color;
           vctx.beginPath();
           vctx.arc(sx, halfH, r, 0, Math.PI * 2);
           vctx.fill();
         } else if (sp.kind === 'gib') {
           const gb = sp.obj;
-          const r = Math.max(1.5, h * 0.06);
+          const r = Math.max(1.5, h * 0.055);
           const gy = halfH + h / 2 - gb.z * h * 0.75 - r;
           vctx.fillStyle = gb.kind === 'skull' || gb.kind === 'rib' ? '#e4e4e7' : '#b91c1c';
           vctx.fillRect(sx - r, gy - r, r * 2, r * 1.6);
@@ -2273,7 +2368,7 @@
 
       function drawAutomap() {
         const fd = getCurrentFloorData();
-        const scale = 6;
+        const scale = 5;
         const ox = 12, oy = 46;
         vctx.save();
         vctx.fillStyle = 'rgba(7, 5, 7, 0.86)';
@@ -2423,8 +2518,8 @@
 
       const moveZone = document.getElementById('touchMoveZone');
       const lookZone = document.getElementById('touchLookZone');
-
       const joyKnob = document.getElementById('joyKnob');
+
       moveZone.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         touchState.moveId = e.pointerId;
@@ -2524,18 +2619,19 @@
       });
 
       // =========================================================================
-      // 10. MOD / DLC EXTENSION API (Allows pasting DLC packs at bottom of HTML!)
+      // 10. MODULAR DLC SYSTEM (Paste or edit custom DLC packs at bottom of HTML)
       // =========================================================================
       let activeDlcId = 'base';
       const DLC_REGISTRY = {
         base: {
           id: 'base',
-          name: 'BASE CAMPAIGN (3 FLOORS)',
-          floors: 3,
-          startWeapons: null,
+          shortName: 'UAC SECTOR',
+          name: 'STANDARD: UAC OUTPOST',
+          desc: 'Endless procedural techbase & crimson arenas with classic enemies.',
+          torchKind: 'torch',
+          wallTheme: null,
           enemyPool: ['trooper', 'sergeant', 'imp', 'pinky', 'caco'],
-          bossType: 'baron',
-          wallTheme: null
+          bossType: 'baron'
         }
       };
 
@@ -2559,11 +2655,12 @@
         const row = document.getElementById('dlcSelectorRow');
         if (!row) return;
         row.innerHTML = Object.values(DLC_REGISTRY).map(d => `
-          <button type="button" class="dlc-pill ${activeDlcId === d.id ? 'active' : ''}" data-dlc="${d.id}">
-            ${d.name}
+          <button type="button" class="dlc-card ${activeDlcId === d.id ? 'active' : ''}" data-dlc="${d.id}">
+            <b>${d.name}</b>
+            <span>${d.desc || 'Endless procedural DLC pack'}</span>
           </button>
         `).join('');
-        row.querySelectorAll('.dlc-pill').forEach(btn => {
+        row.querySelectorAll('.dlc-card').forEach(btn => {
           btn.addEventListener('click', () => {
             activeDlcId = btn.dataset.dlc;
             renderDlcSelector();
@@ -2577,7 +2674,7 @@
         const dt = Math.min(0.05, (ts - lastTs) / 1000);
         lastTs = ts;
         update(dt);
-        if (floorsData.length > 0) render3D();
+        if (floorsData.length > 0) render3D(ts);
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
@@ -2585,26 +2682,29 @@
   </script>
 
   <!-- ======================================================================= -->
-  <!-- 👇 PASTE / EDIT YOUR CUSTOM DLC PACKS RIGHT HERE AT THE BOTTOM OF HTML 👇 -->
+  <!-- 👇 PRE-BUILT DLC PACKS + TEMPLATE FOR YOUR OWN CUSTOM DLCs AT BOTTOM 👇 -->
   <!-- ======================================================================= -->
   <script>
-    // Example Built-In DLC #1: "PLUTONIA OVERKILL" (Unlocks Heavy Arsenal & Cyber-Demons)
+    // Pre-built DLC #1: Crimson Citadel (Super Shotgun start, Cyber Knights & Hell Torches)
     window.registerBrutalDlc({
-      id: 'plutonia_dlc',
-      name: 'DLC: PLUTONIA OVERKILL',
-      wallTheme: 2, // Crimson Hell Brick theme on all floors
+      id: 'crimson_citadel',
+      shortName: 'CITADEL',
+      name: 'DLC 1: CRIMSON CITADEL',
+      desc: 'Start with Super Shotgun, 100 Armor, Soul Braziers & Cyber Knights.',
+      wallTheme: 2,
+      torchKind: 'torch',
       startArmor: 100,
-      startWeapon: 4, // Start with Super Shotgun!
+      startWeapon: 4,
       startOwned: { 1: true, 2: true, 3: true, 4: true, 5: true, 6: false },
       startAmmo: { clip: 120, shells: 36, rockets: 4 },
       enemies: {
         cyber_knight: {
           name: 'Cyber Hell Knight',
-          hp: 310,
-          spd: 2.75,
-          dmg: 28,
-          r: 0.40,
-          scale: 1.28,
+          hp: 165,
+          spd: 2.35,
+          dmg: 16,
+          r: 0.30,
+          scale: 0.92,
           color: '#f97316',
           eye: '#38bdf8',
           ranged: 'plasma',
@@ -2615,32 +2715,82 @@
       bossType: 'baron'
     });
 
-    /* -------------------------------------------------------------------------
-       TEMPLATE FOR YOUR NEXT DLC (Copy, uncomment, and customize):
-       -------------------------------------------------------------------------
+    // Pre-built DLC #2: Toxic Bio-Foundry (Chaingun start, Acid Stalkers & Green Soul Braziers)
     window.registerBrutalDlc({
-      id: 'my_custom_dlc',
-      name: 'DLC: NIGHTMARE LABS',
-      wallTheme: 3, // 1 = UAC Tech, 2 = Hell Brick, 3 = Rusty Slime
+      id: 'toxic_foundry',
+      shortName: 'BIO-LAB',
+      name: 'DLC 2: TOXIC BIO-FOUNDRY',
+      desc: 'Industrial slime walls, green soul braziers, Chaingun & Acid Stalkers.',
+      wallTheme: 3,
+      torchKind: 'soul_brazier',
       startArmor: 75,
-      startWeapon: 5, // 1=Chainsaw, 2=Rifle, 3=Shotgun, 4=SuperShotgun, 5=Chaingun, 6=Rocket
+      startWeapon: 5,
       startOwned: { 1: true, 2: true, 3: true, 4: false, 5: true, 6: false },
-      startAmmo: { clip: 150, shells: 20, rockets: 5 },
+      startAmmo: { clip: 160, shells: 20, rockets: 4 },
       enemies: {
-        acid_fiend: {
+        acid_stalker: {
           name: 'Acid Stalker',
-          hp: 160,
-          spd: 3.4,
-          dmg: 22,
-          r: 0.35,
-          scale: 1.1,
+          hp: 88,
+          spd: 2.85,
+          dmg: 13,
+          r: 0.26,
+          scale: 0.78,
           color: '#22c55e',
           eye: '#facc15',
           ranged: 'hellfire',
           drop: 'clip'
         }
       },
-      enemyPool: ['imp', 'pinky', 'acid_fiend'],
+      enemyPool: ['trooper', 'imp', 'pinky', 'acid_stalker'],
+      bossType: 'baron'
+    });
+
+    // Pre-built DLC #3: Cryo Void Vault (Rocket Launcher start, Frost Wraiths & Cryo Lamps)
+    window.registerBrutalDlc({
+      id: 'cryo_vault',
+      shortName: 'CRYO-VAULT',
+      name: 'DLC 3: CRYO VOID VAULT',
+      desc: 'Frozen blue sectors, cryo lamps, Rocket Launcher & Frost Wraiths.',
+      wallTheme: 7,
+      torchKind: 'cryo_lamp',
+      startArmor: 100,
+      startWeapon: 6,
+      startOwned: { 1: true, 2: true, 3: true, 4: true, 5: true, 6: true },
+      startAmmo: { clip: 140, shells: 30, rockets: 18 },
+      enemies: {
+        frost_wraith: {
+          name: 'Frost Wraith',
+          hp: 110,
+          spd: 2.5,
+          dmg: 14,
+          r: 0.28,
+          scale: 0.84,
+          color: '#38bdf8',
+          eye: '#f43f5e',
+          ranged: 'plasma',
+          flying: true,
+          drop: 'rockets'
+        }
+      },
+      enemyPool: ['sergeant', 'pinky', 'caco', 'frost_wraith'],
+      bossType: 'baron'
+    });
+
+    /* -------------------------------------------------------------------------
+       TEMPLATE: PASTE YOUR OWN CUSTOM DLC PACK BELOW:
+       -------------------------------------------------------------------------
+    window.registerBrutalDlc({
+      id: 'custom_dlc_4',
+      shortName: 'CUSTOM',
+      name: 'DLC 4: CUSTOM HELL',
+      desc: 'Your custom endless sector settings.',
+      wallTheme: 2, // 1=Tech, 2=Crimson Brick, 3=Slime Pipe, 7=Cryo Ice
+      torchKind: 'torch', // 'torch' | 'soul_brazier' | 'cryo_lamp'
+      startArmor: 100,
+      startWeapon: 4, // 1..6
+      startOwned: { 1: true, 2: true, 3: true, 4: true, 5: true, 6: true },
+      startAmmo: { clip: 200, shells: 40, rockets: 20 },
+      enemyPool: ['trooper', 'sergeant', 'imp', 'pinky', 'caco'],
       bossType: 'baron'
     });
     ------------------------------------------------------------------------- */

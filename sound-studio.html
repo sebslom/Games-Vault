@@ -3,27 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FruityWeb Studio 26 · DAW &amp; Synth Workstation</title>
+  <title>FruityWeb Studio 26 Ultra · Mobile & Desktop DAW</title>
   <style>
     :root {
-      --bg-app: #14171c;
-      --bg-panel: #1d222a;
-      --bg-header: #252b35;
-      --bg-dark: #101318;
-      --bg-slot: #2b323e;
-      --border: #363f4e;
-      --border-light: #485366;
+      --bg-app: #111419;
+      --bg-panel: #191e26;
+      --bg-header: #222833;
+      --bg-dark: #0c0f14;
+      --bg-slot: #28303d;
+      --border: #333d4f;
+      --border-hi: #4b5870;
       --fl-orange: #ff7b00;
+      --fl-orange-soft: rgba(255, 123, 0, 0.18);
       --fl-green: #22c55e;
       --fl-cyan: #38bdf8;
       --fl-red: #ef4444;
       --fl-yellow: #facc15;
       --fl-purple: #a855f7;
-      --step-off-a: #3b4252;
-      --step-off-b: #2e3440;
+      --step-a: #3a4252;
+      --step-b: #2b3240;
       --step-on-a: #ff8c1a;
       --step-on-b: #e11d48;
-      --text: #f1f5f9;
+      --text: #f8fafc;
       --muted: #94a3b8;
     }
 
@@ -33,6 +34,7 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html, body {
@@ -43,9 +45,10 @@
       color: var(--text);
       font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
       font-size: 12px;
+      touch-action: manipulation;
     }
 
-    .daw-shell {
+    .daw-root {
       width: 100vw;
       height: 100dvh;
       display: flex;
@@ -53,100 +56,115 @@
       background: var(--bg-app);
     }
 
-    /* --- TOP TRANSPORT & MENU BAR (FL STUDIO STYLE) --- */
-    .transport-bar {
-      height: 52px;
-      background: linear-gradient(180deg, #2b313c 0%, #1e232b 100%);
+    .top-bar {
+      min-height: 52px;
+      background: linear-gradient(180deg, #2a313d 0%, #1c2129 100%);
       border-bottom: 1px solid var(--border);
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      padding: 0 12px;
+      padding: 5px 10px;
       padding-right: 48px;
-      gap: 10px;
-      flex-shrink: 0;
-      z-index: 20;
-    }
-
-    .brand-cluster {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .fl-logo {
-      display: flex;
-      align-items: center;
       gap: 6px;
-      background: #13161c;
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #101318;
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 4px 9px;
       font-weight: 900;
-      letter-spacing: 0.5px;
       color: var(--fl-orange);
+      letter-spacing: 0.4px;
     }
-    .fl-logo span { color: #f8fafc; font-weight: 700; }
+    .logo-badge span {
+      color: #f8fafc;
+      font-weight: 700;
+    }
 
-    .menu-actions {
+    .file-toolbar {
       display: flex;
       gap: 4px;
+      flex-wrap: wrap;
     }
-    .menu-btn {
+
+    .tb-btn {
       background: var(--bg-slot);
       border: 1px solid var(--border);
       color: var(--text);
       border-radius: 5px;
-      padding: 5px 9px;
+      padding: 5px 8px;
       font-size: 11px;
       font-weight: 700;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 4px;
     }
-    .menu-btn:hover { border-color: var(--fl-orange); color: #fff; }
-    .menu-btn.export-wav {
-      background: rgba(34, 197, 94, 0.16);
+    .tb-btn:hover {
+      border-color: var(--fl-orange);
+    }
+    .tb-btn.export-primary {
+      background: rgba(34, 197, 94, 0.18);
       border-color: var(--fl-green);
       color: #86efac;
     }
 
-    .transport-controls {
+    .transport-deck {
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: #12151b;
+      gap: 5px;
+      background: #101319;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 4px 8px;
+      padding: 3px 7px;
     }
 
-    .mode-toggle {
+    .pat-song-switch {
       display: flex;
       flex-direction: column;
       gap: 2px;
-      margin-right: 4px;
     }
-    .mode-pill {
+    .ps-btn {
       font-size: 9px;
       font-weight: 900;
       padding: 2px 6px;
       border-radius: 3px;
-      border: 1px solid #333c4a;
-      background: #1d222a;
+      border: 1px solid #323b4a;
+      background: #1b2029;
       color: var(--muted);
       cursor: pointer;
     }
-    .mode-pill.active.pat { background: var(--fl-orange); color: #000; border-color: var(--fl-orange); }
-    .mode-pill.active.song { background: var(--fl-green); color: #000; border-color: var(--fl-green); }
+    .ps-btn.active.pat {
+      background: var(--fl-orange);
+      color: #000;
+      border-color: var(--fl-orange);
+    }
+    .ps-btn.active.song {
+      background: var(--fl-green);
+      color: #000;
+      border-color: var(--fl-green);
+    }
 
-    .t-btn {
+    .tr-btn {
       width: 32px;
       height: 30px;
       border-radius: 5px;
       border: 1px solid var(--border);
-      background: #252b36;
+      background: #242b36;
       color: var(--text);
       font-size: 13px;
       font-weight: 900;
@@ -155,83 +173,114 @@
       align-items: center;
       justify-content: center;
     }
-    .t-btn:hover { border-color: var(--fl-cyan); }
-    .t-btn.playing {
+    .tr-btn.active-play {
       background: var(--fl-green);
       color: #05180c;
       border-color: #86efac;
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
+    }
+    .tr-btn.rec-on {
+      background: var(--fl-red);
+      color: #fff;
+      border-color: #fca5a5;
     }
 
-    .lcd-display {
-      background: #090c10;
+    .lcd-box {
+      background: #080a0e;
       border: 1px inset #384152;
       border-radius: 5px;
-      padding: 3px 10px;
+      padding: 2px 8px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       font-family: 'JetBrains Mono', 'Courier New', monospace;
     }
-    .lcd-group {
+    .lcd-col {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    .lcd-lbl { font-size: 8px; color: #64748b; font-weight: 800; letter-spacing: 0.7px; }
-    .lcd-val { font-size: 13px; font-weight: 900; color: var(--fl-orange); }
-    .lcd-val.time { color: var(--fl-green); }
-
-    .bpm-input {
-      width: 48px;
+    .lcd-tag {
+      font-size: 8px;
+      color: #64748b;
+      font-weight: 800;
+    }
+    .lcd-num {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--fl-orange);
+    }
+    .lcd-num.green {
+      color: var(--fl-green);
+    }
+    .bpm-field {
+      width: 46px;
       background: #0d1117;
       border: 1px solid #333d4f;
       color: var(--fl-orange);
       font-family: inherit;
       font-weight: 900;
-      font-size: 13px;
+      font-size: 12px;
       text-align: center;
       border-radius: 3px;
-      padding: 1px 2px;
+      padding: 1px;
     }
 
-    .view-tabs {
+    .scope-canvas {
+      width: 84px;
+      height: 30px;
+      background: #07090d;
+      border: 1px solid #2d3646;
+      border-radius: 4px;
+      display: block;
+    }
+
+    .desktop-views {
       display: flex;
       gap: 4px;
     }
-    .v-tab {
-      background: #1a1f27;
+    .view-pill {
+      background: #1a1f28;
       border: 1px solid var(--border);
       color: var(--muted);
-      padding: 5px 10px;
+      padding: 5px 9px;
       border-radius: 5px;
       font-size: 11px;
       font-weight: 800;
       cursor: pointer;
     }
-    .v-tab.active {
-      background: #333c4d;
+    .view-pill.active {
+      background: #323c4e;
       color: var(--fl-orange);
       border-color: var(--fl-orange);
     }
 
-    /* --- MAIN WORKSPACE GRID --- */
-    .workspace {
+    .daw-body {
       flex: 1;
       display: grid;
-      grid-template-columns: 235px 1fr 290px;
+      grid-template-columns: 245px 1fr 315px;
       overflow: hidden;
+      position: relative;
     }
 
-    /* LEFT: SOUND & PRESET BROWSER */
-    .browser-pane {
-      background: var(--bg-panel);
-      border-right: 1px solid var(--border);
+    .pane {
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      background: var(--bg-panel);
     }
-    .pane-header {
+    .pane.browser {
+      border-right: 1px solid var(--border);
+    }
+    .pane.inspector {
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    .pane.center {
+      background: #141820;
+    }
+
+    .pane-head {
       height: 30px;
       background: var(--bg-header);
       border-bottom: 1px solid var(--border);
@@ -242,28 +291,27 @@
       font-size: 11px;
       font-weight: 800;
       color: #cbd5e1;
-      letter-spacing: 0.4px;
       flex-shrink: 0;
     }
 
-    .browser-tools {
+    .search-bar {
       padding: 6px 8px;
       border-bottom: 1px solid var(--border);
       display: flex;
       gap: 5px;
     }
-    .browser-search {
+    .search-input {
       flex: 1;
       background: var(--bg-dark);
       border: 1px solid var(--border);
       border-radius: 4px;
-      padding: 4px 7px;
+      padding: 5px 8px;
       color: var(--text);
       font-size: 11px;
       outline: none;
     }
 
-    .browser-tree {
+    .browser-scroll {
       flex: 1;
       overflow-y: auto;
       padding: 6px;
@@ -272,14 +320,14 @@
       gap: 6px;
     }
 
-    .lib-folder {
-      background: #161a21;
-      border: 1px solid #2a313d;
+    .folder-box {
+      background: #141820;
+      border: 1px solid #28303e;
       border-radius: 6px;
       overflow: hidden;
     }
-    .lib-folder-title {
-      background: #222833;
+    .folder-head {
+      background: #202632;
       padding: 5px 8px;
       font-weight: 800;
       font-size: 11px;
@@ -288,86 +336,82 @@
       justify-content: space-between;
       cursor: pointer;
     }
-    .lib-items {
+    .folder-list {
+      padding: 3px;
       display: flex;
       flex-direction: column;
-      padding: 3px;
       gap: 2px;
     }
-    .lib-item {
-      padding: 4px 7px;
+    .sample-row {
+      padding: 5px 7px;
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 4px;
       font-size: 11px;
-      color: #e2e8f0;
       cursor: pointer;
     }
-    .lib-item:hover { background: #2c3442; }
-    .lib-item .add-ch-btn {
-      background: #333d4f;
+    .sample-row:hover {
+      background: #293140;
+    }
+    .add-btn {
+      background: #313b4d;
       border: none;
       color: var(--fl-cyan);
-      border-radius: 3px;
-      padding: 1px 5px;
+      border-radius: 4px;
+      padding: 2px 6px;
       font-size: 10px;
       font-weight: 900;
       cursor: pointer;
     }
-    .lib-item .add-ch-btn:hover { background: var(--fl-cyan); color: #000; }
-
-    /* CENTER: CHANNEL RACK + PIANO ROLL + PLAYLIST */
-    .center-pane {
-      display: flex;
-      flex-direction: column;
-      background: #161920;
-      overflow: hidden;
+    .add-btn:hover {
+      background: var(--fl-cyan);
+      color: #000;
     }
 
-    .sub-window {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .sub-window.active { display: flex; }
-
-    /* Pattern Selector Bar */
-    .pattern-bar {
-      background: #1d222b;
+    .pattern-toolbar {
+      background: #1c212b;
       border-bottom: 1px solid var(--border);
       padding: 5px 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
     }
-    .pat-pills {
+    .pat-list {
       display: flex;
       gap: 4px;
       flex-wrap: wrap;
     }
-    .pat-btn {
-      background: #272e3a;
+    .pat-chip {
+      background: #262e3b;
       border: 1px solid var(--border);
       color: var(--muted);
       border-radius: 4px;
-      padding: 3px 8px;
+      padding: 4px 8px;
       font-size: 11px;
       font-weight: 800;
       cursor: pointer;
     }
-    .pat-btn.active {
+    .pat-chip.active {
       background: var(--fl-orange);
       color: #090c10;
       border-color: #fdba74;
     }
 
-    /* Channel Rack Rows */
-    .rack-scroll {
+    .center-subview {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .center-subview.active {
+      display: flex;
+    }
+
+    .rack-area {
       flex: 1;
       overflow: auto;
       padding: 8px;
@@ -376,48 +420,49 @@
       gap: 5px;
     }
 
-    .channel-row {
+    .ch-strip {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: #212731;
-      border: 1px solid #303846;
+      background: #1f2530;
+      border: 1px solid #2f3848;
       border-radius: 6px;
-      padding: 4px 6px;
+      padding: 5px 7px;
       min-width: max-content;
     }
-    .channel-row.selected-ch {
+    .ch-strip.selected {
       border-color: var(--fl-orange);
       box-shadow: 0 0 0 1px rgba(255, 123, 0, 0.35);
     }
 
-    .mute-led {
-      width: 12px;
-      height: 24px;
+    .led-btn {
+      width: 13px;
+      height: 26px;
       border-radius: 3px;
-      border: 1px solid #111;
+      border: 1px solid #0b0d12;
       background: var(--fl-green);
       cursor: pointer;
     }
-    .mute-led.muted { background: #334155; }
+    .led-btn.muted {
+      background: #334155;
+    }
 
-    .ch-knob {
-      width: 34px;
+    .mini-slider {
+      width: 36px;
       accent-color: var(--fl-orange);
       cursor: pointer;
     }
 
-    .ch-name-btn {
-      width: 126px;
+    .ch-label-btn {
+      width: 124px;
       height: 28px;
       border-radius: 5px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: #2d3543;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: #2b3342;
       color: #fff;
       font-weight: 800;
       font-size: 11px;
       padding: 0 8px;
-      text-align: left;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -425,65 +470,60 @@
       overflow: hidden;
       white-space: nowrap;
     }
-    .ch-name-btn .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
 
-    .steps-grid {
+    .step-row {
       display: flex;
       gap: 3px;
       align-items: center;
     }
-    .step-cell {
-      width: 22px;
-      height: 28px;
+    .step-pad {
+      width: 24px;
+      height: 30px;
       border-radius: 4px;
-      border: 1px solid #181c24;
+      border: 1px solid #161a22;
       cursor: pointer;
-      position: relative;
     }
-    .step-cell.beat-a { background: var(--step-off-a); }
-    .step-cell.beat-b { background: var(--step-off-b); }
-    .step-cell.on.beat-a { background: var(--step-on-a); border-color: #fed7aa; }
-    .step-cell.on.beat-b { background: var(--step-on-b); border-color: #fecdd3; }
-    .step-cell.playhead {
+    .step-pad.grp-a { background: var(--step-a); }
+    .step-pad.grp-b { background: var(--step-b); }
+    .step-pad.on.grp-a { background: var(--step-on-a); border-color: #fed7aa; }
+    .step-pad.on.grp-b { background: var(--step-on-b); border-color: #fecdd3; }
+    .step-pad.now {
       outline: 2px solid #ffffff;
       box-shadow: 0 0 10px #ffffff;
       z-index: 2;
     }
-    .step-cell:nth-child(4n) { margin-right: 5px; }
+    .step-pad:nth-child(4n) {
+      margin-right: 5px;
+    }
 
-    .pr-open-btn {
-      background: #171c24;
+    .pr-jump-btn {
+      background: #151a22;
       border: 1px solid var(--border);
       color: var(--fl-cyan);
       border-radius: 4px;
-      padding: 4px 7px;
+      padding: 5px 8px;
       font-size: 10px;
       font-weight: 800;
       cursor: pointer;
     }
 
-    /* PIANO ROLL */
-    .piano-roll-wrap {
+    /* Piano Roll */
+    .pr-container {
       flex: 1;
       display: flex;
       overflow: auto;
-      background: #12161d;
+      background: #10141b;
     }
-    .piano-keys {
-      width: 58px;
+    .pr-piano {
+      width: 56px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      border-right: 2px solid #090b0f;
+      border-right: 2px solid #080a0e;
     }
-    .p-key {
-      height: 20px;
-      border-bottom: 1px solid #2b323e;
+    .piano-key {
+      height: 22px;
+      border-bottom: 1px solid #29313e;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -492,37 +532,43 @@
       font-weight: 800;
       cursor: pointer;
     }
-    .p-key.white { background: #e2e8f0; color: #0f172a; }
-    .p-key.black { background: #1e293b; color: #94a3b8; }
-    .p-key:active { background: var(--fl-orange); color: #000; }
+    .piano-key.white { background: #e2e8f0; color: #0f172a; }
+    .piano-key.black { background: #1e293b; color: #94a3b8; }
+    .piano-key:active { background: var(--fl-orange); color: #000; }
 
-    .pr-grid {
+    .pr-matrix {
       flex: 1;
       display: flex;
       flex-direction: column;
-      min-width: 560px;
+      min-width: 540px;
     }
-    .pr-row {
-      height: 20px;
+    .pr-note-row {
+      height: 22px;
       display: grid;
       grid-template-columns: repeat(16, 1fr);
-      border-bottom: 1px solid #1f2631;
+      border-bottom: 1px solid #1d2430;
     }
-    .pr-row.black-row { background: rgba(9, 12, 18, 0.45); }
-    .pr-cell {
-      border-right: 1px solid #232a37;
+    .pr-note-row.sharp-row {
+      background: rgba(8, 10, 16, 0.5);
+    }
+    .pr-slot {
+      border-right: 1px solid #222a38;
       cursor: pointer;
     }
-    .pr-cell:nth-child(4n) { border-right: 2px solid #364154; }
-    .pr-cell.active {
+    .pr-slot:nth-child(4n) {
+      border-right: 2px solid #364256;
+    }
+    .pr-slot.active {
       background: linear-gradient(180deg, #4ade80, #16a34a);
       border: 1px solid #bbf7d0;
       border-radius: 3px;
     }
-    .pr-cell.playhead { background: rgba(255, 255, 255, 0.16); }
+    .pr-slot.now {
+      background: rgba(255, 255, 255, 0.16);
+    }
 
-    /* SONG PLAYLIST ARRANGER */
-    .playlist-grid {
+    /* Song Playlist */
+    .playlist-area {
       flex: 1;
       overflow: auto;
       padding: 10px;
@@ -530,27 +576,27 @@
       flex-direction: column;
       gap: 6px;
     }
-    .pl-row {
+    .track-lane {
       display: flex;
       align-items: center;
       gap: 6px;
       min-width: max-content;
     }
-    .pl-label {
-      width: 110px;
-      background: #232934;
+    .track-tag {
+      width: 105px;
+      background: #212733;
       border: 1px solid var(--border);
       border-radius: 5px;
-      padding: 6px 8px;
+      padding: 7px 8px;
       font-weight: 800;
       font-size: 11px;
       color: var(--fl-orange);
     }
-    .pl-bar-cell {
-      width: 52px;
-      height: 28px;
-      background: #1a202a;
-      border: 1px solid #2e3746;
+    .bar-slot {
+      width: 50px;
+      height: 30px;
+      background: #191f29;
+      border: 1px solid #2d3646;
       border-radius: 4px;
       cursor: pointer;
       display: flex;
@@ -560,33 +606,24 @@
       font-weight: 900;
       color: transparent;
     }
-    .pl-bar-cell.placed {
+    .bar-slot.filled {
       background: linear-gradient(135deg, #2563eb, #0284c7);
       border-color: #7dd3fc;
       color: #ffffff;
     }
-    .pl-bar-cell.playhead {
+    .bar-slot.now {
       outline: 2px solid var(--fl-green);
     }
 
-    /* RIGHT: SYNTHESIZER RACK & MASTER MIXER */
-    .inspector-pane {
-      background: var(--bg-panel);
-      border-left: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .synth-card {
+    /* Right Inspector: Synth + Multi-FX + Mixer */
+    .sec-block {
       padding: 10px;
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-
-    .synth-title {
+    .sec-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -594,20 +631,18 @@
       color: var(--fl-orange);
       font-size: 11px;
     }
-
-    .control-grid {
+    .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 7px;
+      gap: 6px;
     }
-
-    .param-box {
-      background: #141820;
-      border: 1px solid #2b3342;
+    .knob-card {
+      background: #131720;
+      border: 1px solid #293242;
       border-radius: 6px;
       padding: 5px 7px;
     }
-    .param-box label {
+    .knob-card label {
       display: flex;
       justify-content: space-between;
       font-size: 10px;
@@ -615,36 +650,31 @@
       font-weight: 700;
       margin-bottom: 3px;
     }
-    .param-box label b { color: var(--fl-cyan); }
-    .param-box input[type="range"], .param-box select {
+    .knob-card label b {
+      color: var(--fl-cyan);
+    }
+    .knob-card input[type="range"], .knob-card select {
       width: 100%;
       accent-color: var(--fl-orange);
-      background: #0d1016;
+      background: #0c0f15;
       color: #fff;
-      border: 1px solid #333c4d;
+      border: 1px solid #323c4e;
       border-radius: 4px;
       font-size: 11px;
       padding: 2px;
     }
 
-    /* Mixer Strips */
-    .mixer-wrap {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .mixer-strips {
+    .mixer-rack {
       display: flex;
       gap: 6px;
       overflow-x: auto;
       padding-bottom: 4px;
     }
-    .mix-strip {
+    .fader-col {
       width: 52px;
       flex-shrink: 0;
-      background: #141820;
-      border: 1px solid #2d3544;
+      background: #131720;
+      border: 1px solid #2b3444;
       border-radius: 6px;
       padding: 6px 4px;
       display: flex;
@@ -652,46 +682,47 @@
       align-items: center;
       gap: 5px;
     }
-    .mix-strip.master { border-color: var(--fl-orange); }
-    .mix-name {
+    .fader-col.master {
+      border-color: var(--fl-orange);
+    }
+    .fader-lbl {
       font-size: 9px;
       font-weight: 800;
       text-align: center;
-      color: #cbd5e1;
       width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .vu-meter {
+    .meter-bar {
       width: 10px;
-      height: 68px;
-      background: #090b0f;
-      border: 1px solid #2b3342;
+      height: 62px;
+      background: #080a0e;
+      border: 1px solid #2a3242;
       border-radius: 3px;
       display: flex;
       flex-direction: column-reverse;
       overflow: hidden;
     }
-    .vu-fill {
+    .meter-val {
       width: 100%;
       height: 0%;
       background: linear-gradient(0deg, #22c55e 0%, #facc15 72%, #ef4444 95%);
       transition: height 0.06s linear;
     }
-    .mix-fader {
+    .v-fader {
       writing-mode: bt-lr;
       -webkit-appearance: slider-vertical;
       width: 18px;
-      height: 64px;
+      height: 60px;
       accent-color: var(--fl-orange);
       cursor: pointer;
     }
 
-    /* Mini Live Keyboard Footer */
-    .mini-kbd {
+    /* Live Touch Keyboard */
+    .live-kbd {
       height: 44px;
-      background: #12151c;
+      background: #10131a;
       border-top: 1px solid var(--border);
       display: flex;
       align-items: stretch;
@@ -699,7 +730,7 @@
       gap: 2px;
       flex-shrink: 0;
     }
-    .kbd-note {
+    .live-key {
       flex: 1;
       border-radius: 0 0 5px 5px;
       border: 1px solid #1e293b;
@@ -713,243 +744,402 @@
       padding-bottom: 3px;
       cursor: pointer;
     }
-    .kbd-note.sharp {
+    .live-key.sharp {
       background: #1e293b;
       color: #94a3b8;
       height: 68%;
     }
-    .kbd-note:active, .kbd-note.pressed {
+    .live-key:active {
       background: var(--fl-orange);
       color: #000;
     }
 
-    @media (max-width: 920px) {
-      .workspace {
-        grid-template-columns: 1fr;
-        grid-template-rows: 135px 1fr 190px;
+    /* Mobile Bottom Tab Switcher */
+    .mobile-dock {
+      display: none;
+      height: 46px;
+      background: #1a202a;
+      border-top: 1px solid var(--border);
+      grid-template-columns: repeat(5, 1fr);
+      flex-shrink: 0;
+      z-index: 25;
+    }
+    .mob-tab {
+      background: transparent;
+      border: none;
+      border-right: 1px solid #262e3d;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+    }
+    .mob-tab.active {
+      background: rgba(255, 123, 0, 0.16);
+      color: var(--fl-orange);
+    }
+
+    /* Export Audio Modal */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 8, 13, 0.85);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      z-index: 60;
+    }
+    .modal-bg.active {
+      display: flex;
+    }
+    .modal-card {
+      width: min(460px, 95vw);
+      background: #191e27;
+      border: 1.5px solid var(--fl-orange);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal-card h3 {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--fl-orange);
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .form-row label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-row select, .form-row input[type="number"], .form-row input[type="text"] {
+      background: #0d1016;
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 900px) {
+      .desktop-views { display: none; }
+      .mobile-dock { display: grid; }
+      .daw-body {
+        display: block;
       }
-      .browser-pane { border-right: none; border-bottom: 1px solid var(--border); }
-      .inspector-pane { border-left: none; border-top: 1px solid var(--border); }
+      .pane {
+        display: none;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+      .pane.mobile-active {
+        display: flex;
+      }
+      .live-kbd {
+        height: 38px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="daw-shell">
-    <!-- Top Transport Bar -->
-    <header class="transport-bar">
-      <div class="brand-cluster">
-        <div class="fl-logo">🍊 FRUITY<span>WEB STUDIO</span></div>
-        <div class="menu-actions">
-          <button type="button" class="menu-btn" id="importAudioBtn" title="Importuj plik WAV/MP3/OGG jako nowy kanał">📥 Import Audio</button>
-          <button type="button" class="menu-btn" id="importProjBtn" title="Wczytaj projekt lub bibliotekę JSON">📂 Wczytaj</button>
-          <button type="button" class="menu-btn" id="saveProjBtn" title="Zapisz projekt i biblioteki do pliku JSON">💾 Zapisz Projekt</button>
-          <button type="button" class="menu-btn export-wav" id="exportWavBtn" title="Renderuj i pobierz utwór jako plik WAV">💿 Eksportuj WAV</button>
+  <div class="daw-root">
+    <header class="top-bar">
+      <div class="brand-group">
+        <div class="logo-badge">🍊 FRUITY<span>WEB 26</span></div>
+        <div class="file-toolbar">
+          <button type="button" class="tb-btn" id="importAudioBtn">📥 Sample</button>
+          <button type="button" class="tb-btn" id="importProjBtn">📂 Wczytaj</button>
+          <button type="button" class="tb-btn" id="saveProjBtn">💾 Zapisz</button>
+          <button type="button" class="tb-btn export-primary" id="openExportBtn">💿 Eksport Audio</button>
         </div>
       </div>
 
-      <div class="transport-controls">
-        <div class="mode-toggle">
-          <button type="button" class="mode-pill active pat" id="modePatBtn">PAT</button>
-          <button type="button" class="mode-pill song" id="modeSongBtn">SONG</button>
+      <div class="transport-deck">
+        <div class="pat-song-switch">
+          <button type="button" class="ps-btn active pat" id="modePatBtn">PAT</button>
+          <button type="button" class="ps-btn song" id="modeSongBtn">SONG</button>
         </div>
-        <button type="button" class="t-btn" id="playBtn" title="Play / Pause [SPACE]">▶</button>
-        <button type="button" class="t-btn" id="stopBtn" title="Stop">■</button>
-        <div class="lcd-display">
-          <div class="lcd-group">
-            <span class="lcd-lbl">TEMPO (BPM)</span>
-            <input type="number" class="bpm-input" id="bpmInput" min="60" max="220" value="128" />
+        <button type="button" class="tr-btn" id="playBtn" title="Play / Pause [SPACE]">▶</button>
+        <button type="button" class="tr-btn" id="stopBtn" title="Stop">■</button>
+        <div class="lcd-box">
+          <div class="lcd-col">
+            <span class="lcd-tag">BPM</span>
+            <input type="number" class="bpm-field" id="bpmInput" min="60" max="220" value="128" />
           </div>
-          <div class="lcd-group">
-            <span class="lcd-lbl">BAR : STEP</span>
-            <span class="lcd-val time" id="posLcd">01 : 01</span>
+          <div class="lcd-col">
+            <span class="lcd-tag">BAR:STEP</span>
+            <span class="lcd-num green" id="posLcd">01:01</span>
           </div>
         </div>
+        <canvas class="scope-canvas" id="scopeCanvas" width="84" height="30"></canvas>
       </div>
 
-      <div class="view-tabs">
-        <button type="button" class="v-tab active" data-view="rack">Channel Rack</button>
-        <button type="button" class="v-tab" data-view="pianoroll">Piano Roll</button>
-        <button type="button" class="v-tab" data-view="playlist">Playlist</button>
+      <div class="desktop-views">
+        <button type="button" class="view-pill active" data-view="rack">Channel Rack</button>
+        <button type="button" class="view-pill" data-view="pianoroll">Piano Roll</button>
+        <button type="button" class="view-pill" data-view="playlist">Playlist</button>
       </div>
     </header>
 
-    <!-- Hidden File Inputs -->
     <input type="file" id="audioFileInput" accept="audio/*" style="display:none;" />
     <input type="file" id="projFileInput" accept=".json,application/json" style="display:none;" />
 
-    <!-- Main 3-Column DAW Workspace -->
-    <div class="workspace">
-      <!-- Left: Sound & Instrument Library Browser -->
-      <aside class="browser-pane">
-        <div class="pane-header">
-          <span>BIBLIOTEKA DŹWIĘKÓW</span>
-          <button type="button" class="menu-btn" id="exportLibBtn" style="padding:2px 6px; font-size:10px;" title="Eksportuj własną bibliotekę">Eksport</button>
+    <div class="daw-body">
+      <!-- Left: Sound & Preset Browser -->
+      <aside class="pane browser" id="paneBrowser">
+        <div class="pane-head">
+          <span>BIBLIOTEKI DŹWIĘKÓW</span>
+          <button type="button" class="tb-btn" id="exportLibBtn" style="padding:2px 6px; font-size:10px;">Eksport Lib</button>
         </div>
-        <div class="browser-tools">
-          <input type="text" class="browser-search" id="libSearch" placeholder="Szukaj sampli i synthów..." />
+        <div class="search-bar">
+          <input type="text" class="search-input" id="libSearch" placeholder="Filtruj sample i presety..." />
         </div>
-        <div class="browser-tree" id="browserTree"></div>
+        <div class="browser-scroll" id="browserTree"></div>
       </aside>
 
-      <!-- Center: Channel Rack / Piano Roll / Song Playlist -->
-      <main class="center-pane">
-        <!-- Pattern Bar -->
-        <div class="pattern-bar">
-          <div class="pat-pills" id="patPills"></div>
-          <div style="display:flex; gap:5px; align-items:center;">
-            <button type="button" class="menu-btn" id="addPatternBtn">+ Pattern</button>
-            <button type="button" class="menu-btn" id="clearPatternBtn">Wyczyść</button>
+      <!-- Center: Channel Rack / Piano Roll / Playlist -->
+      <main class="pane center mobile-active" id="paneCenter">
+        <div class="pattern-toolbar">
+          <div class="pat-list" id="patPills"></div>
+          <div style="display:flex; gap:4px;">
+            <button type="button" class="tb-btn" id="addPatternBtn">+ Pat</button>
+            <button type="button" class="tb-btn" id="clearPatternBtn">Wyczyść</button>
           </div>
         </div>
 
-        <!-- View 1: Step Sequencer / Channel Rack -->
-        <section class="sub-window active" id="view-rack">
-          <div class="rack-scroll" id="rackList"></div>
+        <section class="center-subview active" id="view-rack">
+          <div class="rack-area" id="rackList"></div>
         </section>
 
-        <!-- View 2: Piano Roll -->
-        <section class="sub-window" id="view-pianoroll">
-          <div class="pane-header" style="background:#191e26;">
-            <span id="prChannelTitle">Piano Roll · Kanał 1</span>
-            <span style="color:var(--muted); font-size:10px;">Kliknij siatkę, aby dodać lub usunąć nuty</span>
+        <section class="center-subview" id="view-pianoroll">
+          <div class="pane-head" style="background:#181d26;">
+            <span id="prChannelTitle">Piano Roll</span>
+            <span style="color:var(--muted); font-size:10px;">Dotknij kratkę, aby postawić nutę</span>
           </div>
-          <div class="piano-roll-wrap">
-            <div class="piano-keys" id="pianoKeys"></div>
-            <div class="pr-grid" id="prGrid"></div>
+          <div class="pr-container">
+            <div class="pr-piano" id="pianoKeys"></div>
+            <div class="pr-matrix" id="prGrid"></div>
           </div>
         </section>
 
-        <!-- View 3: Song Playlist Arranger -->
-        <section class="sub-window" id="view-playlist">
-          <div class="pane-header" style="background:#191e26;">
-            <span>Playlist Arranger (16 Taktów)</span>
-            <span style="color:var(--fl-green); font-size:10px;">Przełącz tryb na SONG u góry, aby odtwarzać aranżację</span>
+        <section class="center-subview" id="view-playlist">
+          <div class="pane-head" style="background:#181d26;">
+            <span>Song Playlist (16 Taktów)</span>
+            <span style="color:var(--fl-green); font-size:10px;">Włącz tryb SONG, aby odtworzyć</span>
           </div>
-          <div class="playlist-grid" id="playlistGrid"></div>
+          <div class="playlist-area" id="playlistGrid"></div>
         </section>
       </main>
 
-      <!-- Right: Channel Synthesizer & Mixer -->
-      <aside class="inspector-pane">
-        <div class="synth-card" id="synthInspector"></div>
+      <!-- Right: Synth, Multi-FX & Mixer -->
+      <aside class="pane inspector" id="paneInspector">
+        <div class="sec-block" id="synthInspector"></div>
 
-        <div class="mixer-wrap">
-          <div class="pane-header" style="border-radius:5px; border:1px solid var(--border);">
-            <span>MIXER &amp; MASTER FX</span>
+        <div class="sec-block">
+          <div class="sec-head">
+            <span>🎛️ RACK EFEKTÓW MASTER FX</span>
             <span id="statusBanner" style="color:var(--fl-green); font-size:10px;">GOTOWY</span>
           </div>
-          <div class="control-grid">
-            <div class="param-box">
-              <label><span>Delay Echo</span><b id="delayValLbl">20%</b></label>
-              <input type="range" id="masterDelaySlider" min="0" max="0.65" step="0.05" value="0.2" />
+          <div class="grid-2">
+            <div class="knob-card">
+              <label><span>Drive / Distortion</span><b id="distValLbl">0%</b></label>
+              <input type="range" id="fxDistSlider" min="0" max="1" step="0.05" value="0" />
             </div>
-            <div class="param-box">
-              <label><span>Master Vol</span><b id="masterVolLbl">85%</b></label>
-              <input type="range" id="masterVolSlider" min="0" max="1" step="0.05" value="0.85" />
+            <div class="knob-card">
+              <label><span>Reverb Space</span><b id="revValLbl">18%</b></label>
+              <input type="range" id="fxRevSlider" min="0" max="0.8" step="0.05" value="0.18" />
+            </div>
+            <div class="knob-card">
+              <label><span>Delay Echo</span><b id="delayValLbl">20%</b></label>
+              <input type="range" id="fxDelaySlider" min="0" max="0.65" step="0.05" value="0.2" />
+            </div>
+            <div class="knob-card">
+              <label><span>Bass Boost EQ</span><b id="bassValLbl">+2 dB</b></label>
+              <input type="range" id="fxBassSlider" min="-8" max="12" step="1" value="2" />
             </div>
           </div>
-          <div class="mixer-strips" id="mixerStrips"></div>
+        </div>
+
+        <div class="sec-block" style="border-bottom:none;">
+          <div class="sec-head">
+            <span>🎚️ MIKSER KANAŁÓW</span>
+            <span id="masterVolLbl" style="color:var(--fl-cyan);">Master 85%</span>
+          </div>
+          <div class="mixer-rack" id="mixerStrips"></div>
         </div>
       </aside>
     </div>
 
-    <!-- Bottom Live Preview Keyboard -->
-    <footer class="mini-kbd" id="miniKbd"></footer>
+    <footer class="live-kbd" id="miniKbd"></footer>
+
+    <!-- Mobile Navigation Dock -->
+    <nav class="mobile-dock" id="mobileDock">
+      <button type="button" class="mob-tab" data-mob="browser">📁<span>Dźwięki</span></button>
+      <button type="button" class="mob-tab active" data-mob="rack">🎛️<span>Rack</span></button>
+      <button type="button" class="mob-tab" data-mob="pianoroll">🎹<span>Piano</span></button>
+      <button type="button" class="mob-tab" data-mob="playlist">🎼<span>Song</span></button>
+      <button type="button" class="mob-tab" data-mob="inspector">🎚️<span>Synth/FX</span></button>
+    </nav>
   </div>
 
-  <script>
+  <!-- Export Audio Modal (WAV / MP3 / OGG / AIFF + Quality/Compression %) -->
+  <div class="modal-bg" id="exportModal">
+    <div class="modal-card">
+      <h3>💿 EKSPORT AUDIO · FORMAT I JAKOŚĆ</h3>
+      <div class="form-row">
+        <label><span>Nazwa pliku wyjściowego:</span></label>
+        <input type="text" id="exportFileName" value="FruityWeb_Track" />
+      </div>
+      <div class="form-row">
+        <label><span>Format pliku audio:</span></label>
+        <select id="exportFormatSelect">
+          <option value="wav">WAV (Bezstratny PCM 16-bit)</option>
+          <option value="mp3">MP3 (Skompresowany strumień MPEG)</option>
+          <option value="ogg">OGG / WebM (Opus/Vorbis Audio)</option>
+          <option value="aiff">AIFF (Apple / Studio PCM)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>
+          <span>Jakość / Kompresja (%):</span>
+          <b id="qualityPctBadge" style="color:var(--fl-cyan);">85% (Wysoka · ~256 kbps / 44.1 kHz)</b>
+        </label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="range" id="qualityRange" min="1" max="100" value="85" style="flex:1; accent-color:var(--fl-orange);" />
+          <input type="number" id="qualityNumber" min="1" max="100" value="85" style="width:68px; text-align:center;" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label><span>Zakres renderowania:</span></label>
+        <select id="exportScopeSelect">
+          <option value="current">Aktualny tryb (PAT lub SONG)</option>
+          <option value="song">Cały utwór z Playlisty (16 taktów)</option>
+          <option value="pat">Tylko aktywny Pattern (2 pętle)</option>
+        </select>
+      </div>
+      <div id="exportProgressText" style="font-size:11px; color:var(--fl-green); min-height:16px;"></div>
+      <div class="modal-actions">
+        <button type="button" class="tb-btn" id="closeExportBtn">Anuluj</button>
+        <button type="button" class="tb-btn export-primary" id="confirmExportBtn">Renderuj i Pobierz</button>
+      </div>
+    </div>
+  </div>
+<script>
     (() => {
       // =========================================================================
-      // 1. BUILT-IN SOUND & INSTRUMENT LIBRARIES (Synthesized & Procedural Drums/Synths)
+      // [MIEJSCE NA WŁASNE DŹWIĘKI I PRESETY]
+      // Możesz dopisać nowe obiekty do poniższej tablicy DEFAULT_LIBRARIES:
+      // { id: 'moj_dzwiek', name: 'Moja Nazwa', color: '#38bdf8', engine: 'synth',
+      //   preset: 'synth', wave: 'sawtooth', cutoff: 2500, attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.15 }
       // =========================================================================
       const DEFAULT_LIBRARIES = [
         {
-          folder: '🥁 Drums · Trap & EDM Pack',
+          folder: '🥁 Drums · Trap & EDM',
           items: [
-            { id: 'kick_808',   name: '808 Sub Kick',     color: '#ef4444', engine: 'drum', preset: 'kick808',   wave: 'sine',     cutoff: 220,  attack: 0.005, decay: 0.42, sustain: 0.0, release: 0.12 },
+            { id: 'kick_808',   name: '808 Sub Kick',     color: '#ef4444', engine: 'drum', preset: 'kick808',   wave: 'sine',     cutoff: 220,  attack: 0.005, decay: 0.45, sustain: 0.0, release: 0.12 },
             { id: 'kick_punch', name: 'Punchy Club Kick', color: '#f97316', engine: 'drum', preset: 'kickPunch', wave: 'sine',     cutoff: 320,  attack: 0.003, decay: 0.24, sustain: 0.0, release: 0.08 },
             { id: 'snare_trap', name: 'Crisp Trap Snare', color: '#38bdf8', engine: 'drum', preset: 'snare',     wave: 'triangle', cutoff: 3200, attack: 0.002, decay: 0.18, sustain: 0.0, release: 0.08 },
             { id: 'clap_909',   name: '909 Studio Clap',  color: '#f472b6', engine: 'drum', preset: 'clap',      wave: 'sawtooth', cutoff: 2600, attack: 0.005, decay: 0.22, sustain: 0.0, release: 0.10 },
             { id: 'hat_closed', name: 'Closed Hi-Hat',    color: '#facc15', engine: 'drum', preset: 'hatClosed', wave: 'square',   cutoff: 8500, attack: 0.001, decay: 0.06, sustain: 0.0, release: 0.03 },
-            { id: 'hat_open',   name: 'Open Hi-Hat',      color: '#eab308', engine: 'drum', preset: 'hatOpen',   wave: 'square',   cutoff: 7800, attack: 0.005, decay: 0.28, sustain: 0.0, release: 0.12 }
+            { id: 'hat_open',   name: 'Open Hi-Hat',      color: '#eab308', engine: 'drum', preset: 'hatOpen',   wave: 'square',   cutoff: 7800, attack: 0.005, decay: 0.28, sustain: 0.0, release: 0.12 },
+            { id: 'rim_shot',   name: 'Cyber Rimshot',    color: '#fb923c', engine: 'drum', preset: 'rim',       wave: 'square',   cutoff: 4100, attack: 0.001, decay: 0.09, sustain: 0.0, release: 0.04 },
+            { id: 'crash_cym',  name: 'Crash Cymbal',     color: '#fde047', engine: 'drum', preset: 'crash',     wave: 'sawtooth', cutoff: 6500, attack: 0.01,  decay: 0.65, sustain: 0.0, release: 0.25 }
           ]
         },
         {
-          folder: '🎹 Synths · Leads & Basses',
+          folder: '🎹 Synths · Bass & Leads',
           items: [
-            { id: 'bass_reese', name: 'Reese Saw Bass',   color: '#a855f7', engine: 'synth', preset: 'synth',    wave: 'sawtooth', cutoff: 620,  attack: 0.015, decay: 0.22, sustain: 0.55, release: 0.16 },
-            { id: 'lead_supersaw',name:'Supersaw Lead',   color: '#22c55e', engine: 'synth', preset: 'synth',    wave: 'sawtooth', cutoff: 4200, attack: 0.02,  decay: 0.18, sustain: 0.65, release: 0.22 },
-            { id: 'pluck_neon', name: 'Neon Pluck',       color: '#06b6d4', engine: 'synth', preset: 'synth',    wave: 'triangle', cutoff: 2600, attack: 0.005, decay: 0.20, sustain: 0.12, release: 0.14 },
-            { id: 'keys_8bit',  name: 'Retro Square Keys',color: '#ec4899', engine: 'synth', preset: 'synth',    wave: 'square',   cutoff: 3100, attack: 0.01,  decay: 0.16, sustain: 0.45, release: 0.15 },
-            { id: 'pad_warm',   name: 'Ambient Pad',      color: '#6366f1', engine: 'synth', preset: 'synth',    wave: 'sine',     cutoff: 1600, attack: 0.12,  decay: 0.35, sustain: 0.75, release: 0.40 }
+            { id: 'bass_reese',   name: 'Reese Saw Bass',   color: '#a855f7', engine: 'synth', preset: 'synth', wave: 'sawtooth', cutoff: 640,  attack: 0.015, decay: 0.22, sustain: 0.55, release: 0.16 },
+            { id: 'bass_acid',    name: '303 Acid Squelch', color: '#ec4899', engine: 'synth', preset: 'synth', wave: 'sawtooth', cutoff: 1450, attack: 0.005, decay: 0.15, sustain: 0.25, release: 0.10 },
+            { id: 'lead_supersaw',name: 'Supersaw Lead',    color: '#22c55e', engine: 'synth', preset: 'synth', wave: 'sawtooth', cutoff: 4400, attack: 0.02,  decay: 0.18, sustain: 0.65, release: 0.22 },
+            { id: 'pluck_neon',   name: 'Neon Pluck',       color: '#06b6d4', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 2600, attack: 0.005, decay: 0.20, sustain: 0.12, release: 0.14 },
+            { id: 'keys_8bit',    name: '8-Bit Square Keys',color: '#f43f5e', engine: 'synth', preset: 'synth', wave: 'square',   cutoff: 3200, attack: 0.01,  decay: 0.16, sustain: 0.45, release: 0.15 },
+            { id: 'pad_warm',     name: 'Cosmic Pad',       color: '#6366f1', engine: 'synth', preset: 'synth', wave: 'sine',     cutoff: 1700, attack: 0.12,  decay: 0.35, sustain: 0.75, release: 0.40 },
+            { id: 'bell_fm',      name: 'Crystal FM Bell',  color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'sine',     cutoff: 5200, attack: 0.004, decay: 0.38, sustain: 0.10, release: 0.30 }
           ]
         },
         {
-          folder: '📁 Imported Audio Samples',
+          folder: '⚡ FX & Percussion',
+          items: [
+            { id: 'fx_laser',   name: 'Laser Zap FX',     color: '#38bdf8', engine: 'drum', preset: 'laser',     wave: 'sawtooth', cutoff: 5000, attack: 0.002, decay: 0.22, sustain: 0.0, release: 0.08 },
+            { id: 'fx_tom',     name: 'Electro Tom',      color: '#34d399', engine: 'drum', preset: 'tom',       wave: 'sine',     cutoff: 900,  attack: 0.004, decay: 0.25, sustain: 0.0, release: 0.09 },
+            { id: 'fx_cowbell', name: '808 Cowbell',      color: '#fbbf24', engine: 'drum', preset: 'cowbell',   wave: 'square',   cutoff: 3400, attack: 0.002, decay: 0.16, sustain: 0.0, release: 0.06 }
+          ]
+        },
+        {
+          folder: '📁 Zaimportowane Sample',
           items: []
         }
       ];
 
-      // Note frequencies (C4 to B5)
       const NOTES = [
-        { name: 'B5', midi: 83, sharp: false },
-        { name: 'A#5',midi: 82, sharp: true  },
-        { name: 'A5', midi: 81, sharp: false },
-        { name: 'G#5',midi: 80, sharp: true  },
-        { name: 'G5', midi: 79, sharp: false },
-        { name: 'F#5',midi: 78, sharp: true  },
-        { name: 'F5', midi: 77, sharp: false },
-        { name: 'E5', midi: 76, sharp: false },
-        { name: 'D#5',midi: 75, sharp: true  },
-        { name: 'D5', midi: 74, sharp: false },
-        { name: 'C#5',midi: 73, sharp: true  },
-        { name: 'C5', midi: 72, sharp: false },
-        { name: 'B4', midi: 71, sharp: false },
-        { name: 'A#4',midi: 70, sharp: true  },
-        { name: 'A4', midi: 69, sharp: false },
-        { name: 'G#4',midi: 68, sharp: true  },
-        { name: 'G4', midi: 67, sharp: false },
-        { name: 'F#4',midi: 66, sharp: true  },
-        { name: 'F4', midi: 65, sharp: false },
-        { name: 'E4', midi: 64, sharp: false },
-        { name: 'D#4',midi: 63, sharp: true  },
-        { name: 'D4', midi: 62, sharp: false },
-        { name: 'C#4',midi: 61, sharp: true  },
-        { name: 'C4', midi: 60, sharp: false }
+        { name: 'B5', midi: 83, sharp: false }, { name: 'A#5', midi: 82, sharp: true },
+        { name: 'A5', midi: 81, sharp: false }, { name: 'G#5', midi: 80, sharp: true },
+        { name: 'G5', midi: 79, sharp: false }, { name: 'F#5', midi: 78, sharp: true },
+        { name: 'F5', midi: 77, sharp: false }, { name: 'E5',  midi: 76, sharp: false },
+        { name: 'D#5',midi: 75, sharp: true  }, { name: 'D5',  midi: 74, sharp: false },
+        { name: 'C#5',midi: 73, sharp: true  }, { name: 'C5',  midi: 72, sharp: false },
+        { name: 'B4', midi: 71, sharp: false }, { name: 'A#4', midi: 70, sharp: true },
+        { name: 'A4', midi: 69, sharp: false }, { name: 'G#4', midi: 68, sharp: true },
+        { name: 'G4', midi: 67, sharp: false }, { name: 'F#4', midi: 66, sharp: true },
+        { name: 'F4', midi: 65, sharp: false }, { name: 'E4',  midi: 64, sharp: false },
+        { name: 'D#4',midi: 63, sharp: true  }, { name: 'D4',  midi: 62, sharp: false },
+        { name: 'C#4',midi: 61, sharp: true  }, { name: 'C4',  midi: 60, sharp: false }
       ];
 
       function midiToFreq(midi) {
         return 440 * Math.pow(2, (midi - 69) / 12);
       }
 
-      // =========================================================================
-      // 2. PROJECT STATE
-      // =========================================================================
       let libraries = JSON.parse(JSON.stringify(DEFAULT_LIBRARIES));
-      const importedBuffers = new Map(); // sampleId -> AudioBuffer (plus base64 dataUrl for saving)
+      const importedBuffers = new Map();
       const importedDataUrls = new Map();
 
       let bpm = 128;
-      let playMode = 'pat'; // 'pat' | 'song'
+      let playMode = 'pat';
       let isPlaying = false;
-      let currentStep = 0; // 0..15 within bar
-      let currentBar = 0;  // 0..15 in playlist
+      let currentStep = 0;
+      let currentBar = 0;
       let activePatternIdx = 0;
       let selectedChannelIdx = 0;
-      let activeView = 'rack'; // 'rack' | 'pianoroll' | 'playlist'
-      let masterVolume = 0.85;
-      let masterDelayWet = 0.20;
+      let activeView = 'rack';
 
-      // Channels list
+      let masterVolume = 0.85;
+      let fxDistortion = 0;
+      let fxReverbWet = 0.18;
+      let fxDelayWet = 0.20;
+      let fxBassGain = 2;
+
       let channels = [
-        { ...DEFAULT_LIBRARIES[0].items[0], uid: 'ch_1', volume: 0.9, pan: 0, muted: false },
-        { ...DEFAULT_LIBRARIES[0].items[2], uid: 'ch_2', volume: 0.82, pan: 0, muted: false },
+        { ...DEFAULT_LIBRARIES[0].items[0], uid: 'ch_1', volume: 0.92, pan: 0, muted: false },
+        { ...DEFAULT_LIBRARIES[0].items[2], uid: 'ch_2', volume: 0.84, pan: 0, muted: false },
         { ...DEFAULT_LIBRARIES[0].items[4], uid: 'ch_3', volume: 0.65, pan: -0.15, muted: false },
-        { ...DEFAULT_LIBRARIES[1].items[0], uid: 'ch_4', volume: 0.78, pan: 0, muted: false },
-        { ...DEFAULT_LIBRARIES[1].items[2], uid: 'ch_5', volume: 0.75, pan: 0.15, muted: false }
+        { ...DEFAULT_LIBRARIES[1].items[0], uid: 'ch_4', volume: 0.80, pan: 0, muted: false },
+        { ...DEFAULT_LIBRARIES[1].items[3], uid: 'ch_5', volume: 0.76, pan: 0.15, muted: false }
       ];
 
-      // Patterns: each pattern maps channel.uid -> { steps: boolean[16], notes: Array<{step, midi}> }
       function createBlankPattern(name) {
         const data = {};
         channels.forEach(ch => {
@@ -965,7 +1155,6 @@
         createBlankPattern('Pattern 4')
       ];
 
-      // Seed Pattern 1 & Pattern 2 with an immediate playable beat so user hears FL-style groove right away
       patterns[0].data['ch_1'].steps = [true,false,false,false, true,false,false,false, true,false,false,false, true,false,true,false];
       patterns[0].data['ch_2'].steps = [false,false,false,false, true,false,false,false, false,false,false,false, true,false,false,false];
       patterns[0].data['ch_3'].steps = [true,false,true,false, true,false,true,false, true,false,true,false, true,false,true,true];
@@ -981,7 +1170,6 @@
       patterns[1].data['ch_2'].steps = [false,false,false,false, true,false,false,true, false,false,false,false, true,false,true,false];
       patterns[1].data['ch_3'].steps = [true,true,true,true, true,true,true,true, true,true,true,true, true,true,true,true];
 
-      // Song Playlist: 4 tracks x 16 bars -> pattern index or null
       let playlist = [
         [0, 0, 1, 1, 0, 0, 1, 1, null, null, null, null, null, null, null, null],
         [null, 0, 0, 1, 1, 0, 0, 1, null, null, null, null, null, null, null, null],
@@ -990,35 +1178,82 @@
       ];
 
       // =========================================================================
-      // 3. WEBAUDIO REALTIME & OFFLINE RENDER ENGINE
+      // AUDIO ENGINE + MULTI-FX GRAPH
       // =========================================================================
       let audioCtx = null;
       let masterGain = null;
+      let bassFilter = null;
+      let shaperNode = null;
       let delayNode = null;
       let delayGain = null;
+      let reverbNode = null;
+      let reverbGain = null;
       let analyser = null;
+
+      function makeDistortionCurve(amount) {
+        const k = amount * 180;
+        const n = 22050;
+        const curve = new Float32Array(n);
+        const deg = Math.PI / 180;
+        for (let i = 0; i < n; i++) {
+          const x = (i * 2) / n - 1;
+          curve[i] = k === 0 ? x : ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+        }
+        return curve;
+      }
+
+      function createImpulseResponse(ctx, duration = 1.6, decay = 2.4) {
+        const len = Math.floor(ctx.sampleRate * duration);
+        const imp = ctx.createBuffer(2, len, ctx.sampleRate);
+        for (let ch = 0; ch < 2; ch++) {
+          const data = imp.getChannelData(ch);
+          for (let i = 0; i < len; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+          }
+        }
+        return imp;
+      }
 
       function ensureAudio() {
         if (!audioCtx) {
           const C = window.AudioContext || window.webkitAudioContext;
           audioCtx = new C();
+
+          bassFilter = audioCtx.createBiquadFilter();
+          bassFilter.type = 'lowshelf';
+          bassFilter.frequency.value = 140;
+          bassFilter.gain.value = fxBassGain;
+
+          shaperNode = audioCtx.createWaveShaper();
+          shaperNode.curve = makeDistortionCurve(fxDistortion);
+          shaperNode.oversample = '2x';
+
           masterGain = audioCtx.createGain();
           masterGain.gain.value = masterVolume;
 
           delayNode = audioCtx.createDelay(1.0);
           delayNode.delayTime.value = 0.28;
           const fb = audioCtx.createGain();
-          fb.gain.value = 0.32;
+          fb.gain.value = 0.34;
           delayGain = audioCtx.createGain();
-          delayGain.gain.value = masterDelayWet;
-
+          delayGain.gain.value = fxDelayWet;
           delayNode.connect(fb);
           fb.connect(delayNode);
           delayNode.connect(delayGain);
-          delayGain.connect(masterGain);
+          delayGain.connect(bassFilter);
+
+          reverbNode = audioCtx.createConvolver();
+          reverbNode.buffer = createImpulseResponse(audioCtx, 1.7, 2.5);
+          reverbGain = audioCtx.createGain();
+          reverbGain.gain.value = fxReverbWet;
+          reverbNode.connect(reverbGain);
+          reverbGain.connect(bassFilter);
+
+          bassFilter.connect(shaperNode);
+          shaperNode.connect(masterGain);
 
           analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 64;
+          analyser.fftSize = 128;
           masterGain.connect(analyser);
           analyser.connect(audioCtx.destination);
         }
@@ -1028,24 +1263,22 @@
         return audioCtx;
       }
 
-      function triggerChannelVoice(ctx, destNode, delayInput, ch, midi = 60, time = ctx.currentTime, dur = 0.22) {
+      function triggerChannelVoice(ctx, destNode, sendDelay, sendReverb, ch, midi = 60, time = ctx.currentTime, dur = 0.22) {
         if (ch.muted) return;
         const chGain = ctx.createGain();
         chGain.gain.setValueAtTime(ch.volume, time);
 
-        let panner = null;
+        let outTarget = chGain;
         if (ctx.createStereoPanner) {
-          panner = ctx.createStereoPanner();
+          const panner = ctx.createStereoPanner();
           panner.pan.setValueAtTime(ch.pan || 0, time);
           chGain.connect(panner);
-          panner.connect(destNode);
-          if (delayInput && ch.engine === 'synth') panner.connect(delayInput);
-        } else {
-          chGain.connect(destNode);
-          if (delayInput && ch.engine === 'synth') chGain.connect(delayInput);
+          outTarget = panner;
         }
+        outTarget.connect(destNode);
+        if (sendDelay && ch.engine === 'synth') outTarget.connect(sendDelay);
+        if (sendReverb) outTarget.connect(sendReverb);
 
-        // Imported Audio Sample playback
         if (ch.engine === 'sample' && importedBuffers.has(ch.id)) {
           const src = ctx.createBufferSource();
           src.buffer = importedBuffers.get(ch.id);
@@ -1055,26 +1288,50 @@
           return;
         }
 
-        // Synthesized Drum Voices
         if (ch.engine === 'drum') {
-          if (ch.preset === 'kick808' || ch.preset === 'kickPunch') {
+          if (ch.preset === 'kick808' || ch.preset === 'kickPunch' || ch.preset === 'tom') {
             const osc = ctx.createOscillator();
             const env = ctx.createGain();
             osc.type = 'sine';
-            const startF = ch.preset === 'kick808' ? 145 : 185;
-            const endF = ch.preset === 'kick808' ? 38 : 48;
+            const startF = ch.preset === 'kick808' ? 145 : ch.preset === 'tom' ? 240 : 185;
+            const endF = ch.preset === 'kick808' ? 38 : ch.preset === 'tom' ? 95 : 48;
             const dec = ch.decay || 0.35;
             osc.frequency.setValueAtTime(startF, time);
-            osc.frequency.exponentialRampToValueAtTime(endF, time + dec * 0.7);
+            osc.frequency.exponentialRampToValueAtTime(endF, time + dec * 0.72);
             env.gain.setValueAtTime(1.0, time);
             env.gain.exponentialRampToValueAtTime(0.001, time + dec);
             osc.connect(env);
             env.connect(chGain);
             osc.start(time);
             osc.stop(time + dec + 0.02);
-          } else if (ch.preset === 'snare' || ch.preset === 'clap') {
-            // White noise burst + body tone
-            const len = Math.floor(ctx.sampleRate * (ch.decay || 0.2));
+          } else if (ch.preset === 'laser') {
+            const osc = ctx.createOscillator();
+            const env = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(1400, time);
+            osc.frequency.exponentialRampToValueAtTime(110, time + 0.2);
+            env.gain.setValueAtTime(0.65, time);
+            env.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+            osc.connect(env);
+            env.connect(chGain);
+            osc.start(time);
+            osc.stop(time + 0.24);
+          } else if (ch.preset === 'cowbell') {
+            [540, 800].forEach(freq => {
+              const osc = ctx.createOscillator();
+              const env = ctx.createGain();
+              osc.type = 'square';
+              osc.frequency.setValueAtTime(freq, time);
+              env.gain.setValueAtTime(0.35, time);
+              env.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+              osc.connect(env);
+              env.connect(chGain);
+              osc.start(time);
+              osc.stop(time + 0.17);
+            });
+          } else if (ch.preset === 'snare' || ch.preset === 'clap' || ch.preset === 'rim') {
+            const dec = ch.decay || 0.2;
+            const len = Math.floor(ctx.sampleRate * dec);
             const buf = ctx.createBuffer(1, len, ctx.sampleRate);
             const data = buf.getChannelData(0);
             for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
@@ -1086,28 +1343,27 @@
             filt.frequency.setValueAtTime(ch.preset === 'clap' ? 1400 : 950, time);
 
             const env = ctx.createGain();
-            env.gain.setValueAtTime(0.9, time);
-            env.gain.exponentialRampToValueAtTime(0.001, time + (ch.decay || 0.2));
+            env.gain.setValueAtTime(0.85, time);
+            env.gain.exponentialRampToValueAtTime(0.001, time + dec);
             noise.connect(filt);
             filt.connect(env);
             env.connect(chGain);
             noise.start(time);
 
-            if (ch.preset === 'snare') {
+            if (ch.preset === 'snare' || ch.preset === 'rim') {
               const body = ctx.createOscillator();
               const bEnv = ctx.createGain();
               body.type = 'triangle';
-              body.frequency.setValueAtTime(195, time);
-              body.frequency.exponentialRampToValueAtTime(85, time + 0.11);
+              body.frequency.setValueAtTime(ch.preset === 'rim' ? 420 : 195, time);
+              body.frequency.exponentialRampToValueAtTime(95, time + 0.1);
               bEnv.gain.setValueAtTime(0.65, time);
-              bEnv.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+              bEnv.gain.exponentialRampToValueAtTime(0.001, time + 0.11);
               body.connect(bEnv);
               bEnv.connect(chGain);
               body.start(time);
-              body.stop(time + 0.13);
+              body.stop(time + 0.12);
             }
           } else {
-            // Hi-Hat (closed or open)
             const dec = ch.decay || 0.07;
             const len = Math.floor(ctx.sampleRate * dec);
             const buf = ctx.createBuffer(1, len, ctx.sampleRate);
@@ -1118,7 +1374,7 @@
 
             const hp = ctx.createBiquadFilter();
             hp.type = 'highpass';
-            hp.frequency.setValueAtTime(ch.cutoff || 7500, time);
+            hp.frequency.setValueAtTime(ch.cutoff || 7200, time);
 
             const env = ctx.createGain();
             env.gain.setValueAtTime(0.55, time);
@@ -1131,7 +1387,6 @@
           return;
         }
 
-        // Subtractive Poly-Synth Engine (Oscillator + Lowpass Filter + ADSR)
         const osc = ctx.createOscillator();
         const filter = ctx.createBiquadFilter();
         const env = ctx.createGain();
@@ -1141,7 +1396,7 @@
 
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(ch.cutoff || 2400, time);
-        filter.Q.setValueAtTime(2.5, time);
+        filter.Q.setValueAtTime(2.6, time);
 
         const a = Math.max(0.002, ch.attack || 0.01);
         const d = Math.max(0.02, ch.decay || 0.18);
@@ -1163,12 +1418,12 @@
       }
 
       // =========================================================================
-      // 4. SEQUENCER CLOCK (PAT & SONG MODES)
+      // SEQUENCER CLOCK
       // =========================================================================
       let stepTimer = null;
 
       function getStepDurationSec() {
-        return (60 / bpm) / 4; // 16th note
+        return (60 / bpm) / 4;
       }
 
       function playStepEvents(patIdx, stepIdx, time = null) {
@@ -1178,18 +1433,16 @@
         if (!pat) return;
 
         const stepDur = getStepDurationSec();
-
         channels.forEach(ch => {
           const chData = pat.data[ch.uid];
           if (!chData) return;
-
           if (chData.steps[stepIdx]) {
-            triggerChannelVoice(ctx, masterGain, delayNode, ch, 60, when, stepDur * 0.9);
+            triggerChannelVoice(ctx, bassFilter, delayNode, reverbNode, ch, 60, when, stepDur * 0.9);
           }
           if (chData.notes && chData.notes.length > 0) {
             chData.notes.forEach(n => {
               if (n.step === stepIdx) {
-                triggerChannelVoice(ctx, masterGain, delayNode, ch, n.midi, when, stepDur * 1.4);
+                triggerChannelVoice(ctx, bassFilter, delayNode, reverbNode, ch, n.midi, when, stepDur * 1.4);
               }
             });
           }
@@ -1198,11 +1451,9 @@
 
       function tickSequencer() {
         if (!isPlaying) return;
-
         if (playMode === 'pat') {
           playStepEvents(activePatternIdx, currentStep);
         } else {
-          // Song mode: play all patterns scheduled on currentBar across playlist rows
           const activePats = new Set();
           playlist.forEach(row => {
             const pIdx = row[currentBar];
@@ -1212,7 +1463,6 @@
         }
 
         updatePlayheadUI();
-
         currentStep++;
         if (currentStep >= 16) {
           currentStep = 0;
@@ -1226,7 +1476,7 @@
         ensureAudio();
         if (isPlaying) return;
         isPlaying = true;
-        document.getElementById('playBtn').classList.add('playing');
+        document.getElementById('playBtn').classList.add('active-play');
         document.getElementById('playBtn').textContent = '❚❚';
         tickSequencer();
         stepTimer = setInterval(tickSequencer, getStepDurationSec() * 1000);
@@ -1237,7 +1487,7 @@
         clearInterval(stepTimer);
         currentStep = 0;
         currentBar = 0;
-        document.getElementById('playBtn').classList.remove('playing');
+        document.getElementById('playBtn').classList.remove('active-play');
         document.getElementById('playBtn').textContent = '▶';
         updatePlayheadUI();
       }
@@ -1251,43 +1501,71 @@
       function updatePlayheadUI() {
         const barNum = playMode === 'song' ? currentBar + 1 : activePatternIdx + 1;
         document.getElementById('posLcd').textContent =
-          `${String(barNum).padStart(2, '0')} : ${String(currentStep + 1).padStart(2, '0')}`;
+          `${String(barNum).padStart(2, '0')}:${String(currentStep + 1).padStart(2, '0')}`;
 
-        document.querySelectorAll('.step-cell.playhead').forEach(el => el.classList.remove('playhead'));
-        document.querySelectorAll('.pr-cell.playhead').forEach(el => el.classList.remove('playhead'));
-        document.querySelectorAll('.pl-bar-cell.playhead').forEach(el => el.classList.remove('playhead'));
+        document.querySelectorAll('.step-pad.now').forEach(el => el.classList.remove('now'));
+        document.querySelectorAll('.pr-slot.now').forEach(el => el.classList.remove('now'));
+        document.querySelectorAll('.bar-slot.now').forEach(el => el.classList.remove('now'));
 
         if (isPlaying) {
-          document.querySelectorAll(`.step-cell[data-step="${currentStep}"]`).forEach(el => el.classList.add('playhead'));
-          document.querySelectorAll(`.pr-cell[data-step="${currentStep}"]`).forEach(el => el.classList.add('playhead'));
+          document.querySelectorAll(`.step-pad[data-step="${currentStep}"]`).forEach(el => el.classList.add('now'));
+          document.querySelectorAll(`.pr-slot[data-step="${currentStep}"]`).forEach(el => el.classList.add('now'));
           if (playMode === 'song') {
-            document.querySelectorAll(`.pl-bar-cell[data-bar="${currentBar}"]`).forEach(el => el.classList.add('playhead'));
+            document.querySelectorAll(`.bar-slot[data-bar="${currentBar}"]`).forEach(el => el.classList.add('now'));
           }
         }
       }
 
       // =========================================================================
-      // 5. OFFLINE WAV EXPORT (Renders real stereo .wav file of Pattern or Song)
+      // MULTI-FORMAT AUDIO EXPORTER (WAV, MP3, OGG/WEBM, AIFF + QUALITY %)
       // =========================================================================
-      async function exportSongToWav() {
-        const statusEl = document.getElementById('statusBanner');
-        statusEl.textContent = 'RENDEROWANIE WAV...';
+      function qualityToBitrateKbps(pct) {
+        return Math.round(32 + (pct / 100) * 288); // 32 kbps .. 320 kbps
+      }
 
+      function qualityToSampleRate(pct) {
+        if (pct < 25) return 16000;
+        if (pct < 50) return 22050;
+        if (pct < 80) return 32000;
+        return 44100;
+      }
+
+      function updateQualityBadge() {
+        const pct = Math.max(1, Math.min(100, Number(document.getElementById('qualityNumber').value) || 85));
+        document.getElementById('qualityNumber').value = pct;
+        document.getElementById('qualityRange').value = pct;
+        const kbps = qualityToBitrateKbps(pct);
+        const sr = qualityToSampleRate(pct);
+        const tier = pct >= 80 ? 'Wysoka' : pct >= 45 ? 'Średnia' : 'Mocna kompresja';
+        document.getElementById('qualityPctBadge').textContent = `${pct}% (${tier} · ~${kbps} kbps / ${(sr / 1000).toFixed(1)} kHz)`;
+      }
+
+      async function renderOfflineAudioBuffer(scopeMode, targetSampleRate) {
         const stepDur = getStepDurationSec();
-        const totalBars = playMode === 'song' ? 16 : 2;
+        const totalBars = scopeMode === 'song' ? 16 : 2;
         const totalSteps = totalBars * 16;
-        const durationSec = totalSteps * stepDur + 1.0;
-        const sampleRate = 44100;
+        const durationSec = totalSteps * stepDur + 0.8;
 
-        const offline = new OfflineAudioContext(2, Math.ceil(sampleRate * durationSec), sampleRate);
+        const offline = new OfflineAudioContext(2, Math.ceil(targetSampleRate * durationSec), targetSampleRate);
+        const outBass = offline.createBiquadFilter();
+        outBass.type = 'lowshelf';
+        outBass.frequency.value = 140;
+        outBass.gain.value = fxBassGain;
+
+        const outShaper = offline.createWaveShaper();
+        outShaper.curve = makeDistortionCurve(fxDistortion);
+
         const outGain = offline.createGain();
         outGain.gain.value = masterVolume;
+
+        outBass.connect(outShaper);
+        outShaper.connect(outGain);
         outGain.connect(offline.destination);
 
         for (let b = 0; b < totalBars; b++) {
           for (let s = 0; s < 16; s++) {
             const time = (b * 16 + s) * stepDur;
-            const patsToPlay = playMode === 'pat'
+            const patsToPlay = scopeMode === 'pat'
               ? [activePatternIdx]
               : [...new Set(playlist.map(r => r[b]).filter(v => v !== null && v !== undefined))];
 
@@ -1298,12 +1576,12 @@
                 const chData = pat.data[ch.uid];
                 if (!chData) return;
                 if (chData.steps[s]) {
-                  triggerChannelVoice(offline, outGain, null, ch, 60, time, stepDur * 0.9);
+                  triggerChannelVoice(offline, outBass, null, null, ch, 60, time, stepDur * 0.9);
                 }
                 if (chData.notes) {
                   chData.notes.forEach(n => {
                     if (n.step === s) {
-                      triggerChannelVoice(offline, outGain, null, ch, n.midi, time, stepDur * 1.4);
+                      triggerChannelVoice(offline, outBass, null, null, ch, n.midi, time, stepDur * 1.4);
                     }
                   });
                 }
@@ -1311,57 +1589,166 @@
             });
           }
         }
-
-        const rendered = await offline.startRendering();
-        const wavBlob = audioBufferToWavBlob(rendered);
-        const url = URL.createObjectURL(wavBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `FruityWeb_${playMode === 'song' ? 'FullSong' : 'Pattern' + (activePatternIdx + 1)}_${bpm}BPM.wav`;
-        a.click();
-        URL.revokeObjectURL(url);
-        statusEl.textContent = 'WAV WYEKSPORTOWANY!';
+        return await offline.startRendering();
       }
 
-      function audioBufferToWavBlob(buffer) {
+      function encodeWavBlob(buffer, qualityPct) {
+        const bitDepth = qualityPct >= 40 ? 16 : 8;
+        const bytesPerSample = bitDepth / 8;
         const numCh = buffer.numberOfChannels;
-        const length = buffer.length * numCh * 2 + 44;
-        const out = new ArrayBuffer(length);
-        const view = new DataView(out);
-        const channelsData = [];
-        for (let i = 0; i < numCh; i++) channelsData.push(buffer.getChannelData(i));
+        const dataLen = buffer.length * numCh * bytesPerSample;
+        const totalLen = dataLen + 44;
+        const ab = new ArrayBuffer(totalLen);
+        const view = new DataView(ab);
+        const chData = [buffer.getChannelData(0), buffer.getChannelData(1)];
 
         const writeStr = (off, str) => {
           for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
         };
 
         writeStr(0, 'RIFF');
-        view.setUint32(4, length - 8, true);
+        view.setUint32(4, totalLen - 8, true);
         writeStr(8, 'WAVE');
         writeStr(12, 'fmt ');
         view.setUint32(16, 16, true);
         view.setUint16(20, 1, true);
         view.setUint16(22, numCh, true);
         view.setUint32(24, buffer.sampleRate, true);
-        view.setUint32(28, buffer.sampleRate * numCh * 2, true);
-        view.setUint16(32, numCh * 2, true);
-        view.setUint16(34, 16, true);
+        view.setUint32(28, buffer.sampleRate * numCh * bytesPerSample, true);
+        view.setUint16(32, numCh * bytesPerSample, true);
+        view.setUint16(34, bitDepth, true);
         writeStr(36, 'data');
-        view.setUint32(40, length - 44, true);
+        view.setUint32(40, dataLen, true);
 
         let pos = 44;
         for (let i = 0; i < buffer.length; i++) {
-          for (let ch = 0; ch < numCh; ch++) {
-            const sample = Math.max(-1, Math.min(1, channelsData[ch][i]));
-            view.setInt16(pos, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+          for (let c = 0; c < numCh; c++) {
+            const s = Math.max(-1, Math.min(1, chData[c][i]));
+            if (bitDepth === 16) {
+              view.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+              pos += 2;
+            } else {
+              view.setUint8(pos, Math.round((s + 1) * 127.5));
+              pos += 1;
+            }
+          }
+        }
+        return new Blob([ab], { type: 'audio/wav' });
+      }
+
+      function encodeAiffBlob(buffer) {
+        const numCh = buffer.numberOfChannels;
+        const numFrames = buffer.length;
+        const dataSize = numFrames * numCh * 2;
+        const totalLen = 54 + dataSize;
+        const ab = new ArrayBuffer(totalLen);
+        const view = new DataView(ab);
+        const chData = [buffer.getChannelData(0), buffer.getChannelData(1)];
+
+        const writeStr = (off, str) => {
+          for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
+        };
+
+        writeStr(0, 'FORM');
+        view.setUint32(4, totalLen - 8, false);
+        writeStr(8, 'AIFF');
+        writeStr(12, 'COMM');
+        view.setUint32(16, 18, false);
+        view.setInt16(20, numCh, false);
+        view.setUint32(22, numFrames, false);
+        view.setInt16(26, 16, false);
+        // 80-bit IEEE 754 sample rate (44100 -> 0x400E 0xAC44000000000000)
+        view.setUint16(28, 0x400E, false);
+        view.setUint32(30, (buffer.sampleRate << 16) >>> 0, false);
+        view.setUint32(34, 0, false);
+
+        writeStr(38, 'SSND');
+        view.setUint32(42, dataSize + 8, false);
+        view.setUint32(46, 0, false);
+        view.setUint32(50, 0, false);
+
+        let pos = 54;
+        for (let i = 0; i < numFrames; i++) {
+          for (let c = 0; c < numCh; c++) {
+            const s = Math.max(-1, Math.min(1, chData[c][i]));
+            view.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7FFF, false);
             pos += 2;
           }
         }
-        return new Blob([out], { type: 'audio/wav' });
+        return new Blob([ab], { type: 'audio/aiff' });
+      }
+
+      async function encodeCompressedBlob(buffer, format, qualityPct) {
+        const bps = qualityToBitrateKbps(qualityPct) * 1000;
+        const mimeCandidates = format === 'mp3'
+          ? ['audio/mpeg', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm']
+          : ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/webm'];
+
+        const supportedMime = (typeof MediaRecorder !== 'undefined')
+          ? mimeCandidates.find(m => MediaRecorder.isTypeSupported(m))
+          : null;
+
+        if (!supportedMime) {
+          // Fallback to compressed-rate WAV packaged with requested extension if browser lacks MediaRecorder codec
+          return encodeWavBlob(buffer, qualityPct);
+        }
+
+        const ctx = ensureAudio();
+        const dest = ctx.createMediaStreamDestination();
+        const src = ctx.createBufferSource();
+        src.buffer = buffer;
+        src.connect(dest);
+
+        const chunks = [];
+        const recorder = new MediaRecorder(dest.stream, { mimeType: supportedMime, audioBitsPerSecond: bps });
+        recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+
+        const done = new Promise(resolve => {
+          recorder.onstop = () => resolve(new Blob(chunks, { type: supportedMime }));
+        });
+
+        recorder.start();
+        src.start();
+        src.onended = () => {
+          if (recorder.state !== 'inactive') recorder.stop();
+        };
+        return await done;
+      }
+
+      async function handleAudioExport() {
+        const format = document.getElementById('exportFormatSelect').value;
+        const qualityPct = Math.max(1, Math.min(100, Number(document.getElementById('qualityNumber').value) || 85));
+        const rawName = (document.getElementById('exportFileName').value || 'FruityWeb_Track').trim();
+        const scopeSel = document.getElementById('exportScopeSelect').value;
+        const scopeMode = scopeSel === 'current' ? playMode : scopeSel;
+        const prog = document.getElementById('exportProgressText');
+
+        prog.textContent = `Renderowanie ${format.toUpperCase()} (${qualityPct}% jakości)...`;
+        const targetSr = (format === 'aiff') ? 44100 : qualityToSampleRate(qualityPct);
+        const renderedBuffer = await renderOfflineAudioBuffer(scopeMode, targetSr);
+
+        let blob;
+        if (format === 'wav') {
+          blob = encodeWavBlob(renderedBuffer, qualityPct);
+        } else if (format === 'aiff') {
+          blob = encodeAiffBlob(renderedBuffer);
+        } else {
+          blob = await encodeCompressedBlob(renderedBuffer, format, qualityPct);
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${rawName}_${qualityPct}pct.${format}`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        prog.textContent = `Gotowe! Pobrano ${rawName}_${qualityPct}pct.${format}`;
+        document.getElementById('statusBanner').textContent = `WYEKSPORTOWANO .${format.toUpperCase()}`;
       }
 
       // =========================================================================
-      // 6. UI RENDERERS (BROWSER, CHANNEL RACK, PIANO ROLL, PLAYLIST, SYNTH)
+      // UI RENDERERS
       // =========================================================================
       function renderBrowser() {
         const query = (document.getElementById('libSearch').value || '').toLowerCase().trim();
@@ -1370,21 +1757,21 @@
           const filtered = lib.items.filter(it => it.name.toLowerCase().includes(query));
           if (query && filtered.length === 0) return '';
           return `
-            <div class="lib-folder">
-              <div class="lib-folder-title">
+            <div class="folder-box">
+              <div class="folder-head">
                 <span>${lib.folder}</span>
                 <span>(${filtered.length})</span>
               </div>
-              <div class="lib-items">
+              <div class="folder-list">
                 ${filtered.length === 0
-                  ? `<div style="padding:4px 6px; color:#64748b; font-size:10px;">Brak elementów (użyj Import Audio)</div>`
-                  : filtered.map((item, iIdx) => `
-                    <div class="lib-item" data-f="${fIdx}" data-id="${item.id}">
+                  ? `<div style="padding:4px 6px; color:#64748b; font-size:10px;">Brak elementów (kliknij 📥 Sample)</div>`
+                  : filtered.map(item => `
+                    <div class="sample-row" data-id="${item.id}">
                       <span style="display:flex; align-items:center; gap:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                         <span style="width:7px; height:7px; border-radius:50%; background:${item.color}; flex-shrink:0;"></span>
                         <span>${item.name}</span>
                       </span>
-                      <button type="button" class="add-ch-btn" data-add="${item.id}" title="Dodaj jako kanał">+CH</button>
+                      <button type="button" class="add-btn" data-add="${item.id}">+CH</button>
                     </div>
                   `).join('')}
               </div>
@@ -1392,18 +1779,16 @@
           `;
         }).join('');
 
-        // Click item to preview sound
-        tree.querySelectorAll('.lib-item').forEach(el => {
+        tree.querySelectorAll('.sample-row').forEach(el => {
           el.addEventListener('click', (e) => {
             if (e.target.closest('[data-add]')) return;
             const item = findLibraryItemById(el.dataset.id);
             if (!item) return;
             const ctx = ensureAudio();
-            triggerChannelVoice(ctx, masterGain, null, { ...item, volume: 0.85, pan: 0, muted: false }, 60);
+            triggerChannelVoice(ctx, bassFilter, null, null, { ...item, volume: 0.85, pan: 0, muted: false }, 60);
           });
         });
 
-        // Click +CH to add to Channel Rack
         tree.querySelectorAll('[data-add]').forEach(btn => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1411,9 +1796,7 @@
             if (!item) return;
             const newUid = 'ch_' + Date.now().toString(36) + Math.floor(Math.random() * 99);
             channels.push({ ...item, uid: newUid, volume: 0.85, pan: 0, muted: false });
-            patterns.forEach(p => {
-              p.data[newUid] = { steps: Array(16).fill(false), notes: [] };
-            });
+            patterns.forEach(p => { p.data[newUid] = { steps: Array(16).fill(false), notes: [] }; });
             selectedChannelIdx = channels.length - 1;
             renderAll();
           });
@@ -1431,7 +1814,7 @@
       function renderPatternsBar() {
         const wrap = document.getElementById('patPills');
         wrap.innerHTML = patterns.map((p, idx) => `
-          <button type="button" class="pat-btn ${idx === activePatternIdx ? 'active' : ''}" data-pat="${idx}">
+          <button type="button" class="pat-chip ${idx === activePatternIdx ? 'active' : ''}" data-pat="${idx}">
             ${p.name}
           </button>
         `).join('');
@@ -1453,21 +1836,21 @@
           const hasNotes = chData.notes && chData.notes.length > 0;
 
           return `
-            <div class="channel-row ${cIdx === selectedChannelIdx ? 'selected-ch' : ''}">
-              <button type="button" class="mute-led ${ch.muted ? 'muted' : ''}" data-mute="${cIdx}" title="Mute / Unmute"></button>
-              <input type="range" class="ch-knob" min="0" max="1" step="0.05" value="${ch.volume}" data-vol="${cIdx}" title="Głośność kanału" />
-              <button type="button" class="ch-name-btn" data-sel="${cIdx}">
+            <div class="ch-strip ${cIdx === selectedChannelIdx ? 'selected' : ''}">
+              <button type="button" class="led-btn ${ch.muted ? 'muted' : ''}" data-mute="${cIdx}"></button>
+              <input type="range" class="mini-slider" min="0" max="1" step="0.05" value="${ch.volume}" data-vol="${cIdx}" />
+              <button type="button" class="ch-label-btn" data-sel="${cIdx}">
                 <span style="overflow:hidden; text-overflow:ellipsis;">${ch.name}</span>
-                <span class="dot" style="background:${ch.color};"></span>
+                <span style="width:8px; height:8px; border-radius:50%; background:${ch.color}; flex-shrink:0;"></span>
               </button>
-              <div class="steps-grid">
+              <div class="step-row">
                 ${Array.from({ length: 16 }, (_, sIdx) => {
-                  const beatGroup = Math.floor(sIdx / 4) % 2 === 0 ? 'beat-a' : 'beat-b';
+                  const grp = Math.floor(sIdx / 4) % 2 === 0 ? 'grp-a' : 'grp-b';
                   const isOn = chData.steps[sIdx];
-                  return `<button type="button" class="step-cell ${beatGroup} ${isOn ? 'on' : ''}" data-ch="${ch.uid}" data-step="${sIdx}"></button>`;
+                  return `<button type="button" class="step-pad ${grp} ${isOn ? 'on' : ''}" data-ch="${ch.uid}" data-step="${sIdx}"></button>`;
                 }).join('')}
               </div>
-              <button type="button" class="pr-open-btn" data-openpr="${cIdx}" title="Otwórz Piano Roll">
+              <button type="button" class="pr-jump-btn" data-openpr="${cIdx}">
                 ${hasNotes ? `🎹 (${chData.notes.length})` : '🎹'}
               </button>
             </div>
@@ -1496,13 +1879,13 @@
             selectedChannelIdx = Number(btn.dataset.sel);
             const ch = channels[selectedChannelIdx];
             const ctx = ensureAudio();
-            triggerChannelVoice(ctx, masterGain, null, ch, 60);
+            triggerChannelVoice(ctx, bassFilter, null, null, ch, 60);
             renderChannelRack();
             renderSynthInspector();
           });
         });
 
-        list.querySelectorAll('.step-cell').forEach(cell => {
+        list.querySelectorAll('.step-pad').forEach(cell => {
           cell.addEventListener('click', () => {
             const uid = cell.dataset.ch;
             const s = Number(cell.dataset.step);
@@ -1513,7 +1896,7 @@
               const ch = channels.find(c => c.uid === uid);
               if (ch) {
                 const ctx = ensureAudio();
-                triggerChannelVoice(ctx, masterGain, null, ch, 60);
+                triggerChannelVoice(ctx, bassFilter, null, null, ch, 60);
               }
             }
           });
@@ -1537,26 +1920,26 @@
         const chData = patterns[activePatternIdx].data[ch.uid];
 
         keysEl.innerHTML = NOTES.map(n => `
-          <div class="p-key ${n.sharp ? 'black' : 'white'}" data-midi="${n.midi}">${n.name}</div>
+          <div class="piano-key ${n.sharp ? 'black' : 'white'}" data-midi="${n.midi}">${n.name}</div>
         `).join('');
 
         gridEl.innerHTML = NOTES.map(n => `
-          <div class="pr-row ${n.sharp ? 'black-row' : ''}">
+          <div class="pr-note-row ${n.sharp ? 'sharp-row' : ''}">
             ${Array.from({ length: 16 }, (_, step) => {
               const active = chData.notes.some(item => item.step === step && item.midi === n.midi);
-              return `<div class="pr-cell ${active ? 'active' : ''}" data-step="${step}" data-midi="${n.midi}"></div>`;
+              return `<div class="pr-slot ${active ? 'active' : ''}" data-step="${step}" data-midi="${n.midi}"></div>`;
             }).join('')}
           </div>
         `).join('');
 
-        keysEl.querySelectorAll('.p-key').forEach(k => {
+        keysEl.querySelectorAll('.piano-key').forEach(k => {
           k.addEventListener('pointerdown', () => {
             const ctx = ensureAudio();
-            triggerChannelVoice(ctx, masterGain, null, ch, Number(k.dataset.midi), ctx.currentTime, 0.25);
+            triggerChannelVoice(ctx, bassFilter, null, null, ch, Number(k.dataset.midi), ctx.currentTime, 0.25);
           });
         });
 
-        gridEl.querySelectorAll('.pr-cell').forEach(cell => {
+        gridEl.querySelectorAll('.pr-slot').forEach(cell => {
           cell.addEventListener('click', () => {
             const step = Number(cell.dataset.step);
             const midi = Number(cell.dataset.midi);
@@ -1568,7 +1951,7 @@
               chData.notes.push({ step, midi });
               cell.classList.add('active');
               const ctx = ensureAudio();
-              triggerChannelVoice(ctx, masterGain, null, ch, midi, ctx.currentTime, 0.22);
+              triggerChannelVoice(ctx, bassFilter, null, null, ch, midi, ctx.currentTime, 0.22);
             }
             renderChannelRack();
           });
@@ -1578,25 +1961,21 @@
       function renderPlaylist() {
         const gridEl = document.getElementById('playlistGrid');
         gridEl.innerHTML = playlist.map((row, tIdx) => `
-          <div class="pl-row">
-            <div class="pl-label">Track ${tIdx + 1}</div>
+          <div class="track-lane">
+            <div class="track-tag">Track ${tIdx + 1}</div>
             ${row.map((patVal, bIdx) => `
-              <button type="button" class="pl-bar-cell ${patVal !== null ? 'placed' : ''}" data-track="${tIdx}" data-bar="${bIdx}">
+              <button type="button" class="bar-slot ${patVal !== null ? 'filled' : ''}" data-track="${tIdx}" data-bar="${bIdx}">
                 ${patVal !== null ? `P${patVal + 1}` : ''}
               </button>
             `).join('')}
           </div>
         `).join('');
 
-        gridEl.querySelectorAll('.pl-bar-cell').forEach(btn => {
+        gridEl.querySelectorAll('.bar-slot').forEach(btn => {
           btn.addEventListener('click', () => {
             const t = Number(btn.dataset.track);
             const b = Number(btn.dataset.bar);
-            if (playlist[t][b] === activePatternIdx) {
-              playlist[t][b] = null;
-            } else {
-              playlist[t][b] = activePatternIdx;
-            }
+            playlist[t][b] = (playlist[t][b] === activePatternIdx) ? null : activePatternIdx;
             renderPlaylist();
           });
         });
@@ -1608,12 +1987,12 @@
         if (!ch) { wrap.innerHTML = ''; return; }
 
         wrap.innerHTML = `
-          <div class="synth-title">
-            <span>🎛️ KANAŁ: ${ch.name.toUpperCase()}</span>
-            <button type="button" class="menu-btn" id="delChannelBtn" style="padding:2px 6px; color:#fb7185;">Usuń</button>
+          <div class="sec-head">
+            <span>🎹 INSTRUMENT: ${ch.name.toUpperCase()}</span>
+            <button type="button" class="tb-btn" id="delChannelBtn" style="padding:2px 6px; color:#fb7185;">Usuń</button>
           </div>
-          <div class="control-grid">
-            <div class="param-box">
+          <div class="grid-2">
+            <div class="knob-card">
               <label><span>Waveform</span></label>
               <select id="waveSelect" ${ch.engine === 'sample' ? 'disabled' : ''}>
                 <option value="sine" ${ch.wave === 'sine' ? 'selected' : ''}>Sine</option>
@@ -1622,25 +2001,25 @@
                 <option value="square" ${ch.wave === 'square' ? 'selected' : ''}>Square</option>
               </select>
             </div>
-            <div class="param-box">
+            <div class="knob-card">
               <label><span>Filter Cutoff</span><b id="cutLbl">${ch.cutoff}Hz</b></label>
               <input type="range" id="cutSlider" min="150" max="9000" step="50" value="${ch.cutoff}" />
             </div>
-            <div class="param-box">
+            <div class="knob-card">
               <label><span>Attack</span><b id="attLbl">${Math.round((ch.attack || 0.01) * 1000)}ms</b></label>
               <input type="range" id="attSlider" min="0.002" max="0.4" step="0.005" value="${ch.attack || 0.01}" />
             </div>
-            <div class="param-box">
+            <div class="knob-card">
               <label><span>Decay</span><b id="decLbl">${Math.round((ch.decay || 0.2) * 1000)}ms</b></label>
               <input type="range" id="decSlider" min="0.04" max="0.8" step="0.01" value="${ch.decay || 0.2}" />
             </div>
-            <div class="param-box">
+            <div class="knob-card">
               <label><span>Panning</span><b id="panLbl">${Math.round((ch.pan || 0) * 100)}%</b></label>
               <input type="range" id="panSlider" min="-1" max="1" step="0.05" value="${ch.pan || 0}" />
             </div>
-            <div class="param-box" style="display:flex; align-items:center; justify-content:center;">
-              <button type="button" class="menu-btn" id="previewVoiceBtn" style="width:100%; justify-content:center; color:var(--fl-orange);">
-                🔊 Testuj Dźwięk
+            <div class="knob-card" style="display:flex; align-items:center; justify-content:center;">
+              <button type="button" class="tb-btn" id="previewVoiceBtn" style="width:100%; justify-content:center; color:var(--fl-orange);">
+                🔊 Testuj
               </button>
             </div>
           </div>
@@ -1665,7 +2044,7 @@
         });
         document.getElementById('previewVoiceBtn')?.addEventListener('click', () => {
           const ctx = ensureAudio();
-          triggerChannelVoice(ctx, masterGain, delayNode, ch, 60);
+          triggerChannelVoice(ctx, bassFilter, delayNode, reverbNode, ch, 60);
         });
         document.getElementById('delChannelBtn')?.addEventListener('click', () => {
           if (channels.length <= 1) return;
@@ -1680,16 +2059,16 @@
       function renderMixer() {
         const strips = document.getElementById('mixerStrips');
         strips.innerHTML = [
-          `<div class="mix-strip master">
-             <div class="mix-name" style="color:var(--fl-orange);">MASTER</div>
-             <div class="vu-meter"><div class="vu-fill" id="masterVu"></div></div>
-             <input type="range" class="mix-fader" min="0" max="1" step="0.05" value="${masterVolume}" id="masterStripFader" />
+          `<div class="fader-col master">
+             <div class="fader-lbl" style="color:var(--fl-orange);">MASTER</div>
+             <div class="meter-bar"><div class="meter-val" id="masterVu"></div></div>
+             <input type="range" class="v-fader" min="0" max="1" step="0.05" value="${masterVolume}" id="masterStripFader" />
            </div>`,
           ...channels.map((ch, idx) => `
-            <div class="mix-strip">
-              <div class="mix-name" style="color:${ch.color};">${ch.name}</div>
-              <div class="vu-meter"><div class="vu-fill" style="height:${ch.muted ? 0 : Math.round(ch.volume * 75)}%;"></div></div>
-              <input type="range" class="mix-fader" min="0" max="1" step="0.05" value="${ch.volume}" data-mixvol="${idx}" />
+            <div class="fader-col">
+              <div class="fader-lbl" style="color:${ch.color};">${ch.name}</div>
+              <div class="meter-bar"><div class="meter-val" style="height:${ch.muted ? 0 : Math.round(ch.volume * 75)}%;"></div></div>
+              <input type="range" class="v-fader" min="0" max="1" step="0.05" value="${ch.volume}" data-mixvol="${idx}" />
             </div>
           `)
         ].join('');
@@ -1697,8 +2076,7 @@
         document.getElementById('masterStripFader')?.addEventListener('input', e => {
           masterVolume = Number(e.target.value);
           if (masterGain) masterGain.gain.value = masterVolume;
-          document.getElementById('masterVolSlider').value = masterVolume;
-          document.getElementById('masterVolLbl').textContent = `${Math.round(masterVolume * 100)}%`;
+          document.getElementById('masterVolLbl').textContent = `Master ${Math.round(masterVolume * 100)}%`;
         });
 
         strips.querySelectorAll('[data-mixvol]').forEach(fader => {
@@ -1714,29 +2092,49 @@
         const kbd = document.getElementById('miniKbd');
         const notesAsc = [...NOTES].reverse();
         kbd.innerHTML = notesAsc.map(n => `
-          <button type="button" class="kbd-note ${n.sharp ? 'sharp' : ''}" data-midi="${n.midi}">
+          <button type="button" class="live-key ${n.sharp ? 'sharp' : ''}" data-midi="${n.midi}">
             ${n.name}
           </button>
         `).join('');
 
-        kbd.querySelectorAll('.kbd-note').forEach(btn => {
+        kbd.querySelectorAll('.live-key').forEach(btn => {
           btn.addEventListener('pointerdown', e => {
             e.preventDefault();
             const ch = channels[selectedChannelIdx] || channels[0];
             if (!ch) return;
             const ctx = ensureAudio();
-            triggerChannelVoice(ctx, masterGain, delayNode, ch, Number(btn.dataset.midi), ctx.currentTime, 0.28);
+            triggerChannelVoice(ctx, bassFilter, delayNode, reverbNode, ch, Number(btn.dataset.midi), ctx.currentTime, 0.28);
           });
         });
       }
 
       function switchView(viewName) {
         activeView = viewName;
-        document.querySelectorAll('.v-tab').forEach(t => t.classList.toggle('active', t.dataset.view === viewName));
-        document.querySelectorAll('.sub-window').forEach(w => w.classList.remove('active'));
+        document.querySelectorAll('.view-pill').forEach(t => t.classList.toggle('active', t.dataset.view === viewName));
+        document.querySelectorAll('.center-subview').forEach(w => w.classList.remove('active'));
         document.getElementById(`view-${viewName}`).classList.add('active');
         if (viewName === 'pianoroll') renderPianoRoll();
         if (viewName === 'playlist') renderPlaylist();
+      }
+
+      function switchMobileTab(tabName) {
+        document.querySelectorAll('.mob-tab').forEach(b => b.classList.toggle('active', b.dataset.mob === tabName));
+        const pBrowser = document.getElementById('paneBrowser');
+        const pCenter = document.getElementById('paneCenter');
+        const pInsp = document.getElementById('paneInspector');
+
+        pBrowser.classList.remove('mobile-active');
+        pCenter.classList.remove('mobile-active');
+        pInsp.classList.remove('mobile-active');
+
+        if (tabName === 'browser') {
+          pBrowser.classList.add('mobile-active');
+        } else if (tabName === 'inspector') {
+          pInsp.classList.add('mobile-active');
+        } else {
+          pCenter.classList.add('mobile-active');
+          switchView(tabName);
+        }
       }
 
       function renderAll() {
@@ -1749,22 +2147,55 @@
         renderMixer();
       }
 
-      // Live VU Meter Animation Loop
-      function animateVu() {
+      // Oscilloscope & Master VU Animation
+      const scopeCanvas = document.getElementById('scopeCanvas');
+      const sctx = scopeCanvas.getContext('2d');
+      function animateVisuals() {
         const masterVu = document.getElementById('masterVu');
-        if (masterVu && analyser && isPlaying) {
-          const data = new Uint8Array(analyser.frequencyBinCount);
-          analyser.getByteFrequencyData(data);
-          const avg = data.reduce((a, b) => a + b, 0) / data.length;
-          masterVu.style.height = `${Math.min(100, Math.round((avg / 180) * 100))}%`;
-        } else if (masterVu) {
-          masterVu.style.height = '0%';
+        sctx.fillStyle = '#07090d';
+        sctx.fillRect(0, 0, scopeCanvas.width, scopeCanvas.height);
+
+        if (analyser && isPlaying) {
+          const freqData = new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteFrequencyData(freqData);
+          const avg = freqData.reduce((a, b) => a + b, 0) / freqData.length;
+          if (masterVu) masterVu.style.height = `${Math.min(100, Math.round((avg / 170) * 100))}%`;
+
+          const barW = scopeCanvas.width / 24;
+          for (let i = 0; i < 24; i++) {
+            const h = (freqData[i] / 255) * scopeCanvas.height;
+            sctx.fillStyle = i > 16 ? '#38bdf8' : '#ff7b00';
+            sctx.fillRect(i * barW, scopeCanvas.height - h, barW - 1, h);
+          }
+        } else {
+          if (masterVu) masterVu.style.height = '0%';
+          sctx.strokeStyle = '#334155';
+          sctx.beginPath();
+          sctx.moveTo(0, scopeCanvas.height / 2);
+          sctx.lineTo(scopeCanvas.width, scopeCanvas.height / 2);
+          sctx.stroke();
         }
-        requestAnimationFrame(animateVu);
+        requestAnimationFrame(animateVisuals);
       }
 
       // =========================================================================
-      // 7. IMPORT / EXPORT (AUDIO SAMPLES, LIBRARIES, FULL PROJECT JSON)
+      // DLC / EXPANSION PACK REGISTRATION API (Wywoływane na dole pliku HTML)
+      // =========================================================================
+      window.registerFruityDlc = function(pack) {
+        if (!pack || !pack.folder || !Array.isArray(pack.items)) return;
+        const existing = libraries.find(l => l.folder === pack.folder);
+        if (existing) {
+          pack.items.forEach(it => {
+            if (!existing.items.some(x => x.id === it.id)) existing.items.push(it);
+          });
+        } else {
+          libraries.splice(libraries.length - 1, 0, pack);
+        }
+        renderBrowser();
+      };
+
+      // =========================================================================
+      // IMPORT / EXPORT HANDLERS
       // =========================================================================
       document.getElementById('importAudioBtn').addEventListener('click', () => {
         document.getElementById('audioFileInput').click();
@@ -1777,7 +2208,6 @@
         const arrayBuf = await file.arrayBuffer();
         const audioBuf = await ctx.decodeAudioData(arrayBuf.slice(0));
 
-        // Also store DataURL so project JSON export preserves imported samples
         const reader = new FileReader();
         reader.onload = () => {
           const sampleId = 'smp_' + Date.now().toString(36);
@@ -1798,14 +2228,13 @@
             sustain: 0.8,
             release: 0.1
           };
-          libraries[2].items.push(sampleDef);
+          libraries[libraries.length - 1].items.push(sampleDef);
 
-          // Automatically add imported sample as a new channel
           const newUid = 'ch_' + Date.now().toString(36);
           channels.push({ ...sampleDef, uid: newUid, volume: 0.9, pan: 0, muted: false });
           patterns.forEach(p => { p.data[newUid] = { steps: Array(16).fill(false), notes: [] }; });
           selectedChannelIdx = channels.length - 1;
-          document.getElementById('statusBanner').textContent = `ZAIMPORTOWANO: ${cleanName}`;
+          document.getElementById('statusBanner').textContent = `DODANO: ${cleanName}`;
           renderAll();
         };
         reader.readAsDataURL(file);
@@ -1814,10 +2243,13 @@
 
       document.getElementById('saveProjBtn').addEventListener('click', () => {
         const payload = {
-          version: 1,
+          version: 2,
           bpm,
           masterVolume,
-          masterDelayWet,
+          fxDistortion,
+          fxReverbWet,
+          fxDelayWet,
+          fxBassGain,
           channels,
           patterns,
           playlist,
@@ -1828,10 +2260,10 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `FruityWeb_Project_${bpm}BPM.json`;
+        a.download = `FruityWeb26_Project_${bpm}BPM.json`;
         a.click();
         URL.revokeObjectURL(url);
-        document.getElementById('statusBanner').textContent = 'PROJEKT ZAPISANY (.JSON)';
+        document.getElementById('statusBanner').textContent = 'PROJEKT ZAPISANY';
       });
 
       document.getElementById('exportLibBtn').addEventListener('click', () => {
@@ -1844,7 +2276,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'FruityWeb_SoundLibrary.json';
+        a.download = 'FruityWeb26_Library.json';
         a.click();
         URL.revokeObjectURL(url);
         document.getElementById('statusBanner').textContent = 'BIBLIOTEKA WYEKSPORTOWANA';
@@ -1881,7 +2313,6 @@
             bpm = data.bpm || 128;
             document.getElementById('bpmInput').value = bpm;
             masterVolume = data.masterVolume ?? 0.85;
-            masterDelayWet = data.masterDelayWet ?? 0.2;
             channels = data.channels;
             patterns = data.patterns;
             playlist = data.playlist || playlist;
@@ -1897,9 +2328,23 @@
         e.target.value = '';
       });
 
-      // =========================================================================
-      // 8. TRANSPORT & GLOBAL CONTROLS
-      // =========================================================================
+      // Export Modal Controls
+      document.getElementById('openExportBtn').addEventListener('click', () => {
+        updateQualityBadge();
+        document.getElementById('exportProgressText').textContent = '';
+        document.getElementById('exportModal').classList.add('active');
+      });
+      document.getElementById('closeExportBtn').addEventListener('click', () => {
+        document.getElementById('exportModal').classList.remove('active');
+      });
+      document.getElementById('qualityRange').addEventListener('input', e => {
+        document.getElementById('qualityNumber').value = e.target.value;
+        updateQualityBadge();
+      });
+      document.getElementById('qualityNumber').addEventListener('input', updateQualityBadge);
+      document.getElementById('confirmExportBtn').addEventListener('click', handleAudioExport);
+
+      // Transport & Master FX Controls
       document.getElementById('playBtn').addEventListener('click', () => {
         if (isPlaying) stopPlayback();
         else startPlayback();
@@ -1931,30 +2376,38 @@
 
       document.getElementById('clearPatternBtn').addEventListener('click', () => {
         const pat = patterns[activePatternIdx];
-        channels.forEach(ch => {
-          pat.data[ch.uid] = { steps: Array(16).fill(false), notes: [] };
-        });
+        channels.forEach(ch => { pat.data[ch.uid] = { steps: Array(16).fill(false), notes: [] }; });
         renderAll();
       });
 
-      document.getElementById('masterDelaySlider').addEventListener('input', e => {
-        masterDelayWet = Number(e.target.value);
-        if (delayGain) delayGain.gain.value = masterDelayWet;
-        document.getElementById('delayValLbl').textContent = `${Math.round(masterDelayWet * 100)}%`;
+      document.getElementById('fxDistSlider').addEventListener('input', e => {
+        fxDistortion = Number(e.target.value);
+        if (shaperNode) shaperNode.curve = makeDistortionCurve(fxDistortion);
+        document.getElementById('distValLbl').textContent = `${Math.round(fxDistortion * 100)}%`;
+      });
+      document.getElementById('fxRevSlider').addEventListener('input', e => {
+        fxReverbWet = Number(e.target.value);
+        if (reverbGain) reverbGain.gain.value = fxReverbWet;
+        document.getElementById('revValLbl').textContent = `${Math.round((fxReverbWet / 0.8) * 100)}%`;
+      });
+      document.getElementById('fxDelaySlider').addEventListener('input', e => {
+        fxDelayWet = Number(e.target.value);
+        if (delayGain) delayGain.gain.value = fxDelayWet;
+        document.getElementById('delayValLbl').textContent = `${Math.round((fxDelayWet / 0.65) * 100)}%`;
+      });
+      document.getElementById('fxBassSlider').addEventListener('input', e => {
+        fxBassGain = Number(e.target.value);
+        if (bassFilter) bassFilter.gain.value = fxBassGain;
+        document.getElementById('bassValLbl').textContent = `${fxBassGain >= 0 ? '+' : ''}${fxBassGain} dB`;
       });
 
-      document.getElementById('masterVolSlider').addEventListener('input', e => {
-        masterVolume = Number(e.target.value);
-        if (masterGain) masterGain.gain.value = masterVolume;
-        document.getElementById('masterVolLbl').textContent = `${Math.round(masterVolume * 100)}%`;
-        renderMixer();
-      });
-
-      document.getElementById('exportWavBtn').addEventListener('click', exportSongToWav);
       document.getElementById('libSearch').addEventListener('input', renderBrowser);
 
-      document.querySelectorAll('.v-tab').forEach(tab => {
+      document.querySelectorAll('.view-pill').forEach(tab => {
         tab.addEventListener('click', () => switchView(tab.dataset.view));
+      });
+      document.querySelectorAll('.mob-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchMobileTab(tab.dataset.mob));
       });
 
       window.addEventListener('keydown', e => {
@@ -1966,10 +2419,2712 @@
         }
       });
 
-      // Boot
       renderMiniKeyboard();
       renderAll();
-      requestAnimationFrame(animateVu);
+      requestAnimationFrame(animateVisuals);
+    })();
+  </script>
+  <!-- ======================================================================= -->
+  <!-- 👇 MIEJSCE NA DODAWANIE WŁASNYCH PAKIETÓW DLC (Poniżej gotowe DLC) 👇 -->
+  <!-- ======================================================================= -->
+  <script>
+    window.registerFruityDlc({
+      folder: '🌌 DLC 1 · Cyberpunk & Synthwave Pack',
+      items: [
+        { id: 'dlc_0_0', name: 'Neon Arp', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'sawtooth', cutoff: 280, attack: 0.004, decay: 0.12, sustain: 0.2, release: 0.08 },
+        { id: 'dlc_0_1', name: 'Cyber Bassline', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'square', cutoff: 750, attack: 0.019, decay: 0.18, sustain: 0.34, release: 0.14 },
+        { id: 'dlc_0_2', name: 'Blade Runner Pad', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 1220, attack: 0.034, decay: 0.24, sustain: 0.48, release: 0.2 },
+        { id: 'dlc_0_3', name: 'Dystopia Brass', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 1690, attack: 0.049, decay: 0.3, sustain: 0.62, release: 0.26 },
+        { id: 'dlc_0_4', name: 'Outrun Lead', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'sawtooth', cutoff: 2160, attack: 0.064, decay: 0.36, sustain: 0.76, release: 0.08 },
+        { id: 'dlc_0_5', name: 'Chrome Pluck', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'square', cutoff: 2630, attack: 0.004, decay: 0.42, sustain: 0.2, release: 0.14 },
+        { id: 'dlc_0_6', name: 'VHS Keys', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 3100, attack: 0.019, decay: 0.12, sustain: 0.34, release: 0.2 },
+        { id: 'dlc_0_7', name: 'Laser Sub', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 3570, attack: 0.034, decay: 0.18, sustain: 0.48, release: 0.26 },
+        { id: 'dlc_0_8', name: 'Midnight Horizon', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'sawtooth', cutoff: 4040, attack: 0.049, decay: 0.24, sustain: 0.62, release: 0.08 },
+        { id: 'dlc_0_9', name: 'Grid Runner', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'square', cutoff: 4510, attack: 0.064, decay: 0.3, sustain: 0.76, release: 0.14 },
+        { id: 'dlc_0_10', name: 'Analog Pulse', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 4980, attack: 0.004, decay: 0.36, sustain: 0.2, release: 0.2 },
+        { id: 'dlc_0_11', name: 'Retrowave Bell', color: '#38bdf8', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 5450, attack: 0.019, decay: 0.42, sustain: 0.34, release: 0.26 }
+      ]
+    });
+    window.registerFruityDlc({
+      folder: '🔥 DLC 2 · Hardstyle & Phonk Arsenal',
+      items: [
+        { id: 'dlc_1_0', name: 'Phonk Cowbell Hard', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'sawtooth', cutoff: 590, attack: 0.004, decay: 0.12, sustain: 0.0, release: 0.08 },
+        { id: 'dlc_1_1', name: 'Distorted 808 Rage', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'square', cutoff: 1060, attack: 0.019, decay: 0.18, sustain: 0.0, release: 0.14 },
+        { id: 'dlc_1_2', name: 'Hardstyle Reverse Kick', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'sine', cutoff: 1530, attack: 0.034, decay: 0.24, sustain: 0.0, release: 0.2 },
+        { id: 'dlc_1_3', name: 'Memphis Snare', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'sawtooth', cutoff: 2000, attack: 0.049, decay: 0.3, sustain: 0.0, release: 0.26 },
+        { id: 'dlc_1_4', name: 'Industrial Metallic Hit', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'square', cutoff: 2470, attack: 0.064, decay: 0.36, sustain: 0.0, release: 0.08 },
+        { id: 'dlc_1_5', name: 'Sub Drop Boom', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'sine', cutoff: 2940, attack: 0.004, decay: 0.42, sustain: 0.0, release: 0.14 },
+        { id: 'dlc_1_6', name: 'Aggro Kick', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'sawtooth', cutoff: 3410, attack: 0.019, decay: 0.12, sustain: 0.0, release: 0.2 },
+        { id: 'dlc_1_7', name: 'Razor Hat', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'square', cutoff: 3880, attack: 0.034, decay: 0.18, sustain: 0.0, release: 0.26 },
+        { id: 'dlc_1_8', name: 'Street Clap', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'sine', cutoff: 4350, attack: 0.049, decay: 0.24, sustain: 0.0, release: 0.08 },
+        { id: 'dlc_1_9', name: 'Warehouse Kick', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'sawtooth', cutoff: 4820, attack: 0.064, decay: 0.3, sustain: 0.0, release: 0.14 },
+        { id: 'dlc_1_10', name: 'Dark Phonk Bass', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'square', cutoff: 5290, attack: 0.004, decay: 0.36, sustain: 0.0, release: 0.2 },
+        { id: 'dlc_1_11', name: 'Overdrive Punch', color: '#f43f5e', engine: 'drum', preset: 'kickPunch', wave: 'sine', cutoff: 5760, attack: 0.019, decay: 0.42, sustain: 0.0, release: 0.26 }
+      ]
+    });
+    window.registerFruityDlc({
+      folder: '🎹 DLC 3 · Lo-Fi & Chill Keys',
+      items: [
+        { id: 'dlc_2_0', name: 'Dusty Rhodes', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 900, attack: 0.004, decay: 0.12, sustain: 0.2, release: 0.08 },
+        { id: 'dlc_2_1', name: 'Rainy Day Sine', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 1370, attack: 0.019, decay: 0.18, sustain: 0.34, release: 0.14 },
+        { id: 'dlc_2_2', name: 'Warm Tape Keys', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 1840, attack: 0.034, decay: 0.24, sustain: 0.48, release: 0.2 },
+        { id: 'dlc_2_3', name: 'Mellow Sub', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 2310, attack: 0.049, decay: 0.3, sustain: 0.62, release: 0.26 },
+        { id: 'dlc_2_4', name: 'Velvet Pad', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 2780, attack: 0.064, decay: 0.36, sustain: 0.76, release: 0.08 },
+        { id: 'dlc_2_5', name: 'Music Box', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 3250, attack: 0.004, decay: 0.42, sustain: 0.2, release: 0.14 },
+        { id: 'dlc_2_6', name: 'Soft Flute Lead', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 3720, attack: 0.019, decay: 0.12, sustain: 0.34, release: 0.2 },
+        { id: 'dlc_2_7', name: 'Dreamy Bell', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 4190, attack: 0.034, decay: 0.18, sustain: 0.48, release: 0.26 },
+        { id: 'dlc_2_8', name: 'Vinyl Chord', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 4660, attack: 0.049, decay: 0.24, sustain: 0.62, release: 0.08 },
+        { id: 'dlc_2_9', name: 'Cozy Pluck', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 5130, attack: 0.064, decay: 0.3, sustain: 0.76, release: 0.14 },
+        { id: 'dlc_2_10', name: 'Sunset Organ', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'sine', cutoff: 5600, attack: 0.004, decay: 0.36, sustain: 0.2, release: 0.2 },
+        { id: 'dlc_2_11', name: 'Cloud Pad', color: '#34d399', engine: 'synth', preset: 'synth', wave: 'triangle', cutoff: 6070, attack: 0.019, decay: 0.42, sustain: 0.34, release: 0.26 }
+      ]
+    });
+    window.registerFruityDlc({
+      folder: '🚀 DLC 4 · Sci-Fi & Cinematic FX',
+      items: [
+        { id: 'dlc_3_0', name: 'Hyperdrive Sweep', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'sawtooth', cutoff: 1210, attack: 0.004, decay: 0.12, sustain: 0.0, release: 0.08 },
+        { id: 'dlc_3_1', name: 'Alien Telemetry', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'square', cutoff: 1680, attack: 0.019, decay: 0.18, sustain: 0.0, release: 0.14 },
+        { id: 'dlc_3_2', name: 'Reactor Pulse', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'triangle', cutoff: 2150, attack: 0.034, decay: 0.24, sustain: 0.0, release: 0.2 },
+        { id: 'dlc_3_3', name: 'Orbital Cannon', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'sawtooth', cutoff: 2620, attack: 0.049, decay: 0.3, sustain: 0.0, release: 0.26 },
+        { id: 'dlc_3_4', name: 'Deep Space Tom', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'square', cutoff: 3090, attack: 0.064, decay: 0.36, sustain: 0.0, release: 0.08 },
+        { id: 'dlc_3_5', name: 'Plasma Zap', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'triangle', cutoff: 3560, attack: 0.004, decay: 0.42, sustain: 0.0, release: 0.14 },
+        { id: 'dlc_3_6', name: 'Quantum Rim', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'sawtooth', cutoff: 4030, attack: 0.019, decay: 0.12, sustain: 0.0, release: 0.2 },
+        { id: 'dlc_3_7', name: 'Cyber Alarm', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'square', cutoff: 4500, attack: 0.034, decay: 0.18, sustain: 0.0, release: 0.26 },
+        { id: 'dlc_3_8', name: 'Gravity Drop', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'triangle', cutoff: 4970, attack: 0.049, decay: 0.24, sustain: 0.0, release: 0.08 },
+        { id: 'dlc_3_9', name: 'Warp Core', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'sawtooth', cutoff: 5440, attack: 0.064, decay: 0.3, sustain: 0.0, release: 0.14 },
+        { id: 'dlc_3_10', name: 'Android Voice Synth', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'square', cutoff: 5910, attack: 0.004, decay: 0.36, sustain: 0.0, release: 0.2 },
+        { id: 'dlc_3_11', name: 'Void Sub', color: '#a855f7', engine: 'drum', preset: 'laser', wave: 'triangle', cutoff: 6380, attack: 0.019, decay: 0.42, sustain: 0.0, release: 0.26 }
+      ]
+    });
+    (function registerExtendedFactoryPresets() {
+      const extraPacks = [
+        {
+          folder: '🎛️ Factory · Bass Vault (40)',
+          items: [
+            {
+              id: 'fac_0_0',
+              name: 'Bass 01 · Deep',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 220,
+              attack: 0.003,
+              decay: 0.1,
+              sustain: 0.15,
+              release: 0.06
+            },
+            {
+              id: 'fac_0_1',
+              name: 'Bass 02 · Bright',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 435,
+              attack: 0.015,
+              decay: 0.155,
+              sustain: 0.27,
+              release: 0.11
+            },
+            {
+              id: 'fac_0_2',
+              name: 'Bass 03 · Warm',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 650,
+              attack: 0.027,
+              decay: 0.21,
+              sustain: 0.39,
+              release: 0.16
+            },
+            {
+              id: 'fac_0_3',
+              name: 'Bass 04 · Crisp',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 865,
+              attack: 0.039,
+              decay: 0.265,
+              sustain: 0.51,
+              release: 0.21
+            },
+            {
+              id: 'fac_0_4',
+              name: 'Bass 05 · Analog',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 1080,
+              attack: 0.051,
+              decay: 0.32,
+              sustain: 0.63,
+              release: 0.26
+            },
+            {
+              id: 'fac_0_5',
+              name: 'Bass 06 · Sub',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 1295,
+              attack: 0.063,
+              decay: 0.375,
+              sustain: 0.75,
+              release: 0.06
+            },
+            {
+              id: 'fac_0_6',
+              name: 'Bass 07 · Hyper',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 1510,
+              attack: 0.075,
+              decay: 0.43,
+              sustain: 0.15,
+              release: 0.11
+            },
+            {
+              id: 'fac_0_7',
+              name: 'Bass 08 · Dark',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 1725,
+              attack: 0.003,
+              decay: 0.485,
+              sustain: 0.27,
+              release: 0.16
+            },
+            {
+              id: 'fac_0_8',
+              name: 'Bass 09 · Deep',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 1940,
+              attack: 0.015,
+              decay: 0.1,
+              sustain: 0.39,
+              release: 0.21
+            },
+            {
+              id: 'fac_0_9',
+              name: 'Bass 10 · Bright',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 2155,
+              attack: 0.027,
+              decay: 0.155,
+              sustain: 0.51,
+              release: 0.26
+            },
+            {
+              id: 'fac_0_10',
+              name: 'Bass 11 · Warm',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 2370,
+              attack: 0.039,
+              decay: 0.21,
+              sustain: 0.63,
+              release: 0.06
+            },
+            {
+              id: 'fac_0_11',
+              name: 'Bass 12 · Crisp',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 2585,
+              attack: 0.051,
+              decay: 0.265,
+              sustain: 0.75,
+              release: 0.11
+            },
+            {
+              id: 'fac_0_12',
+              name: 'Bass 13 · Analog',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 2800,
+              attack: 0.063,
+              decay: 0.32,
+              sustain: 0.15,
+              release: 0.16
+            },
+            {
+              id: 'fac_0_13',
+              name: 'Bass 14 · Sub',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 3015,
+              attack: 0.075,
+              decay: 0.375,
+              sustain: 0.27,
+              release: 0.21
+            },
+            {
+              id: 'fac_0_14',
+              name: 'Bass 15 · Hyper',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 3230,
+              attack: 0.003,
+              decay: 0.43,
+              sustain: 0.39,
+              release: 0.26
+            },
+            {
+              id: 'fac_0_15',
+              name: 'Bass 16 · Dark',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 3445,
+              attack: 0.015,
+              decay: 0.485,
+              sustain: 0.51,
+              release: 0.06
+            },
+            {
+              id: 'fac_0_16',
+              name: 'Bass 17 · Deep',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 3660,
+              attack: 0.027,
+              decay: 0.1,
+              sustain: 0.63,
+              release: 0.11
+            },
+            {
+              id: 'fac_0_17',
+              name: 'Bass 18 · Bright',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 3875,
+              attack: 0.039,
+              decay: 0.155,
+              sustain: 0.75,
+              release: 0.16
+            },
+            {
+              id: 'fac_0_18',
+              name: 'Bass 19 · Warm',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 4090,
+              attack: 0.051,
+              decay: 0.21,
+              sustain: 0.15,
+              release: 0.21
+            },
+            {
+              id: 'fac_0_19',
+              name: 'Bass 20 · Crisp',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 4305,
+              attack: 0.063,
+              decay: 0.265,
+              sustain: 0.27,
+              release: 0.26
+            },
+            {
+              id: 'fac_0_20',
+              name: 'Bass 21 · Analog',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 4520,
+              attack: 0.075,
+              decay: 0.32,
+              sustain: 0.39,
+              release: 0.06
+            },
+            {
+              id: 'fac_0_21',
+              name: 'Bass 22 · Sub',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 4735,
+              attack: 0.003,
+              decay: 0.375,
+              sustain: 0.51,
+              release: 0.11
+            },
+            {
+              id: 'fac_0_22',
+              name: 'Bass 23 · Hyper',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 4950,
+              attack: 0.015,
+              decay: 0.43,
+              sustain: 0.63,
+              release: 0.16
+            },
+            {
+              id: 'fac_0_23',
+              name: 'Bass 24 · Dark',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 5165,
+              attack: 0.027,
+              decay: 0.485,
+              sustain: 0.75,
+              release: 0.21
+            },
+            {
+              id: 'fac_0_24',
+              name: 'Bass 25 · Deep',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 5380,
+              attack: 0.039,
+              decay: 0.1,
+              sustain: 0.15,
+              release: 0.26
+            },
+            {
+              id: 'fac_0_25',
+              name: 'Bass 26 · Bright',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 5595,
+              attack: 0.051,
+              decay: 0.155,
+              sustain: 0.27,
+              release: 0.06
+            },
+            {
+              id: 'fac_0_26',
+              name: 'Bass 27 · Warm',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 5810,
+              attack: 0.063,
+              decay: 0.21,
+              sustain: 0.39,
+              release: 0.11
+            },
+            {
+              id: 'fac_0_27',
+              name: 'Bass 28 · Crisp',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 6025,
+              attack: 0.075,
+              decay: 0.265,
+              sustain: 0.51,
+              release: 0.16
+            },
+            {
+              id: 'fac_0_28',
+              name: 'Bass 29 · Analog',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 6240,
+              attack: 0.003,
+              decay: 0.32,
+              sustain: 0.63,
+              release: 0.21
+            },
+            {
+              id: 'fac_0_29',
+              name: 'Bass 30 · Sub',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 6455,
+              attack: 0.015,
+              decay: 0.375,
+              sustain: 0.75,
+              release: 0.26
+            },
+            {
+              id: 'fac_0_30',
+              name: 'Bass 31 · Hyper',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 6670,
+              attack: 0.027,
+              decay: 0.43,
+              sustain: 0.15,
+              release: 0.06
+            },
+            {
+              id: 'fac_0_31',
+              name: 'Bass 32 · Dark',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 6885,
+              attack: 0.039,
+              decay: 0.485,
+              sustain: 0.27,
+              release: 0.11
+            },
+            {
+              id: 'fac_0_32',
+              name: 'Bass 33 · Deep',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 7100,
+              attack: 0.051,
+              decay: 0.1,
+              sustain: 0.39,
+              release: 0.16
+            },
+            {
+              id: 'fac_0_33',
+              name: 'Bass 34 · Bright',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 7315,
+              attack: 0.063,
+              decay: 0.155,
+              sustain: 0.51,
+              release: 0.21
+            },
+            {
+              id: 'fac_0_34',
+              name: 'Bass 35 · Warm',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 7530,
+              attack: 0.075,
+              decay: 0.21,
+              sustain: 0.63,
+              release: 0.26
+            },
+            {
+              id: 'fac_0_35',
+              name: 'Bass 36 · Crisp',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 7745,
+              attack: 0.003,
+              decay: 0.265,
+              sustain: 0.75,
+              release: 0.06
+            },
+            {
+              id: 'fac_0_36',
+              name: 'Bass 37 · Analog',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 7960,
+              attack: 0.015,
+              decay: 0.32,
+              sustain: 0.15,
+              release: 0.11
+            },
+            {
+              id: 'fac_0_37',
+              name: 'Bass 38 · Sub',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 8175,
+              attack: 0.027,
+              decay: 0.375,
+              sustain: 0.27,
+              release: 0.16
+            },
+            {
+              id: 'fac_0_38',
+              name: 'Bass 39 · Hyper',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 8390,
+              attack: 0.039,
+              decay: 0.43,
+              sustain: 0.39,
+              release: 0.21
+            },
+            {
+              id: 'fac_0_39',
+              name: 'Bass 40 · Dark',
+              color: '#a855f7',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sawtooth',
+              cutoff: 405,
+              attack: 0.051,
+              decay: 0.485,
+              sustain: 0.51,
+              release: 0.26
+            }
+          ]
+        },
+        {
+          folder: '✨ Factory · Lead & Arp Vault (40)',
+          items: [
+            {
+              id: 'fac_1_0',
+              name: 'Lead 01 · Deep',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 410,
+              attack: 0.003,
+              decay: 0.1,
+              sustain: 0.15,
+              release: 0.06
+            },
+            {
+              id: 'fac_1_1',
+              name: 'Lead 02 · Bright',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 625,
+              attack: 0.015,
+              decay: 0.155,
+              sustain: 0.27,
+              release: 0.11
+            },
+            {
+              id: 'fac_1_2',
+              name: 'Lead 03 · Warm',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 840,
+              attack: 0.027,
+              decay: 0.21,
+              sustain: 0.39,
+              release: 0.16
+            },
+            {
+              id: 'fac_1_3',
+              name: 'Lead 04 · Crisp',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 1055,
+              attack: 0.039,
+              decay: 0.265,
+              sustain: 0.51,
+              release: 0.21
+            },
+            {
+              id: 'fac_1_4',
+              name: 'Lead 05 · Analog',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 1270,
+              attack: 0.051,
+              decay: 0.32,
+              sustain: 0.63,
+              release: 0.26
+            },
+            {
+              id: 'fac_1_5',
+              name: 'Lead 06 · Sub',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 1485,
+              attack: 0.063,
+              decay: 0.375,
+              sustain: 0.75,
+              release: 0.06
+            },
+            {
+              id: 'fac_1_6',
+              name: 'Lead 07 · Hyper',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 1700,
+              attack: 0.075,
+              decay: 0.43,
+              sustain: 0.15,
+              release: 0.11
+            },
+            {
+              id: 'fac_1_7',
+              name: 'Lead 08 · Dark',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 1915,
+              attack: 0.003,
+              decay: 0.485,
+              sustain: 0.27,
+              release: 0.16
+            },
+            {
+              id: 'fac_1_8',
+              name: 'Lead 09 · Deep',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 2130,
+              attack: 0.015,
+              decay: 0.1,
+              sustain: 0.39,
+              release: 0.21
+            },
+            {
+              id: 'fac_1_9',
+              name: 'Lead 10 · Bright',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 2345,
+              attack: 0.027,
+              decay: 0.155,
+              sustain: 0.51,
+              release: 0.26
+            },
+            {
+              id: 'fac_1_10',
+              name: 'Lead 11 · Warm',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 2560,
+              attack: 0.039,
+              decay: 0.21,
+              sustain: 0.63,
+              release: 0.06
+            },
+            {
+              id: 'fac_1_11',
+              name: 'Lead 12 · Crisp',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 2775,
+              attack: 0.051,
+              decay: 0.265,
+              sustain: 0.75,
+              release: 0.11
+            },
+            {
+              id: 'fac_1_12',
+              name: 'Lead 13 · Analog',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 2990,
+              attack: 0.063,
+              decay: 0.32,
+              sustain: 0.15,
+              release: 0.16
+            },
+            {
+              id: 'fac_1_13',
+              name: 'Lead 14 · Sub',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 3205,
+              attack: 0.075,
+              decay: 0.375,
+              sustain: 0.27,
+              release: 0.21
+            },
+            {
+              id: 'fac_1_14',
+              name: 'Lead 15 · Hyper',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 3420,
+              attack: 0.003,
+              decay: 0.43,
+              sustain: 0.39,
+              release: 0.26
+            },
+            {
+              id: 'fac_1_15',
+              name: 'Lead 16 · Dark',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 3635,
+              attack: 0.015,
+              decay: 0.485,
+              sustain: 0.51,
+              release: 0.06
+            },
+            {
+              id: 'fac_1_16',
+              name: 'Lead 17 · Deep',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 3850,
+              attack: 0.027,
+              decay: 0.1,
+              sustain: 0.63,
+              release: 0.11
+            },
+            {
+              id: 'fac_1_17',
+              name: 'Lead 18 · Bright',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 4065,
+              attack: 0.039,
+              decay: 0.155,
+              sustain: 0.75,
+              release: 0.16
+            },
+            {
+              id: 'fac_1_18',
+              name: 'Lead 19 · Warm',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 4280,
+              attack: 0.051,
+              decay: 0.21,
+              sustain: 0.15,
+              release: 0.21
+            },
+            {
+              id: 'fac_1_19',
+              name: 'Lead 20 · Crisp',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 4495,
+              attack: 0.063,
+              decay: 0.265,
+              sustain: 0.27,
+              release: 0.26
+            },
+            {
+              id: 'fac_1_20',
+              name: 'Lead 21 · Analog',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 4710,
+              attack: 0.075,
+              decay: 0.32,
+              sustain: 0.39,
+              release: 0.06
+            },
+            {
+              id: 'fac_1_21',
+              name: 'Lead 22 · Sub',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 4925,
+              attack: 0.003,
+              decay: 0.375,
+              sustain: 0.51,
+              release: 0.11
+            },
+            {
+              id: 'fac_1_22',
+              name: 'Lead 23 · Hyper',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 5140,
+              attack: 0.015,
+              decay: 0.43,
+              sustain: 0.63,
+              release: 0.16
+            },
+            {
+              id: 'fac_1_23',
+              name: 'Lead 24 · Dark',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 5355,
+              attack: 0.027,
+              decay: 0.485,
+              sustain: 0.75,
+              release: 0.21
+            },
+            {
+              id: 'fac_1_24',
+              name: 'Lead 25 · Deep',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 5570,
+              attack: 0.039,
+              decay: 0.1,
+              sustain: 0.15,
+              release: 0.26
+            },
+            {
+              id: 'fac_1_25',
+              name: 'Lead 26 · Bright',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 5785,
+              attack: 0.051,
+              decay: 0.155,
+              sustain: 0.27,
+              release: 0.06
+            },
+            {
+              id: 'fac_1_26',
+              name: 'Lead 27 · Warm',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 6000,
+              attack: 0.063,
+              decay: 0.21,
+              sustain: 0.39,
+              release: 0.11
+            },
+            {
+              id: 'fac_1_27',
+              name: 'Lead 28 · Crisp',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 6215,
+              attack: 0.075,
+              decay: 0.265,
+              sustain: 0.51,
+              release: 0.16
+            },
+            {
+              id: 'fac_1_28',
+              name: 'Lead 29 · Analog',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 6430,
+              attack: 0.003,
+              decay: 0.32,
+              sustain: 0.63,
+              release: 0.21
+            },
+            {
+              id: 'fac_1_29',
+              name: 'Lead 30 · Sub',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 6645,
+              attack: 0.015,
+              decay: 0.375,
+              sustain: 0.75,
+              release: 0.26
+            },
+            {
+              id: 'fac_1_30',
+              name: 'Lead 31 · Hyper',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 6860,
+              attack: 0.027,
+              decay: 0.43,
+              sustain: 0.15,
+              release: 0.06
+            },
+            {
+              id: 'fac_1_31',
+              name: 'Lead 32 · Dark',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 7075,
+              attack: 0.039,
+              decay: 0.485,
+              sustain: 0.27,
+              release: 0.11
+            },
+            {
+              id: 'fac_1_32',
+              name: 'Lead 33 · Deep',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 7290,
+              attack: 0.051,
+              decay: 0.1,
+              sustain: 0.39,
+              release: 0.16
+            },
+            {
+              id: 'fac_1_33',
+              name: 'Lead 34 · Bright',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 7505,
+              attack: 0.063,
+              decay: 0.155,
+              sustain: 0.51,
+              release: 0.21
+            },
+            {
+              id: 'fac_1_34',
+              name: 'Lead 35 · Warm',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 7720,
+              attack: 0.075,
+              decay: 0.21,
+              sustain: 0.63,
+              release: 0.26
+            },
+            {
+              id: 'fac_1_35',
+              name: 'Lead 36 · Crisp',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 7935,
+              attack: 0.003,
+              decay: 0.265,
+              sustain: 0.75,
+              release: 0.06
+            },
+            {
+              id: 'fac_1_36',
+              name: 'Lead 37 · Analog',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 8150,
+              attack: 0.015,
+              decay: 0.32,
+              sustain: 0.15,
+              release: 0.11
+            },
+            {
+              id: 'fac_1_37',
+              name: 'Lead 38 · Sub',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 8365,
+              attack: 0.027,
+              decay: 0.375,
+              sustain: 0.27,
+              release: 0.16
+            },
+            {
+              id: 'fac_1_38',
+              name: 'Lead 39 · Hyper',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 380,
+              attack: 0.039,
+              decay: 0.43,
+              sustain: 0.39,
+              release: 0.21
+            },
+            {
+              id: 'fac_1_39',
+              name: 'Lead 40 · Dark',
+              color: '#22c55e',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'square',
+              cutoff: 595,
+              attack: 0.051,
+              decay: 0.485,
+              sustain: 0.51,
+              release: 0.26
+            }
+          ]
+        },
+        {
+          folder: '🥁 Factory · Percussion Vault (40)',
+          items: [
+            {
+              id: 'fac_2_0',
+              name: 'Perc 01 · Deep',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 600,
+              attack: 0.003,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_2_1',
+              name: 'Perc 02 · Bright',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 815,
+              attack: 0.015,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_2_2',
+              name: 'Perc 03 · Warm',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 1030,
+              attack: 0.027,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_2_3',
+              name: 'Perc 04 · Crisp',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 1245,
+              attack: 0.039,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_2_4',
+              name: 'Perc 05 · Analog',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 1460,
+              attack: 0.051,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_2_5',
+              name: 'Perc 06 · Sub',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 1675,
+              attack: 0.063,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_2_6',
+              name: 'Perc 07 · Hyper',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 1890,
+              attack: 0.075,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_2_7',
+              name: 'Perc 08 · Dark',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 2105,
+              attack: 0.003,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_2_8',
+              name: 'Perc 09 · Deep',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 2320,
+              attack: 0.015,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_2_9',
+              name: 'Perc 10 · Bright',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 2535,
+              attack: 0.027,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_2_10',
+              name: 'Perc 11 · Warm',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 2750,
+              attack: 0.039,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_2_11',
+              name: 'Perc 12 · Crisp',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 2965,
+              attack: 0.051,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_2_12',
+              name: 'Perc 13 · Analog',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 3180,
+              attack: 0.063,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_2_13',
+              name: 'Perc 14 · Sub',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 3395,
+              attack: 0.075,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_2_14',
+              name: 'Perc 15 · Hyper',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 3610,
+              attack: 0.003,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_2_15',
+              name: 'Perc 16 · Dark',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 3825,
+              attack: 0.015,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_2_16',
+              name: 'Perc 17 · Deep',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 4040,
+              attack: 0.027,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_2_17',
+              name: 'Perc 18 · Bright',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 4255,
+              attack: 0.039,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_2_18',
+              name: 'Perc 19 · Warm',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 4470,
+              attack: 0.051,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_2_19',
+              name: 'Perc 20 · Crisp',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 4685,
+              attack: 0.063,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_2_20',
+              name: 'Perc 21 · Analog',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 4900,
+              attack: 0.075,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_2_21',
+              name: 'Perc 22 · Sub',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 5115,
+              attack: 0.003,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_2_22',
+              name: 'Perc 23 · Hyper',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 5330,
+              attack: 0.015,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_2_23',
+              name: 'Perc 24 · Dark',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 5545,
+              attack: 0.027,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_2_24',
+              name: 'Perc 25 · Deep',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 5760,
+              attack: 0.039,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_2_25',
+              name: 'Perc 26 · Bright',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 5975,
+              attack: 0.051,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_2_26',
+              name: 'Perc 27 · Warm',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 6190,
+              attack: 0.063,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_2_27',
+              name: 'Perc 28 · Crisp',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 6405,
+              attack: 0.075,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_2_28',
+              name: 'Perc 29 · Analog',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 6620,
+              attack: 0.003,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_2_29',
+              name: 'Perc 30 · Sub',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 6835,
+              attack: 0.015,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_2_30',
+              name: 'Perc 31 · Hyper',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 7050,
+              attack: 0.027,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_2_31',
+              name: 'Perc 32 · Dark',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 7265,
+              attack: 0.039,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_2_32',
+              name: 'Perc 33 · Deep',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 7480,
+              attack: 0.051,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_2_33',
+              name: 'Perc 34 · Bright',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 7695,
+              attack: 0.063,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_2_34',
+              name: 'Perc 35 · Warm',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 7910,
+              attack: 0.075,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_2_35',
+              name: 'Perc 36 · Crisp',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 8125,
+              attack: 0.003,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_2_36',
+              name: 'Perc 37 · Analog',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 8340,
+              attack: 0.015,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_2_37',
+              name: 'Perc 38 · Sub',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 355,
+              attack: 0.027,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_2_38',
+              name: 'Perc 39 · Hyper',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 570,
+              attack: 0.039,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_2_39',
+              name: 'Perc 40 · Dark',
+              color: '#facc15',
+              engine: 'drum',
+              preset: 'tom',
+              wave: 'triangle',
+              cutoff: 785,
+              attack: 0.051,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.26
+            }
+          ]
+        },
+        {
+          folder: '🌊 Factory · Pad & Texture Vault (40)',
+          items: [
+            {
+              id: 'fac_3_0',
+              name: 'Pad 01 · Deep',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 790,
+              attack: 0.003,
+              decay: 0.1,
+              sustain: 0.15,
+              release: 0.06
+            },
+            {
+              id: 'fac_3_1',
+              name: 'Pad 02 · Bright',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 1005,
+              attack: 0.015,
+              decay: 0.155,
+              sustain: 0.27,
+              release: 0.11
+            },
+            {
+              id: 'fac_3_2',
+              name: 'Pad 03 · Warm',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 1220,
+              attack: 0.027,
+              decay: 0.21,
+              sustain: 0.39,
+              release: 0.16
+            },
+            {
+              id: 'fac_3_3',
+              name: 'Pad 04 · Crisp',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 1435,
+              attack: 0.039,
+              decay: 0.265,
+              sustain: 0.51,
+              release: 0.21
+            },
+            {
+              id: 'fac_3_4',
+              name: 'Pad 05 · Analog',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 1650,
+              attack: 0.051,
+              decay: 0.32,
+              sustain: 0.63,
+              release: 0.26
+            },
+            {
+              id: 'fac_3_5',
+              name: 'Pad 06 · Sub',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 1865,
+              attack: 0.063,
+              decay: 0.375,
+              sustain: 0.75,
+              release: 0.06
+            },
+            {
+              id: 'fac_3_6',
+              name: 'Pad 07 · Hyper',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 2080,
+              attack: 0.075,
+              decay: 0.43,
+              sustain: 0.15,
+              release: 0.11
+            },
+            {
+              id: 'fac_3_7',
+              name: 'Pad 08 · Dark',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 2295,
+              attack: 0.003,
+              decay: 0.485,
+              sustain: 0.27,
+              release: 0.16
+            },
+            {
+              id: 'fac_3_8',
+              name: 'Pad 09 · Deep',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 2510,
+              attack: 0.015,
+              decay: 0.1,
+              sustain: 0.39,
+              release: 0.21
+            },
+            {
+              id: 'fac_3_9',
+              name: 'Pad 10 · Bright',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 2725,
+              attack: 0.027,
+              decay: 0.155,
+              sustain: 0.51,
+              release: 0.26
+            },
+            {
+              id: 'fac_3_10',
+              name: 'Pad 11 · Warm',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 2940,
+              attack: 0.039,
+              decay: 0.21,
+              sustain: 0.63,
+              release: 0.06
+            },
+            {
+              id: 'fac_3_11',
+              name: 'Pad 12 · Crisp',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 3155,
+              attack: 0.051,
+              decay: 0.265,
+              sustain: 0.75,
+              release: 0.11
+            },
+            {
+              id: 'fac_3_12',
+              name: 'Pad 13 · Analog',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 3370,
+              attack: 0.063,
+              decay: 0.32,
+              sustain: 0.15,
+              release: 0.16
+            },
+            {
+              id: 'fac_3_13',
+              name: 'Pad 14 · Sub',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 3585,
+              attack: 0.075,
+              decay: 0.375,
+              sustain: 0.27,
+              release: 0.21
+            },
+            {
+              id: 'fac_3_14',
+              name: 'Pad 15 · Hyper',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 3800,
+              attack: 0.003,
+              decay: 0.43,
+              sustain: 0.39,
+              release: 0.26
+            },
+            {
+              id: 'fac_3_15',
+              name: 'Pad 16 · Dark',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 4015,
+              attack: 0.015,
+              decay: 0.485,
+              sustain: 0.51,
+              release: 0.06
+            },
+            {
+              id: 'fac_3_16',
+              name: 'Pad 17 · Deep',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 4230,
+              attack: 0.027,
+              decay: 0.1,
+              sustain: 0.63,
+              release: 0.11
+            },
+            {
+              id: 'fac_3_17',
+              name: 'Pad 18 · Bright',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 4445,
+              attack: 0.039,
+              decay: 0.155,
+              sustain: 0.75,
+              release: 0.16
+            },
+            {
+              id: 'fac_3_18',
+              name: 'Pad 19 · Warm',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 4660,
+              attack: 0.051,
+              decay: 0.21,
+              sustain: 0.15,
+              release: 0.21
+            },
+            {
+              id: 'fac_3_19',
+              name: 'Pad 20 · Crisp',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 4875,
+              attack: 0.063,
+              decay: 0.265,
+              sustain: 0.27,
+              release: 0.26
+            },
+            {
+              id: 'fac_3_20',
+              name: 'Pad 21 · Analog',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 5090,
+              attack: 0.075,
+              decay: 0.32,
+              sustain: 0.39,
+              release: 0.06
+            },
+            {
+              id: 'fac_3_21',
+              name: 'Pad 22 · Sub',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 5305,
+              attack: 0.003,
+              decay: 0.375,
+              sustain: 0.51,
+              release: 0.11
+            },
+            {
+              id: 'fac_3_22',
+              name: 'Pad 23 · Hyper',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 5520,
+              attack: 0.015,
+              decay: 0.43,
+              sustain: 0.63,
+              release: 0.16
+            },
+            {
+              id: 'fac_3_23',
+              name: 'Pad 24 · Dark',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 5735,
+              attack: 0.027,
+              decay: 0.485,
+              sustain: 0.75,
+              release: 0.21
+            },
+            {
+              id: 'fac_3_24',
+              name: 'Pad 25 · Deep',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 5950,
+              attack: 0.039,
+              decay: 0.1,
+              sustain: 0.15,
+              release: 0.26
+            },
+            {
+              id: 'fac_3_25',
+              name: 'Pad 26 · Bright',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 6165,
+              attack: 0.051,
+              decay: 0.155,
+              sustain: 0.27,
+              release: 0.06
+            },
+            {
+              id: 'fac_3_26',
+              name: 'Pad 27 · Warm',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 6380,
+              attack: 0.063,
+              decay: 0.21,
+              sustain: 0.39,
+              release: 0.11
+            },
+            {
+              id: 'fac_3_27',
+              name: 'Pad 28 · Crisp',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 6595,
+              attack: 0.075,
+              decay: 0.265,
+              sustain: 0.51,
+              release: 0.16
+            },
+            {
+              id: 'fac_3_28',
+              name: 'Pad 29 · Analog',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 6810,
+              attack: 0.003,
+              decay: 0.32,
+              sustain: 0.63,
+              release: 0.21
+            },
+            {
+              id: 'fac_3_29',
+              name: 'Pad 30 · Sub',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 7025,
+              attack: 0.015,
+              decay: 0.375,
+              sustain: 0.75,
+              release: 0.26
+            },
+            {
+              id: 'fac_3_30',
+              name: 'Pad 31 · Hyper',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 7240,
+              attack: 0.027,
+              decay: 0.43,
+              sustain: 0.15,
+              release: 0.06
+            },
+            {
+              id: 'fac_3_31',
+              name: 'Pad 32 · Dark',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 7455,
+              attack: 0.039,
+              decay: 0.485,
+              sustain: 0.27,
+              release: 0.11
+            },
+            {
+              id: 'fac_3_32',
+              name: 'Pad 33 · Deep',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 7670,
+              attack: 0.051,
+              decay: 0.1,
+              sustain: 0.39,
+              release: 0.16
+            },
+            {
+              id: 'fac_3_33',
+              name: 'Pad 34 · Bright',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 7885,
+              attack: 0.063,
+              decay: 0.155,
+              sustain: 0.51,
+              release: 0.21
+            },
+            {
+              id: 'fac_3_34',
+              name: 'Pad 35 · Warm',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 8100,
+              attack: 0.075,
+              decay: 0.21,
+              sustain: 0.63,
+              release: 0.26
+            },
+            {
+              id: 'fac_3_35',
+              name: 'Pad 36 · Crisp',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 8315,
+              attack: 0.003,
+              decay: 0.265,
+              sustain: 0.75,
+              release: 0.06
+            },
+            {
+              id: 'fac_3_36',
+              name: 'Pad 37 · Analog',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 330,
+              attack: 0.015,
+              decay: 0.32,
+              sustain: 0.15,
+              release: 0.11
+            },
+            {
+              id: 'fac_3_37',
+              name: 'Pad 38 · Sub',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 545,
+              attack: 0.027,
+              decay: 0.375,
+              sustain: 0.27,
+              release: 0.16
+            },
+            {
+              id: 'fac_3_38',
+              name: 'Pad 39 · Hyper',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 760,
+              attack: 0.039,
+              decay: 0.43,
+              sustain: 0.39,
+              release: 0.21
+            },
+            {
+              id: 'fac_3_39',
+              name: 'Pad 40 · Dark',
+              color: '#38bdf8',
+              engine: 'synth',
+              preset: 'synth',
+              wave: 'sine',
+              cutoff: 975,
+              attack: 0.051,
+              decay: 0.485,
+              sustain: 0.51,
+              release: 0.26
+            }
+          ]
+        },
+        {
+          folder: '⚡ Factory · Hard Drum & FX Vault (40)',
+          items: [
+            {
+              id: 'fac_4_0',
+              name: 'Drum 01 · Deep',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 980,
+              attack: 0.003,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_4_1',
+              name: 'Drum 02 · Bright',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 1195,
+              attack: 0.015,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_4_2',
+              name: 'Drum 03 · Warm',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 1410,
+              attack: 0.027,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_4_3',
+              name: 'Drum 04 · Crisp',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 1625,
+              attack: 0.039,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_4_4',
+              name: 'Drum 05 · Analog',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 1840,
+              attack: 0.051,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_4_5',
+              name: 'Drum 06 · Sub',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 2055,
+              attack: 0.063,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_4_6',
+              name: 'Drum 07 · Hyper',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 2270,
+              attack: 0.075,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_4_7',
+              name: 'Drum 08 · Dark',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 2485,
+              attack: 0.003,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_4_8',
+              name: 'Drum 09 · Deep',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 2700,
+              attack: 0.015,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_4_9',
+              name: 'Drum 10 · Bright',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 2915,
+              attack: 0.027,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_4_10',
+              name: 'Drum 11 · Warm',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 3130,
+              attack: 0.039,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_4_11',
+              name: 'Drum 12 · Crisp',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 3345,
+              attack: 0.051,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_4_12',
+              name: 'Drum 13 · Analog',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 3560,
+              attack: 0.063,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_4_13',
+              name: 'Drum 14 · Sub',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 3775,
+              attack: 0.075,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_4_14',
+              name: 'Drum 15 · Hyper',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 3990,
+              attack: 0.003,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_4_15',
+              name: 'Drum 16 · Dark',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 4205,
+              attack: 0.015,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_4_16',
+              name: 'Drum 17 · Deep',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 4420,
+              attack: 0.027,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_4_17',
+              name: 'Drum 18 · Bright',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 4635,
+              attack: 0.039,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_4_18',
+              name: 'Drum 19 · Warm',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 4850,
+              attack: 0.051,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_4_19',
+              name: 'Drum 20 · Crisp',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 5065,
+              attack: 0.063,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_4_20',
+              name: 'Drum 21 · Analog',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 5280,
+              attack: 0.075,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_4_21',
+              name: 'Drum 22 · Sub',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 5495,
+              attack: 0.003,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_4_22',
+              name: 'Drum 23 · Hyper',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 5710,
+              attack: 0.015,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_4_23',
+              name: 'Drum 24 · Dark',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 5925,
+              attack: 0.027,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_4_24',
+              name: 'Drum 25 · Deep',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 6140,
+              attack: 0.039,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_4_25',
+              name: 'Drum 26 · Bright',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 6355,
+              attack: 0.051,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_4_26',
+              name: 'Drum 27 · Warm',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 6570,
+              attack: 0.063,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_4_27',
+              name: 'Drum 28 · Crisp',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 6785,
+              attack: 0.075,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_4_28',
+              name: 'Drum 29 · Analog',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 7000,
+              attack: 0.003,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_4_29',
+              name: 'Drum 30 · Sub',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 7215,
+              attack: 0.015,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_4_30',
+              name: 'Drum 31 · Hyper',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 7430,
+              attack: 0.027,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_4_31',
+              name: 'Drum 32 · Dark',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 7645,
+              attack: 0.039,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_4_32',
+              name: 'Drum 33 · Deep',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 7860,
+              attack: 0.051,
+              decay: 0.1,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_4_33',
+              name: 'Drum 34 · Bright',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 8075,
+              attack: 0.063,
+              decay: 0.155,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_4_34',
+              name: 'Drum 35 · Warm',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 8290,
+              attack: 0.075,
+              decay: 0.21,
+              sustain: 0.0,
+              release: 0.26
+            },
+            {
+              id: 'fac_4_35',
+              name: 'Drum 36 · Crisp',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 305,
+              attack: 0.003,
+              decay: 0.265,
+              sustain: 0.0,
+              release: 0.06
+            },
+            {
+              id: 'fac_4_36',
+              name: 'Drum 37 · Analog',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 520,
+              attack: 0.015,
+              decay: 0.32,
+              sustain: 0.0,
+              release: 0.11
+            },
+            {
+              id: 'fac_4_37',
+              name: 'Drum 38 · Sub',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 735,
+              attack: 0.027,
+              decay: 0.375,
+              sustain: 0.0,
+              release: 0.16
+            },
+            {
+              id: 'fac_4_38',
+              name: 'Drum 39 · Hyper',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 950,
+              attack: 0.039,
+              decay: 0.43,
+              sustain: 0.0,
+              release: 0.21
+            },
+            {
+              id: 'fac_4_39',
+              name: 'Drum 40 · Dark',
+              color: '#fb7185',
+              engine: 'drum',
+              preset: 'kick808',
+              wave: 'sine',
+              cutoff: 1165,
+              attack: 0.051,
+              decay: 0.485,
+              sustain: 0.0,
+              release: 0.26
+            }
+          ]
+        }
+      ];
+      extraPacks.forEach(pk => window.registerFruityDlc(pk));
     })();
   </script>
 </body>
